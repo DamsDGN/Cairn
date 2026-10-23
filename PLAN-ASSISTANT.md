@@ -59,27 +59,27 @@ multi-fournisseurs (intel local, OpenAI, Anthropic, vLLM Sover...).
   plateformes (dmg, NSIS, deb), signatures macOS (certificat Apple requis) et Windows, serveur
   d'auto-update.
 - **M7 Flavor Sover (optionnel)** : provider par défaut vers vLLM de Sover.tech.
-- **M8 Stats usage abonnement OpenCode Go** : afficher la consommation (5 h glissantes / semaine /
-  mois) dans la sidebar. Pas d'API officielle dédiée (upstream #31084, #40584) : l'endpoint public
-  utilisé par les extensions tierces est `GET https://opencode.ai/zen/go/v1/usage` avec
-  `Authorization: Bearer <clé>` (référence : paquet `pi-opencode-go-usage`). La clé vit dans
-  `~/.local/share/opencode/auth.json` (`opencode-go.key` ; repli `opencode.key`, puis
-  `OPENCODE_GO_API_KEY` / `OPENCODE_API_KEY` / `OPENCODE_ZEN_API_KEY`). Chemin :
-  RPC IPC main-process fork (lire auth.json, appeler l'endpoint, cache ~60 s, retour null sur toute
-  erreur pour cacher silencieusement la carte), exposé comme `platform.goUsage?()` optionnel, la
-  sidebar interroge toutes les 5 min. Le fallback cookie console (`/console/api/go/status`) est
-  volontairement non porté (cookie.__Host-console_session non accessible au renderer).
-- **M9 Conversations audio** : utiliser les APIs voice expérimentales déjà présentes en amont
-  (`packages/protocol/src/groups/voice.ts` : `voice.models`, `voice.session`, `voice.instructions`,
-  côté serveur `packages/core/src/voice.ts`, moteurs realtime openai/xai/google). Sessions brokerées
-  par le serveur : clé fournisseur stockée côté serveur OU session hébergée par la Console OpenCode
-  (facturée Go). Pas d'UI voice en amont (seul le parsing de handoff iOS existe). Phases :
-  1) bouton micro dans le composer + session realtime full-duplex WebRTC via `voice.session`
-     (SDP offer renderer -> serveur -> answer), retour audio dans la conversation ;
-  2) dictation push-to-talk (STT) si le temps réel ne suffit pas (nécessite alors une API
-     transcription, absente en amont).
-  Attention Electron : permission micro à gérer côté main (setPermissionRequestHandler) et
-  permission media quand la session démarre.
+- **M8 Stats usage abonnement OpenCode Go (fait)** : carte "OpenCode Go" dans la sidebar (histogramme
+  des 3 fenêtres : 5 h / semaine / mois, poll 5 min). Endpoint `GET
+https://opencode.ai/zen/go/v1/usage` (Bearer, ref paquet `pi-opencode-go-usage`), clé lue côté
+  main-process depuis `~/.local/share/opencode/auth.json` (`opencode-go.key`, repli `opencode.key`,
+  puis env `OPENCODE_GO_API_KEY` / `OPENCODE_API_KEY` / `OPENCODE_ZEN_API_KEY`), cache 60 s, null sur
+  toute erreur (carte absente). RPC IPC `GoUsage` + `platform.goUsage?()` optionnel (typecheck ok,
+  tests desktop 131 pass). Vérifié live : 200 `{usage:{rolling/weekly/monthly:{status,percent,resetsAt}}}`,
+  `resetsAt` ISO string converti en epoch ms.path Restes éventuels : libellé reset countdown, couleur
+  selon seuil, page réglages détaillée si souhaité (entry point product = sidebar ; à confirmer).
+- **M9 Conversations audio (phase 1 faite, phase 2 en attente de clé)** : APIs voice expérimentales
+  upstream utilisées (`voice.models` / `voice.session` / brokering serveur, moteurs realtime
+  openai/xai/google). Fait : bouton micro dans la barre d'actions du composer (assistant uniquement),
+  overlay Dialog (phases connect/listening/thinking/ready + transcripts user/assistant accumulés),
+  session WebRTC via SDP offer/answer mise en forme par le serveur, canal data realtime
+  OpenAI-family (speech started/stopped, transcription, deltas), permission `media` côté main,
+  icône fork microphone, prop additive `voiceControl` sur Composer/ComposerEditor ; rebase-friendly.
+  Constat du 23/10 : sur l'install de Damien, les 4 moteurs existent mais `available: false` (aucune
+  clé openai/xai/google côté serveur, Console non connectée) : la voix ne démarre pas sans
+  connecter OpenCode Console (hébergée, facturée Go) ou stocker une clé OpenAI en premier. Phase 2
+  reste : instructions/persona lié à l'agent, moteurs websocket (grok/gemini), push-to-talk
+  dictation (STT, absent upstream), interruption barge-in, UX plein écran Claude-like.
 
 ## Risques
 
