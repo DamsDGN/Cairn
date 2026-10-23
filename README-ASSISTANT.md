@@ -58,6 +58,23 @@ bun run build                    # electron-vite (out/main, preload, renderer)
 bunx electron-builder --linux AppImage deb --config electron-builder.config.ts
 ```
 
+Cross-builds depuis Linux (le `out/` d'electron-vite est indépendant de la plateforme) :
+
+```sh
+# Windows (NSIS) : le CLI est renommé .exe, prebuilds node-pty win32 requis dans node_modules
+OPENCODE_CLI_TARGET=x86_64-pc-windows-msvc bun ./scripts/prebuild.ts
+mv resources/opencode-cli resources/opencode-cli.exe
+OPENCODE_CLI_TARGET=x86_64-pc-windows-msvc bunx electron-builder --win --config electron-builder.config.ts
+
+# macOS (zip non signé, pas de DMG hors macOS) : config additive electron-builder.assistant.ts
+OPENCODE_CLI_TARGET=aarch64-apple-darwin bun ./scripts/prebuild.ts
+OPENCODE_CLI_TARGET=aarch64-apple-darwin bunx electron-builder --mac --config electron-builder.assistant.ts
+```
+
+Le résultat Windows/macOS est non signé : SmartScreen/Gatekeeper demandent une confirmation à
+l'ouverture. La signature propre nécessite un certificat (M6).
+```
+
 ## Principes de fork
 
 1. Diffs petits, groupés, modules additifs : rebase `origin/dev` régulier.
