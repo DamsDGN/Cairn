@@ -94,6 +94,26 @@ https://opencode.ai/zen/go/v1/usage` (Bearer, ref paquet `pi-opencode-go-usage`)
   connecter OpenCode Console (hébergée, facturée Go) ou stocker une clé OpenAI en premier. Phase 2
   reste : instructions/persona lié à l'agent, moteurs websocket (grok/gemini), push-to-talk
   dictation (STT, absent upstream), interruption barge-in, UX plein écran Claude-like.
+- **M10 Sidebar Claude Desktop (fait le 23/10)** : recadrage de la sidebar fork à la Claude Desktop,
+  d'après les captures de référence (`/home/dams/Téléchargements/Claude Desktop/`) :
+  - Ordre : `Nouvelle conversation` (bouton +), recherche inline, puis sections `Projets`,
+    `Artefacts` et `Récents` (ex "Historique") en liste directe de conversations (30 dernières).
+  - Sections `Projets` / `Artefacts` repliables (chevron), état persisté ; `Récents` ouverte par
+    défaut, aussi repliable.
+  - État centralisé dans `packages/app/src/assistant/sidebar-state.ts` : store Solid persisté en
+    localStorage (largeur, collapse, sections). Règles repo respectées : `createStore` (pas de
+    signals multiples), pas de try/catch (sections stockées en flags "0"/"1" par clé, pas de JSON).
+  - Redimensionnement : `ResizeHandle` du UI kit sur le bord droit (200-480 px), collapse par drag
+    sous 150 px (`collapseThreshold` + `onCollapse`), largeur persistée.
+  - Collapse/expand via bouton icône `sidebar` dans la titlebar (tooltip i18n
+    `assistant.sidebar.collapse` / `expand`), état persisté.
+  - Onglets masqués en mode assistant : rail vertical (`shell.tsx`, `verticalTabs` conditionné à
+    `!assistantRail()`) et strip horizontale + menu onglets récemment fermés (`titlebar.tsx`,
+    fallback dans `<Show when={!assistantMode()}>`). `addSessionTab` dédoublonne déjà : cliquer une
+    conversation Récents la réouvre, pas d'onglets fantômes.
+  - i18n : `assistant.chats` = "Recents"/"Récents", nouvelles clés sidebar collapse/expand (en + fr).
+  - Vérifié : `bun --bun run check` vert (lint + typecheck, 34 tasks), tests desktop 130 pass /
+    1 skip / 0 fail, `bun run build` (electron-vite) OK. Commit `d2ca31fe9d` poussé sur GitHub main.
 
 ## Packaging Linux (validé le 23/10)
 
@@ -123,6 +143,20 @@ https://opencode.ai/zen/go/v1/usage` (Bearer, ref paquet `pi-opencode-go-usage`)
   `git config core.hooksPath .husky-local`, `.husky-local/` exclu via `.git/info/exclude`.
   `check` passe (lint + typecheck turbo, 34 tasks OK), push effectif.
 - Release : assets AppImage + deb attachés au tag `v0.1.0` du repo fork.
+
+## Builds cross-plateformes (en cours)
+
+- Points d'appui connus : `OPENCODE_CLI_TARGET` (scripts/utils.ts, cibles dans `CLI_BINARIES`) pour
+  le CLI embarqué, prebuilds node-pty par plateforme (`@lydell/node-pty-<os>-<cpu>` à installer dans
+  `packages/desktop/node_modules` avant packaging), `bun run package:win` (NSIS) et `bun run
+  package:mac` (dmg/zip) depuis electron-builder.config.ts.
+- Windows : `signWindows` est un no-op hors win32 (build non signé OK). afterPack vérifie les
+  prebuilds `conpty.node`. NSIS fonctionne sans wine avec electron-builder récent (app-builder
+  embarque nsis linux). A tester.
+- macOS : signature + notarize impossibles sans cert Apple ; produire un zip/dmg non signé et
+  désactiver `notarize`/`hardenedRuntime` avant le build, sinon afterSign échoue. A tester.
+- Sinon fallback : GitHub Actions sur les runners windows/macos hébergés (gratuits pour repo privé
+  dans les quotas), même config electron-builder.
 
 ## Risques
 
