@@ -3,8 +3,10 @@ import type { GoUsage, GoUsageWindow } from "@/runtime/platform/platform"
 import { skipToken, useQuery } from "@tanstack/solid-query"
 import { Button } from "@opencode/ui/button"
 import { Icon } from "@opencode/ui/icon"
+import type { IconName } from "@opencode/ui/icons/catalog"
 import { TextInput } from "@opencode/ui/text-input"
 import { ScrollView } from "@opencode/ui/scroll-view"
+import { ResizeHandle } from "@opencode/ui/resize-handle"
 import { For, Show, createMemo, createResource, createSignal, startTransition, type JSX } from "solid-js"
 import { debounce } from "@solid-primitives/scheduled"
 import { useLanguage } from "@/runtime/i18n/language"
@@ -15,15 +17,29 @@ import { sessionLabel } from "@/session/title"
 import { useSettingsSurface } from "@/settings/surface"
 import { useTabs } from "@/shell/tabs/tabs"
 import type { LocalProject } from "@/shell/state/layout"
+import {
+  SIDEBAR_COLLAPSE_THRESHOLD,
+  SIDEBAR_MAX_WIDTH,
+  SIDEBAR_MIN_WIDTH,
+  assistantSidebar,
+  persistSidebarCollapsed,
+  persistSidebarWidth,
+  toggleSidebarSection,
+} from "@/assistant/sidebar-state"
 import { pathKey } from "@/workspaces/path-key"
 
 const SESSION_LIMIT = 30
 
-const SECTION_LABEL = "text-[12px] text-v2-text-text-muted [font-weight:440]"
-
 const ROW = `
   flex h-9 min-w-0 w-full shrink-0 items-center gap-2 rounded-[6px] px-2.5 text-start
   text-v2-text-text-base [font-weight:440] outline-none
+  transition-[background-color] duration-[120ms] ease-in-out
+  hover:bg-v2-overlay-simple-overlay-hover focus-visible:bg-v2-overlay-simple-overlay-hover
+`
+
+const LABEL_ROW = `
+  flex h-7 min-w-0 w-full shrink-0 items-center gap-2 rounded-[6px] px-2.5 text-start
+  text-[12px] text-v2-text-text-muted [font-weight:440] outline-none
   transition-[background-color] duration-[120ms] ease-in-out
   hover:bg-v2-overlay-simple-overlay-hover focus-visible:bg-v2-overlay-simple-overlay-hover
 `
@@ -157,8 +173,19 @@ export function AssistantSidebar(props: { directory: string }) {
   return (
     <aside
       data-slot="assistant-sidebar"
-      class="relative flex h-full min-h-0 w-[264px] shrink-0 flex-col bg-v2-background-bg-deep px-2.5 pb-[max(10px,var(--shell-bottom-inset,8px))] pt-2"
+      class="relative flex h-full min-h-0 shrink-0 flex-col bg-v2-background-bg-deep px-2.5 pb-[max(10px,var(--shell-bottom-inset,8px))] pt-2"
+      style={{ width: `${assistantSidebar.width}px` }}
     >
+      <ResizeHandle
+        class="-end-2 z-20"
+        direction="horizontal"
+        size={assistantSidebar.width}
+        min={SIDEBAR_MIN_WIDTH}
+        max={SIDEBAR_MAX_WIDTH}
+        collapseThreshold={SIDEBAR_COLLAPSE_THRESHOLD}
+        onResize={persistSidebarWidth}
+        onCollapse={() => persistSidebarCollapsed(true)}
+      />
       <Button class="mb-2 w-full justify-start" variant="submit" icon="plus-small" onClick={newChat}>
         {language.t("assistant.new")}
       </Button>
@@ -172,19 +199,13 @@ export function AssistantSidebar(props: { directory: string }) {
         onInput={(event) => runSearch(event.currentTarget.value)}
       />
       <ScrollView class="min-h-0 flex-1 overflow-y-auto">
-        <Section label={language.t("assistant.chats")}>
-          <Show when={chats().length > 0} fallback={<div class={EMPTY}>{language.t("assistant.chats.empty")}</div>}>
-            <For each={chats()}>
-              {(session) => (
-                <button type="button" class={ROW} onClick={() => openChat(session)}>
-                  <span class="truncate">{sessionLabel(session)}</span>
-                </button>
-              )}
-            </For>
-          </Show>
-        </Section>
         <Show when={projects().length > 0}>
-          <Section label={language.t("home.projects")}>
+          <CollapsibleSection
+            label={language.t("home.projects")}
+            icon="folder"
+            open={assistantSidebar.sections.projects}
+            onToggle={() => toggleSidebarSection("projects")}
+          >
             <For each={projects()}>
               {(project) => (
                 <button type="button" class={ROW} onClick={() => openProject(project)}>
@@ -193,9 +214,14 @@ export function AssistantSidebar(props: { directory: string }) {
                 </button>
               )}
             </For>
-          </Section>
+          </CollapsibleSection>
         </Show>
-        <Section label={language.t("assistant.artifacts")}>
+        <CollapsibleSection
+          label={language.t("assistant.artifacts")}
+          icon="file-tree"
+          open={assistantSidebar.sections.artifacts}
+          onToggle={() => toggleSidebarSection("artifacts")}
+        >
           <Show
             when={artifactEntries().length > 0}
             fallback={<div class={EMPTY}>{language.t("assistant.artifacts.empty")}</div>}
@@ -212,7 +238,22 @@ export function AssistantSidebar(props: { directory: string }) {
               )}
             </For>
           </Show>
-        </Section>
+        </CollapsibleSection>
+        <CollapsibleSection
+          label={language.t("assistant.chats")}
+          open={assistantSidebar.sections.recents}
+          onToggle={() => toggleSidebarSection("recents")}
+        >
+          <Show when={chats().length > 0} fallback={<div class={EMPTY}>{language.t("assistant.chats.empty")}</div>}>
+            <For each={chats()}>
+              {(session) => (
+                <button type="button" class={ROW} onClick={() => openChat(session)}>
+                  <span class="truncate">{sessionLabel(session)}</span>
+                </button>
+              )}
+            </For>
+          </Show>
+        </CollapsibleSection>
       </ScrollView>
       <div class="mt-2 flex flex-col gap-0.5">
         <GoCard />
@@ -229,11 +270,29 @@ export function AssistantSidebar(props: { directory: string }) {
   )
 }
 
-function Section(props: { label: string; children: JSX.Element }) {
+function CollapsibleSection(props: {
+  label: string
+  icon?: IconName
+  open: boolean
+  onToggle: () => void
+  children: JSX.Element
+}) {
   return (
     <div class="mb-3">
-      <div class={`${SECTION_LABEL} px-2.5 pb-1 pt-1.5`}>{props.label}</div>
-      {props.children}
+      <button type="button" class={props.icon ? ROW : LABEL_ROW} onClick={props.onToggle} aria-expanded={props.open}>
+        <Show when={props.icon} keyed>
+          {(icon) => <Icon name={icon} class="shrink-0 text-v2-icon-icon-muted" />}
+        </Show>
+        <span class="min-w-0 flex-1 truncate">{props.label}</span>
+        <Icon
+          name={props.open ? "chevron-down" : "chevron-right"}
+          size="small"
+          class="shrink-0 text-v2-text-text-faint"
+        />
+      </button>
+      <Show when={props.open}>
+        <div class="mb-1">{props.children}</div>
+      </Show>
     </div>
   )
 }

@@ -10,6 +10,7 @@ import { UploadToastHost } from "@/composer/attachments/uploads"
 import { TitlebarRightProvider } from "@/shell/titlebar/right-slot"
 import { useSettingsSurface } from "@/settings/surface"
 import { useSettings } from "@/settings/model"
+import { assistantSidebar } from "@/assistant/sidebar-state"
 import { ExtensionServerCover } from "@/runtime/extension/server-shell"
 import { ExtensionSlot } from "@/runtime/extension/render"
 
@@ -24,10 +25,16 @@ export default function Layout(props: ParentProps) {
     tabsMount: undefined,
   })
 
-  const verticalTabs = () => preferences.appearance.tabLayout() === "vertical" && !mobile()
   const bottomTitlebar = () => mobile() && preferences.general.mobileTitlebarPosition() === "bottom"
   // Fork: the assistant rail hides on narrow windows and while the full-screen settings surface is open.
   const assistantRail = () => (mobile() || settings.active() ? undefined : platform.assistantDirectory)
+  const assistantRailVisible = () => {
+    const rail = assistantRail()
+
+    return rail && !assistantSidebar.collapsed ? rail : undefined
+  }
+
+  const verticalTabs = () => preferences.appearance.tabLayout() === "vertical" && !mobile() && !assistantRail()
 
   return (
     <TitlebarRightProvider>
@@ -51,7 +58,7 @@ export default function Layout(props: ParentProps) {
         <Titlebar verticalTabs={verticalTabs() ? { mount: state.tabsMount } : undefined} />
         <div class="flex flex-1 min-h-0 min-w-0 flex-row">
           {/* Fork: chat-first rail with chats, projects, artifacts and settings shortcuts on the assistant directory. */}
-          <Show when={assistantRail()} keyed>
+          <Show when={assistantRailVisible()} keyed>
             {(directory) => <AssistantSidebar directory={directory} />}
           </Show>
           <Show when={verticalTabs()}>

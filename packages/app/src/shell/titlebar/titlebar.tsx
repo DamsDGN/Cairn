@@ -29,6 +29,7 @@ import { sessionTabTitle } from "./tab-title"
 import { SessionTabAvatar } from "@/shell/layout/session-tab-avatar"
 import { SessionProgressIndicatorV2 } from "@opencode/session-ui/v2/session-progress-indicator-v2"
 import { RecentlyClosedTabsMenu } from "./recently-closed-tabs-menu"
+import { assistantSidebar, toggleSidebarCollapsed } from "@/assistant/sidebar-state"
 import { useSettingsDialog } from "@/settings/command"
 import { rootSession } from "@/shell/routes/session"
 import { TitlebarItem } from "@opencode/gui-extensions/sdk"
@@ -63,6 +64,8 @@ export function Titlebar(props: { verticalTabs?: { mount?: HTMLElement } }) {
   const navigate = useNavigate()
   const location = useLocation()
   const mobile = createMediaQuery("(max-width: 767px)")
+  // Fork: assistant mode runs without visible tabs; the rail replaces the tab strips.
+  const assistantMode = () => !mobile() && platform.assistantDirectory !== undefined
   const bottom = createMemo(() => mobile() && settings.general.mobileTitlebarPosition() === "bottom")
   const mobileTop = createMemo(() => platform.platform === "web" && mobile() && !bottom())
 
@@ -542,6 +545,32 @@ export function Titlebar(props: { verticalTabs?: { mount?: HTMLElement } }) {
                   "ps-3.5": windows(),
                 }}
               >
+                <Show when={assistantMode()}>
+                  <Tooltip
+                    placement="bottom"
+                    value={
+                      assistantSidebar.collapsed
+                        ? language.t("assistant.sidebar.expand")
+                        : language.t("assistant.sidebar.collapse")
+                    }
+                    class="shrink-0"
+                  >
+                    <IconButton
+                      type="button"
+                      variant="ghost-muted"
+                      size="large"
+                      class="!w-8 shrink-0"
+                      icon={<Icon name="sidebar" />}
+                      onClick={toggleSidebarCollapsed}
+                      aria-label={
+                        assistantSidebar.collapsed
+                          ? language.t("assistant.sidebar.expand")
+                          : language.t("assistant.sidebar.collapse")
+                      }
+                      aria-expanded={!assistantSidebar.collapsed}
+                    />
+                  </Tooltip>
+                </Show>
                 <Show when={!mobile() && (!props.verticalTabs || windows())}>
                   <ChannelIndicator horizontal />
                 </Show>
@@ -689,31 +718,33 @@ export function Titlebar(props: { verticalTabs?: { mount?: HTMLElement } }) {
                   <Show
                     when={props.verticalTabs}
                     fallback={
-                      <>
-                        <TitlebarTabStrip
-                          tabs={tabsStore}
-                          currentTab={currentTab()}
-                          onNavigate={(tab, el) => {
-                            tabs.select(tab)
-                            el?.scrollIntoView({ behavior: "instant" })
-                          }}
-                          onClose={(tab) => {
-                            const index = tabsStore.findIndex((item) => tabKey(item) === tabKey(tab))
+                      <Show when={!assistantMode()}>
+                        <>
+                          <TitlebarTabStrip
+                            tabs={tabsStore}
+                            currentTab={currentTab()}
+                            onNavigate={(tab, el) => {
+                              tabs.select(tab)
+                              el?.scrollIntoView({ behavior: "instant" })
+                            }}
+                            onClose={(tab) => {
+                              const index = tabsStore.findIndex((item) => tabKey(item) === tabKey(tab))
 
-                            if (index !== -1) tabsStoreActions.closeTab(index)
-                          }}
-                          onReorder={(keys) => tabsStoreActions.reorder(keys)}
-                        />
-                        <RecentlyClosedTabsMenu
-                          onNewTab={openNewTab}
-                          tooltip={
-                            <>
-                              {language.t("command.session.new")}
-                              <Keybind keys={command.keybindParts("tab.new")} variant="neutral" />
-                            </>
-                          }
-                        />
-                      </>
+                              if (index !== -1) tabsStoreActions.closeTab(index)
+                            }}
+                            onReorder={(keys) => tabsStoreActions.reorder(keys)}
+                          />
+                          <RecentlyClosedTabsMenu
+                            onNewTab={openNewTab}
+                            tooltip={
+                              <>
+                                {language.t("command.session.new")}
+                                <Keybind keys={command.keybindParts("tab.new")} variant="neutral" />
+                              </>
+                            }
+                          />
+                        </>
+                      </Show>
                     }
                   >
                     {(vertical) => (
