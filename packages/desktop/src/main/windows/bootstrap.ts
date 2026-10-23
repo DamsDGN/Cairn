@@ -1,7 +1,7 @@
 import { app } from "electron"
 import { Predicate } from "effect"
 import { windowBootstrapArgument, type WindowBootstrap } from "../../shared/window-bootstrap"
-import { assistantDirectory } from "../lifecycle/assistant"
+import { readAssistantDirectory } from "../lifecycle/assistant"
 import { FIRST_LAUNCH_ONBOARDING_COMPLETE_KEY } from "../storage/keys"
 import { getStore } from "../storage/store"
 
@@ -15,7 +15,7 @@ export function windowBootstrap(id: string): WindowBootstrap {
     id,
     firstLaunchPending: Predicate.isBoolean(complete) ? !complete : undefined,
     packaged: app.isPackaged,
-    assistantDirectory: assistantDirectory(),
+    assistantDirectory: readAssistantDirectory(),
   }
 }
 

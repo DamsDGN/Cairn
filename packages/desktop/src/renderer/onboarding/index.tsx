@@ -1,9 +1,10 @@
-import { ServerConnection, useCurrentRoute, useGlobal, useServers, useTabs } from "@opencode/app/desktop"
+import { ServerConnection, useCurrentRoute, useGlobal, useServers, useTabs, type Platform } from "@opencode/app/desktop"
 import { createResource } from "solid-js"
 import type { ElectronAPI } from "../api-types"
 
 export function DesktopFirstLaunchOnboarding(props: {
   api: ElectronAPI
+  platform: Platform
   initialUrl: string
   pending: boolean
   onReady: () => void
@@ -42,6 +43,10 @@ export function DesktopFirstLaunchOnboarding(props: {
       const directory = await props.api.finishFirstLaunchOnboarding(shouldTrigger)
 
       if (!shouldTrigger || !directory) return
+
+      // The platform object was built before the directory existed: adopt it before the draft mounts
+      // so the first chat renders in assistant mode.
+      props.platform.assistantDirectory = directory
 
       console.info("[desktop-onboarding] starting first launch draft", { directory })
       const sidecar = ServerConnection.Key.make("sidecar")

@@ -10,6 +10,7 @@ import { DesktopStorage } from "../storage"
 import { safeWebContentsURL } from "../windows/state"
 import { getLastFocusedWindow, getWindowByID, makeMainWindows, setAppQuitting, setRelaunchHandler } from "../windows"
 import { marks } from "./marks"
+import { resolveAssistantDirectory } from "./assistant"
 import { initializeFirstLaunchOnboarding } from "./onboarding"
 import { Shutdown } from "./shutdown"
 import { consoleReturnWindow } from "./deep-link"
@@ -190,7 +191,10 @@ export const layer = Layer.unwrap(
   Effect.gen(function* () {
     // Decide first-launch state before the storage layer creates drafts.sqlite, which would
     // otherwise read as evidence of an earlier launch on a fresh install.
-    yield* initializeFirstLaunchOnboarding(app.getPath("userData"))
+    const complete = yield* initializeFirstLaunchOnboarding(app.getPath("userData"))
+    // Upgrade path: existing installs skip the onboarding, so the assistant's chat directory is
+    // resolved (and stored) right after the decision that this is not a fresh install.
+    if (complete) resolveAssistantDirectory()
     marks.onboarding = Date.now()
 
     return runtime.pipe(Layer.provideMerge(platform))

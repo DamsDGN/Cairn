@@ -3,7 +3,7 @@ import { scoped } from "../native/logging"
 import { hasExistingAppState } from "../storage/install-state"
 import { FIRST_LAUNCH_ONBOARDING_COMPLETE_KEY } from "../storage/keys"
 import { getStore } from "../storage/store"
-import { assistantDirectory } from "./assistant"
+import { resolveAssistantDirectory } from "./assistant"
 
 export const initializeFirstLaunchOnboarding = Effect.fn("Onboarding.initialize")(function* (userDataPath: string) {
   const store = getStore()
@@ -46,7 +46,7 @@ export const finishFirstLaunchOnboarding = Effect.fn("Onboarding.finish")(functi
   }
 
   // Fork: the first project the onboarding drafts onto is the assistant's chat directory.
-  const defaultProject = createDefaultProject ? assistantDirectory() : null
+  const defaultProject = createDefaultProject ? resolveAssistantDirectory() : null
 
   getStore().set(FIRST_LAUNCH_ONBOARDING_COMPLETE_KEY, true)
   yield* scoped(
