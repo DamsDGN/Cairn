@@ -36,11 +36,15 @@ multi-fournisseurs (intel local, OpenAI, Anthropic, vLLM Sover...).
 - **M0 Toolchain (fait)** : clone complet, `bun install` (2150 paquets), build dev OK, app lancée,
   onboarding first launch validé sur Linux Wayland. Particularité Linux dev : `ELECTRON_DISABLE_SANDBOX=1`
   (le SUID sandbox exige un chown root, non possible sans sudo).
-- **M1 Mode assistant** : plumbing bootstrap + platform ; écran de draft sans sélecteur projet/git
+- **M1 Mode assistant (fait)** : plumbing bootstrap + platform ; écran de draft sans sélecteur projet/git
   quand le répertoire est le répertoire assistant ; bouton "+" d'onglet par défaut sur le répertoire
-  assistant ; tips du draft adaptés.
-- **M2 Persona & permissions** : génération du `opencode.json` du répertoire Conversations
-  (agent "assistant", permissions : read autorisé, write/bash à approuver, default_agent).
+  assistant ; tips du draft adaptés. Résolution du répertoire ordonnée après la détection de premier
+  lancement (sinon une install neuve est prise pour un upgrade) et adoption au montage du premier draft.
+- **M2 Persona & permissions (fait)** : génération idempotente du `opencode.json` du répertoire
+  Conversations (agent "Assistant" en défaut : read/edit autorisés dedans, websearch ok, webfetch et
+  le reste à approuver). Validé via le serveur standalone + `GET /api/agent?location[directory]=...`
+  : l'agent apparaît en tête de liste. Reste à polir quoi quévers : cacher Build/Plan/General du
+  picker dans ce mode, tester l'écriture réelle depuis le chat.
 - **M3 Connecteurs MCP** : écran géré en UI sur les APIs existantes `mcp.list/add/remove/connect`
   (`packages/server/src/handlers/mcp.ts`) et le dialog `mcp-dialog.tsx`.
 - **M4 Historique chat** : home réorganisée (conversations du répertoire assistant au premier plan),
