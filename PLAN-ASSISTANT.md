@@ -165,7 +165,9 @@ https://opencode.ai/zen/go/v1/usage` (Bearer, ref paquet `pi-opencode-go-usage`)
 - Prebuilds node-pty cross : installer via un temp dir puis copier dans
   `packages/desktop/node_modules/@lydell/` (`bun add --os=<os> --cpu=<cpu> @lydell/node-pty-<os>-<cpu>`
   dans un répertoire jetable), sans toucher au lockfile.
-- Première release CI : `assistant-v0.1.1` (run 40021960512).
+- Première release CI : `assistant-v0.1.1` (run 40021960512), sur tag `assistant-v0.1.1` ; Linux
+  (AppImage + deb) rebuildé localement avec la sidebar M10 puis uploadé sur la même release :
+  les 3 OS sont dans `assistant-v0.1.1` (boot AppImage revalidé).
 
 ## Risques
 
