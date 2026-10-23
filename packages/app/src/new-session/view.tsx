@@ -6,6 +6,7 @@ import { Schema } from "effect"
 import createPresence from "solid-presence"
 import { Composer } from "@/composer/composer"
 import { ComposerDropzone } from "@/composer/dropzone"
+import { AssistantVoiceButton } from "@/assistant/voice/voice-dialog"
 import type { ComposerModel } from "@/composer/model"
 import { PromptGitStatus, PromptWorkspaceSelector } from "@/new-session/workspace/selector"
 import {
@@ -75,7 +76,7 @@ export function NewSessionView(props: {
           <div class={NEW_SESSION_CONTENT_WIDTH}>
             <NewSessionWordmark />
             <div class="mt-8 flex flex-col gap-8">
-              <Composer model={props.composer} />
+              <Composer model={props.composer} voiceControl={<AssistantVoiceButton />} />
               <Show when={!assistantMode() && props.project.empty()}>
                 <PromptProjectAddButton controller={props.project} />
               </Show>

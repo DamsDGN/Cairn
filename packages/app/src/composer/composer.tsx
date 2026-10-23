@@ -1,4 +1,4 @@
-import { Show, createMemo } from "solid-js"
+import { Show, createMemo, type JSX } from "solid-js"
 import { createMediaQuery } from "@solid-primitives/media"
 import { Button } from "@opencode/ui/button"
 import { useDialog } from "@opencode/ui/context/dialog"
@@ -19,6 +19,7 @@ export function Composer(props: {
   borderUnderlay?: boolean
   readOnly?: boolean
   suggestionBoundary?: () => HTMLElement | undefined
+  voiceControl?: JSX.Element
 }) {
   const dialog = useDialog()
   const command = useCommand()
@@ -31,6 +32,7 @@ export function Composer(props: {
         borderUnderlay={props.borderUnderlay}
         readOnly={props.readOnly}
         class={props.class}
+        voiceControl={props.voiceControl}
         modelControlsVisible={!props.model.model.loading}
         attachKeybind={command.keybindParts("file.attach")}
         attachShortcut={command.keybind("file.attach")}
