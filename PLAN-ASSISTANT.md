@@ -114,6 +114,9 @@ https://opencode.ai/zen/go/v1/usage` (Bearer, ref paquet `pi-opencode-go-usage`)
     fallback dans `<Show when={!assistantMode()}>`). `addSessionTab` dédoublonne déjà : cliquer une
     conversation Récents la réouvre, pas d'onglets fantômes.
   - i18n : `assistant.chats` = "Recents"/"Récents", nouvelles clés sidebar collapse/expand (en + fr).
+  - Barre de titre épurée en mode assistant (flat, sur capture Claude Desktop) : ChannelIndicator
+    ("dev"), WindowsAppMenu (burger) et le bouton Accueil masqués ; il reste l'icône panel
+    (toggle sidebar) et le drag régional, tout le reste de la barre est vide.
   - Vérifié : `bun --bun run check` vert (lint + typecheck, 34 tasks), tests desktop 130 pass /
     1 skip / 0 fail, `bun run build` (electron-vite) OK. Commit `d2ca31fe9d` poussé sur GitHub main.
 

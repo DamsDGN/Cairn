@@ -571,13 +571,13 @@ export function Titlebar(props: { verticalTabs?: { mount?: HTMLElement } }) {
                     />
                   </Tooltip>
                 </Show>
-                <Show when={!mobile() && (!props.verticalTabs || windows())}>
+                <Show when={!mobile() && !assistantMode() && (!props.verticalTabs || windows())}>
                   <ChannelIndicator horizontal />
                 </Show>
-                <Show when={windows() || linux()}>
+                <Show when={!assistantMode() && (windows() || linux())}>
                   <WindowsAppMenu command={command} platform={platform} />
                 </Show>
-                <Show when={!mobile() && !props.verticalTabs}>{homeButton()}</Show>
+                <Show when={!mobile() && !props.verticalTabs && !assistantMode()}>{homeButton()}</Show>
 
                 <Show
                   when={!mobile()}
