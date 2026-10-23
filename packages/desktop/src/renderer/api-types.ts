@@ -1,4 +1,5 @@
 import type { DesktopMenuAction } from "@opencode/app/desktop-menu"
+import type { GoUsage } from "@opencode/app/desktop"
 import type { DesktopNativeBundle } from "@opencode/app/i18n/desktop-native"
 import type { WindowBootstrap } from "../shared/window-bootstrap"
 import type {
@@ -47,8 +48,10 @@ export type ElectronAPI = {
   openLocalFile(url: string): void
   openPath(path: string, app?: string): Promise<string | undefined>
   revealPath(path: string): Promise<boolean>
+  goUsage(): Promise<GoUsage | null>
   readClipboardImage(): Promise<ClipboardImage | null>
   writeClipboardText(text: string): Promise<void>
+  goUsage(): Promise<GoUsage | null>
   getWindowFocused(): Promise<boolean>
   getWindowFullscreen(): Promise<boolean>
   onWindowFullscreenChanged(cb: (fullscreen: boolean) => void): () => void

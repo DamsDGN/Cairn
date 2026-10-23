@@ -11,6 +11,7 @@ import { appHandlers } from "./ipc-handlers/app"
 import { eventHandlers } from "./ipc-handlers/events"
 import { extensionHandlers } from "./ipc-handlers/extensions"
 import { fileHandlers } from "./ipc-handlers/files"
+import { goHandlers } from "./ipc-handlers/go"
 import { menuHandlers } from "./ipc-handlers/menu"
 import { storageHandlers } from "./ipc-handlers/storage"
 import { windowHandlers } from "./ipc-handlers/window"
@@ -31,6 +32,7 @@ const handlers = Layer.mergeAll(
   menuHandlers,
   eventHandlers,
   extensionHandlers,
+  goHandlers,
 )
 
 export const layer = RpcServer.layer(DesktopRpcs, { disableFatalDefects: true }).pipe(

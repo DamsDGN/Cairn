@@ -47,14 +47,39 @@ multi-fournisseurs (intel local, OpenAI, Anthropic, vLLM Sover...).
   picker dans ce mode, tester l'écriture réelle depuis le chat.
 - **M3 Connecteurs MCP** : écran géré en UI sur les APIs existantes `mcp.list/add/remove/connect`
   (`packages/server/src/handlers/mcp.ts`) et le dialog `mcp-dialog.tsx`.
-- **M4 Historique chat** : home réorganisée (conversations du répertoire assistant au premier plan),
-  recherche de conversations, titre auto.
+- **M4 Historique chat (partiel fait)** : sidebar fork `packages/app/src/assistant/sidebar.tsx`
+  montée dans `shell.tsx` quand `assistantDirectory` existe (cachée en mobile et sous la surface
+  réglages) : nouvelle conversation, historique (30 dernières du répertoire), projets (nouveau draft
+  sur le worktree), artefacts (fichiers du répertoire, ouverture/reveal système), raccourcis
+  Connecteurs (`settings.open("extensions")`) et Réglages (`settings.open()`). Reste côté home :
+  réorganisation chat-first et recherche de conversations, titre auto.
 - **M5 Shell produit** : tray + menu contextuel, raccourci global quick capture, notifications,
   démarrage auto.
 - **M6 Branding & distribution** : identité (appId, nom, icônes, deep link), packaging CI des 3
   plateformes (dmg, NSIS, deb), signatures macOS (certificat Apple requis) et Windows, serveur
   d'auto-update.
 - **M7 Flavor Sover (optionnel)** : provider par défaut vers vLLM de Sover.tech.
+- **M8 Stats usage abonnement OpenCode Go** : afficher la consommation (5 h glissantes / semaine /
+  mois) dans la sidebar. Pas d'API officielle dédiée (upstream #31084, #40584) : l'endpoint public
+  utilisé par les extensions tierces est `GET https://opencode.ai/zen/go/v1/usage` avec
+  `Authorization: Bearer <clé>` (référence : paquet `pi-opencode-go-usage`). La clé vit dans
+  `~/.local/share/opencode/auth.json` (`opencode-go.key` ; repli `opencode.key`, puis
+  `OPENCODE_GO_API_KEY` / `OPENCODE_API_KEY` / `OPENCODE_ZEN_API_KEY`). Chemin :
+  RPC IPC main-process fork (lire auth.json, appeler l'endpoint, cache ~60 s, retour null sur toute
+  erreur pour cacher silencieusement la carte), exposé comme `platform.goUsage?()` optionnel, la
+  sidebar interroge toutes les 5 min. Le fallback cookie console (`/console/api/go/status`) est
+  volontairement non porté (cookie.__Host-console_session non accessible au renderer).
+- **M9 Conversations audio** : utiliser les APIs voice expérimentales déjà présentes en amont
+  (`packages/protocol/src/groups/voice.ts` : `voice.models`, `voice.session`, `voice.instructions`,
+  côté serveur `packages/core/src/voice.ts`, moteurs realtime openai/xai/google). Sessions brokerées
+  par le serveur : clé fournisseur stockée côté serveur OU session hébergée par la Console OpenCode
+  (facturée Go). Pas d'UI voice en amont (seul le parsing de handoff iOS existe). Phases :
+  1) bouton micro dans le composer + session realtime full-duplex WebRTC via `voice.session`
+     (SDP offer renderer -> serveur -> answer), retour audio dans la conversation ;
+  2) dictation push-to-talk (STT) si le temps réel ne suffit pas (nécessite alors une API
+     transcription, absente en amont).
+  Attention Electron : permission micro à gérer côté main (setPermissionRequestHandler) et
+  permission media quand la session démarre.
 
 ## Risques
 

@@ -3,6 +3,7 @@ import { AppRpcs } from "./ipc-rpc/app"
 import { EventRpcs } from "./ipc-rpc/events"
 import { ExtensionRpcs } from "./ipc-rpc/extensions"
 import { FileRpcs } from "./ipc-rpc/files"
+import { GoRpcs } from "./ipc-rpc/go"
 import { MenuRpcs } from "./ipc-rpc/menu"
 import { StorageRpcs } from "./ipc-rpc/storage"
 import { WindowRpcs } from "./ipc-rpc/window"
@@ -21,6 +22,8 @@ export { StorageRpcs } from "./ipc-rpc/storage"
 
 export { WindowRpcs } from "./ipc-rpc/window"
 
-export const DesktopRpcs = AppRpcs.merge(StorageRpcs, FileRpcs, WindowRpcs, MenuRpcs, EventRpcs, ExtensionRpcs)
+export { GoRpcs } from "./ipc-rpc/go"
+
+export const DesktopRpcs = AppRpcs.merge(StorageRpcs, FileRpcs, WindowRpcs, MenuRpcs, EventRpcs, ExtensionRpcs, GoRpcs)
 
 export type DesktopRpcClient = RpcClient.FromGroup<typeof DesktopRpcs, RpcClientError.RpcClientError>

@@ -24,6 +24,7 @@ export function createDesktopPlatform(api: ElectronAPI, windowState: DesktopWind
     version: windowState.version,
     windowID: windowState.id,
     assistantDirectory: windowState.assistantDirectory,
+    goUsage: () => api.goUsage(),
     ...createDesktopFiles(api, os),
     ...createDesktopStorage(api),
     exportDebugLogs: () => api.exportDebugLogs(),

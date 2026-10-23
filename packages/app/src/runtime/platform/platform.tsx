@@ -23,6 +23,18 @@ type PlatformName = "web" | "desktop"
 
 type DesktopOS = "macos" | "windows" | "linux"
 
+export type GoUsageWindow = {
+  status?: string
+  percent: number
+  resetsAt?: number
+}
+
+export type GoUsage = {
+  rolling?: GoUsageWindow
+  weekly?: GoUsageWindow
+  monthly?: GoUsageWindow
+}
+
 export type FatalRendererErrorLog = {
   error: string
   url: string
@@ -118,6 +130,9 @@ type PlatformBase = {
 
   /** Root directory hosting the standalone chat sessions (desktop fork; undefined keeps the project-based flow). */
   assistantDirectory?: string
+
+  /** Usage of the OpenCode Go subscription, null when it cannot be fetched (desktop fork). */
+  goUsage?(): Promise<GoUsage | null>
 }
 
 export type Platform = PlatformBase &

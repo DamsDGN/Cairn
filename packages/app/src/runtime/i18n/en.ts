@@ -529,6 +529,9 @@ export const dict = {
   "assistant.artifacts.empty": "No files yet",
   "assistant.connectors": "Connectors",
   "assistant.settings": "Settings",
+  "assistant.go.rolling": "5 hours",
+  "assistant.go.week": "Week",
+  "assistant.go.month": "Month",
 
   "session.tab.session": "Session",
   "session.tab.more": "More...",

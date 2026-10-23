@@ -1,4 +1,5 @@
 import type { SessionInfo } from "@opencode/client/promise"
+import type { GoUsage, GoUsageWindow } from "@/runtime/platform/platform"
 import { skipToken, useQuery } from "@tanstack/solid-query"
 import { Button } from "@opencode/ui/button"
 import { Icon } from "@opencode/ui/icon"
@@ -191,6 +192,7 @@ export function AssistantSidebar(props: { directory: string }) {
         </Section>
       </ScrollView>
       <div class="mt-2 flex flex-col gap-0.5">
+        <GoCard />
         <button type="button" class={ROW} onClick={() => settings.open("extensions")}>
           <Icon name="outline-globe-plus" class="shrink-0 text-v2-icon-icon-muted" />
           <span class="truncate">{language.t("assistant.connectors")}</span>
@@ -210,5 +212,57 @@ function Section(props: { label: string; children: JSX.Element }) {
       <div class={`${SECTION_LABEL} px-2.5 pb-1 pt-1.5`}>{props.label}</div>
       {props.children}
     </div>
+  )
+}
+
+const GO_REFRESH = 300_000
+
+function GoCard() {
+  const platform = usePlatform()
+  const language = useLanguage()
+
+  const usage = useQuery(() => ({
+    queryKey: ["assistant-go-usage"],
+    enabled: !!platform.goUsage,
+    queryFn: async () => ((await platform.goUsage?.()) ?? null) as GoUsage | null,
+    staleTime: 240_000,
+    refetchInterval: GO_REFRESH,
+  }))
+
+  const rows = createMemo(() => {
+    const data = usage.data
+    if (!data) return []
+    const list: Array<{ label: string; window: GoUsageWindow }> = []
+    if (data.rolling) list.push({ label: language.t("assistant.go.rolling"), window: data.rolling })
+    if (data.weekly) list.push({ label: language.t("assistant.go.week"), window: data.weekly })
+    if (data.monthly) list.push({ label: language.t("assistant.go.month"), window: data.monthly })
+    return list
+  })
+
+  return (
+    <Show when={rows().length > 0}>
+      <div
+        data-slot="assistant-go"
+        class="mb-1 flex flex-col gap-1.5 rounded-[8px] border border-v2-border-border-muted px-2.5 py-2"
+      >
+        <span class="text-[12px] text-v2-text-text-base [font-weight:440]">OpenCode Go</span>
+        <For each={rows()}>
+          {(row) => (
+            <div class="flex items-center gap-2">
+              <span class="w-11 shrink-0 truncate text-[12px] text-v2-text-text-muted">{row.label}</span>
+              <div class="h-1 min-w-0 flex-1 overflow-hidden rounded-full bg-v2-border-border-muted">
+                <div
+                  class="h-full rounded-full bg-v2-icon-icon-base"
+                  style={{ width: `${Math.min(100, Math.max(0, row.window.percent))}%` }}
+                />
+              </div>
+              <span class="shrink-0 text-[12px] text-v2-text-text-muted tabular-nums">
+                {Math.round(row.window.percent)}%
+              </span>
+            </div>
+          )}
+        </For>
+      </div>
+    </Show>
   )
 }
