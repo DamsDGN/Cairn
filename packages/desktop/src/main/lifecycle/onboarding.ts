@@ -1,10 +1,9 @@
-import { app } from "electron"
 import { Effect, FileSystem, Option, Path } from "effect"
 import { scoped } from "../native/logging"
 import { hasExistingAppState } from "../storage/install-state"
 import { FIRST_LAUNCH_ONBOARDING_COMPLETE_KEY } from "../storage/keys"
 import { getStore } from "../storage/store"
-import { nativeT } from "../native/translations"
+import { assistantDirectory } from "./assistant"
 
 export const initializeFirstLaunchOnboarding = Effect.fn("Onboarding.initialize")(function* (userDataPath: string) {
   const store = getStore()
@@ -46,14 +45,8 @@ export const finishFirstLaunchOnboarding = Effect.fn("Onboarding.finish")(functi
     return null
   }
 
-  const fs = yield* FileSystem.FileSystem
-  const path = yield* Path.Path
-
-  const defaultProject = createDefaultProject
-    ? path.join(app.getPath("documents"), nativeT("desktop.onboarding.defaultProject"))
-    : null
-
-  if (defaultProject) yield* fs.makeDirectory(defaultProject, { recursive: true })
+  // Fork: the first project the onboarding drafts onto is the assistant's chat directory.
+  const defaultProject = createDefaultProject ? assistantDirectory() : null
 
   getStore().set(FIRST_LAUNCH_ONBOARDING_COMPLETE_KEY, true)
   yield* scoped(

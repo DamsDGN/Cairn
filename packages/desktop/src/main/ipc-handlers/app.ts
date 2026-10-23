@@ -33,7 +33,10 @@ export const appHandlers = AppRpcs.toLayer(
       AppConsumeInitialDeepLinks: () => Effect.sync(lifecycle.consumeInitialDeepLinks),
       AppIsFirstLaunchOnboardingPending: isFirstLaunchOnboardingPending,
       AppFinishFirstLaunchOnboarding: ({ createDefaultProject }) =>
-        finishFirstLaunchOnboarding(createDefaultProject).pipe(Effect.orDie),
+        finishFirstLaunchOnboarding(createDefaultProject).pipe(
+          Effect.map((value) => value ?? null),
+          Effect.orDie,
+        ),
       AppCheckAppExists: ({ appName }) => checkAppExists(appName).pipe(Effect.orDie),
       AppResolveAppPath: ({ appName }) => resolveAppPath(appName).pipe(Effect.orDie),
       AppSetBackgroundColor: ({ color }) => Effect.sync(() => setBackgroundColor(color)),

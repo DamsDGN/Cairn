@@ -9,3 +9,5 @@ export const BACKGROUND_COLOR_KEY = "backgroundColor"
 export const WINDOW_IDS_KEY = "windowIds"
 
 export const BUNDLED_CLI_VERSION_KEY = "bundledCliVersion"
+
+export const ASSISTANT_DIRECTORY_KEY = "assistantDirectory"

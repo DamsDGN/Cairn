@@ -32,7 +32,13 @@ import { DesktopMemoryRouter } from "./window/router"
 const MigrationStatus = lazy(() => import("./migration-status").then((module) => ({ default: module.MigrationStatus })))
 
 export function DesktopApp(props: { api: ElectronAPI; version: string }) {
-  const windowState = { id: props.api.getWindowID(), version: props.version }
+  // The bootstrap is parsed from argv in the preload, so this never touches the IPC port.
+  const bootstrap = props.api.getWindowBootstrap()
+  const windowState = {
+    id: props.api.getWindowID(),
+    version: props.version,
+    assistantDirectory: bootstrap.assistantDirectory,
+  }
   const initialUrl = getLastActiveUrl(windowState.id)
   const url = new URL(initialUrl, "http://localhost")
   const route = currentRoute(url.pathname, url.search)
@@ -48,8 +54,6 @@ export function DesktopApp(props: { api: ElectronAPI; version: string }) {
 
   // The window was created with the answers the shell gate needs; only a fresh install, which has no
   // onboarding decision yet, asks over IPC and waits for the port.
-  const bootstrap = props.api.getWindowBootstrap()
-
   const [firstLaunch] = createResource(() =>
     bootstrap.firstLaunchPending !== undefined
       ? Promise.resolve(bootstrap.firstLaunchPending)

@@ -389,6 +389,14 @@ export function Titlebar(props: { verticalTabs?: { mount?: HTMLElement } }) {
 
                     return
                   }
+
+                  const assistant = platform.assistantDirectory
+
+                  if (conn && assistant) {
+                    void tabs.newDraft({ server: ServerConnection.key(conn), directory: assistant }, "")
+
+                    return
+                  }
                 }
               }
             }

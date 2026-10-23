@@ -14,6 +14,7 @@ import {
   type PromptProjectController,
 } from "@/new-session/project/selector"
 import { useLanguage } from "@/runtime/i18n/language"
+import { usePlatform } from "@/runtime/platform/platform"
 import { useWorkspaceLocation } from "@/workspaces/location"
 import { useProviders } from "@/providers/catalog/providers"
 import { NEW_SESSION_CONTENT_WIDTH } from "@/new-session/layout"
@@ -45,6 +46,15 @@ export function NewSessionView(props: {
     { used: false },
   )
 
+  // Fork: drafts on the assistant's own directory are plain chats: no project or worktree pickers.
+  const platform = usePlatform()
+  const workspaceLocation = useWorkspaceLocation()
+  const assistantMode = () => {
+    const assistant = platform.assistantDirectory
+
+    return assistant !== undefined && workspaceLocation().directory === assistant
+  }
+
   const select = (value: string) => {
     props.workspace.selection.set(value)
 
@@ -66,10 +76,10 @@ export function NewSessionView(props: {
             <NewSessionWordmark />
             <div class="mt-8 flex flex-col gap-8">
               <Composer model={props.composer} />
-              <Show when={props.project.empty()}>
+              <Show when={!assistantMode() && props.project.empty()}>
                 <PromptProjectAddButton controller={props.project} />
               </Show>
-              <Show when={props.project.selected()}>
+              <Show when={!assistantMode() && props.project.selected()}>
                 <div class="flex min-h-7 min-w-0 flex-row flex-wrap items-center justify-center gap-0 text-v2-text-text-faint">
                   <PromptProjectSelector controller={props.project} placement="bottom" />
                   <Show
@@ -105,6 +115,7 @@ export function NewSessionView(props: {
           selection={props.composer.model.selection}
           onDone={props.composer.restoreFocus}
           workspaceEligible={
+            !assistantMode() &&
             !!props.project.selected() &&
             props.workspace.bar.visible() &&
             props.workspace.selection.value() !== "create" &&

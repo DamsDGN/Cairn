@@ -115,6 +115,9 @@ type PlatformBase = {
 
   /** GUI extension bridge to the main-process extension host (desktop only). */
   extensions?: Bridge
+
+  /** Root directory hosting the standalone chat sessions (desktop fork; undefined keeps the project-based flow). */
+  assistantDirectory?: string
 }
 
 export type Platform = PlatformBase &

@@ -5,6 +5,8 @@ export type WindowBootstrap = {
   firstLaunchPending?: boolean
   /** The app runs packaged (`app.isPackaged`), as extensions' `Build.packaged` reports in both processes. */
   packaged?: boolean
+  /** Root directory of the assistant fork's chat sessions (undefined when it cannot be resolved). */
+  assistantDirectory?: string
 }
 
 const prefix = "--opencode-window="
