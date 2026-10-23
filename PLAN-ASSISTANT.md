@@ -66,7 +66,7 @@ https://opencode.ai/zen/go/v1/usage` (Bearer, ref paquet `pi-opencode-go-usage`)
   puis env `OPENCODE_GO_API_KEY` / `OPENCODE_API_KEY` / `OPENCODE_ZEN_API_KEY`), cache 60 s, null sur
   toute erreur (carte absente). RPC IPC `GoUsage` + `platform.goUsage?()` optionnel (typecheck ok,
   tests desktop 131 pass). Vérifié live : 200 `{usage:{rolling/weekly/monthly:{status,percent,resetsAt}}}`,
-  `resetsAt` ISO string converti en epoch ms.path Restes éventuels : libellé reset countdown, couleur
+  `resetsAt` ISO string converti en epoch ms. Restes éventuels : libellé reset countdown, couleur
   selon seuil, page réglages détaillée si souhaité (entry point product = sidebar ; à confirmer).
 - **M9 Conversations audio (phase 1 faite, phase 2 en attente de clé)** : APIs voice expérimentales
   upstream utilisées (`voice.models` / `voice.session` / brokering serveur, moteurs realtime
