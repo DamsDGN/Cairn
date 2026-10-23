@@ -45,14 +45,28 @@ multi-fournisseurs (intel local, OpenAI, Anthropic, vLLM Sover...).
   le reste à approuver). Validé via le serveur standalone + `GET /api/agent?location[directory]=...`
   : l'agent apparaît en tête de liste. Reste à polir quoi quévers : cacher Build/Plan/General du
   picker dans ce mode, tester l'écriture réelle depuis le chat.
-- **M3 Connecteurs MCP** : écran géré en UI sur les APIs existantes `mcp.list/add/remove/connect`
-  (`packages/server/src/handlers/mcp.ts`) et le dialog `mcp-dialog.tsx`.
+- **M3 Connecteurs MCP (hérité fait, OAuth validé)** : l'écran Connecteurs de l'upstream
+  (`settings.extensions`, atteint via le sidebar) gère déjà tout : liste/toggle des serveurs,
+  `mcp.connect` puis sur `needs_auth` le flow OAuth (`integration.oauth.connect` + ouverture du
+  navigateur système `platform.openExternal` + poll status, paste de code quand la méthode demande
+  un code, `providers/connect/mcp.ts` + `controller.ts`; routes serveur /connect/oauth
+  connect/status/complete/cancel). Validé live le 23/10 : `integration.oauth.connect` sur le
+  connecteur n8n (mcp_10645a44802caf6a) retourne bien une URL d'autorisation n8n.sover.lan
+  mode auto, exp 10 min ; attempt annulé après test (côté CLI, repli interactif : `opencode mcp
+auth`). Le point clé : les serveurs MCP de la config user (n8n, postsdeck, runpod, qonto,
+  pennylane, hf-mcp-server) sont listés globalement par `integration.list`, le toggle attire la
+  cible sur le répertoire courant (le répertoire assistant) ; aucun fork nécessaire. Reste :
+  UI d'ajout d'un nouveau serveur MCP distant dans le répertoire assistant si le path upstream ne
+  suffit pas (mcp-dialog hérité devrait suffire), test visuel avec un vrai connecteur OAuth.
 - **M4 Historique chat (partiel fait)** : sidebar fork `packages/app/src/assistant/sidebar.tsx`
   montée dans `shell.tsx` quand `assistantDirectory` existe (cachée en mobile et sous la surface
-  réglages) : nouvelle conversation, historique (30 dernières du répertoire), projets (nouveau draft
-  sur le worktree), artefacts (fichiers du répertoire, ouverture/reveal système), raccourcis
-  Connecteurs (`settings.open("extensions")`) et Réglages (`settings.open()`). Reste côté home :
-  réorganisation chat-first et recherche de conversations, titre auto.
+  réglages) : nouvelle conversation, historique (30 dernières du répertoire), recherche inline
+  (debounce 150 ms, `session.list` search = LIKE titre côté serveur + filtre du merge local),
+  projets (nouveau draft sur le worktree), artefacts (fichiers du répertoire, ouverture/reveal
+  système), carte OpenCode Go (M8), raccourcis Connecteurs (`settings.open("extensions")`) et
+  Réglages (`settings.open()`). Reste côté home : réorganisation chat-first et recherche de
+  conversations à l'écran home, titre auto (existe déjà côté serveur : plugin Title au premier
+  message ; vérifier qu'il tourne sur le répertoire assistant).
 - **M5 Shell produit** : tray + menu contextuel, raccourci global quick capture, notifications,
   démarrage auto.
 - **M6 Branding & distribution** : identité (appId, nom, icônes, deep link), packaging CI des 3
