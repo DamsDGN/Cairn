@@ -525,6 +525,7 @@ export const dict = {
   "assistant.new": "New chat",
   "assistant.chats": "Chats",
   "assistant.chats.empty": "No chats yet",
+  "assistant.search": "Search chats",
   "assistant.artifacts": "Artifacts",
   "assistant.artifacts.empty": "No files yet",
   "assistant.connectors": "Connectors",

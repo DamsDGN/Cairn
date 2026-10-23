@@ -602,6 +602,7 @@ export const dict = {
   "assistant.new": "Nouvelle conversation",
   "assistant.chats": "Historique",
   "assistant.chats.empty": "Pas encore de conversation",
+  "assistant.search": "Rechercher",
   "assistant.artifacts": "Artefacts",
   "assistant.artifacts.empty": "Aucun fichier",
   "assistant.connectors": "Connecteurs",

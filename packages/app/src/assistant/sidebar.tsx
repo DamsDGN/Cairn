@@ -3,8 +3,10 @@ import type { GoUsage, GoUsageWindow } from "@/runtime/platform/platform"
 import { skipToken, useQuery } from "@tanstack/solid-query"
 import { Button } from "@opencode/ui/button"
 import { Icon } from "@opencode/ui/icon"
+import { TextInput } from "@opencode/ui/text-input"
 import { ScrollView } from "@opencode/ui/scroll-view"
-import { For, Show, createMemo, createResource, startTransition, type JSX } from "solid-js"
+import { For, Show, createMemo, createResource, createSignal, startTransition, type JSX } from "solid-js"
+import { debounce } from "@solid-primitives/scheduled"
 import { useLanguage } from "@/runtime/i18n/language"
 import { usePlatform } from "@/runtime/platform/platform"
 import { ServerConnection, useServers } from "@/runtime/server/registry"
@@ -45,23 +47,35 @@ export function AssistantSidebar(props: { directory: string }) {
     return local && local.sdk.connection.status() === "connected" ? local : undefined
   }
 
+  const [search, setSearch] = createSignal("")
+  const runSearch = debounce(setSearch, 150)
+
   const [sessions] = createResource(
-    () => ready() || undefined,
-    (local) =>
-      local.sdk.api.session
-        .list({ directory, limit: SESSION_LIMIT, order: "desc", parentID: null })
+    () => (ready() ? { ready: ready()!, search: search() } : undefined),
+    (input) =>
+      input.ready.sdk.api.session
+        .list({
+          directory,
+          limit: SESSION_LIMIT,
+          order: "desc",
+          parentID: null,
+          ...(input.search ? { search: input.search } : {}),
+        })
         .then((response) => response.data)
         .catch(() => [] as SessionInfo[]),
   )
 
   const chats = createMemo(() => {
     // Merge the fetched page with the event store, newest first; the store wins on conflict
-    // exactly like the Home index does.
+    // exactly like the Home index does. The query also filters by title on the server when
+    // a search term is active.
+    const query = search().trim().toLowerCase()
     const byID = new Map<string, SessionInfo>()
     for (const session of sessions.latest ?? []) byID.set(session.id, session)
     for (const session of ready()?.data.session.list() ?? []) {
       if (session.parentID || typeof session.time.archived === "number") continue
       if (pathKey(session.location.directory) !== pathKey(directory)) continue
+      if (query && !sessionLabel(session).toLowerCase().includes(query)) continue
       byID.set(session.id, session)
     }
 
@@ -148,6 +162,15 @@ export function AssistantSidebar(props: { directory: string }) {
       <Button class="mb-2 w-full justify-start" variant="submit" icon="plus-small" onClick={newChat}>
         {language.t("assistant.new")}
       </Button>
+      <TextInput
+        class="mb-2"
+        value={search()}
+        autocomplete="off"
+        spellcheck={false}
+        placeholder={language.t("assistant.search")}
+        leadingIcon={<Icon name="magnifying-glass" class="text-v2-icon-icon-muted" />}
+        onInput={(event) => runSearch(event.currentTarget.value)}
+      />
       <ScrollView class="min-h-0 flex-1 overflow-y-auto">
         <Section label={language.t("assistant.chats")}>
           <Show when={chats().length > 0} fallback={<div class={EMPTY}>{language.t("assistant.chats.empty")}</div>}>
