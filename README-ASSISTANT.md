@@ -23,15 +23,21 @@ Le plan complet et l'état des jalons vivent dans [PLAN-ASSISTANT.md](PLAN-ASSIS
   OpenAI/xAI/Google ou OpenCode Console connectée.
 - Statistiques d'usage OpenCode Go : fenêtres 5 h / semaine / mois, rafraîchies toutes les 5 min.
 
-## Installation (Linux)
+## Installation
 
-Release `v0.1.0` : https://github.com/DamsDGN/opencode-assistant/releases
+Releases : https://github.com/DamsDGN/opencode-assistant/releases
 
-- `opencode-desktop-linux-x86_64.AppImage` (nécessite libfuse2 : `sudo apt install libfuse2`,
-  ou `./opencode-desktop-linux-x86_64.AppImage --appimage-extract && ./squashfs-root/AppRun`)
-- `opencode-desktop-linux-amd64.deb` (installe `OpenCode Dev` + `/usr/bin/ai.opencode.desktop.dev`)
+- **Linux** (`v0.1.0`) :
+  - `opencode-desktop-linux-x86_64.AppImage` (nécessite libfuse2 : `sudo apt install libfuse2`,
+    ou `./opencode-desktop-linux-x86_64.AppImage --appimage-extract && ./squashfs-root/AppRun`)
+  - `opencode-desktop-linux-amd64.deb` (installe `OpenCode Dev` + `/usr/bin/ai.opencode.desktop.dev`)
+- **Windows** (`assistant-v0.1.1`) : `opencode-desktop-win-x64.exe`, installeur NSIS non signé
+  (SmartScreen : `Informations complémentaires` puis `Exécuter quand même`).
+- **macOS Apple Silicon** (`assistant-v0.1.1`) : `opencode-desktop-mac-arm64.zip`, app non signée
+  (étendre, puis clic droit `OpenCode Dev.app` > `Ouvrir` au premier lancement). Pas de dmg
+  (hdiutil requiert macOS), pas de build Intel pour l'instant.
 
-Windows et macOS : en cours (voir "Builds cross-plateformes" dans PLAN-ASSISTANT.md).
+Les builds Windows et macOS sont produits par le workflow GitHub Actions sur tag `assistant-v*`.
 
 ## Développer
 
@@ -89,6 +95,9 @@ Cross-builds depuis Linux :
 
 ## À faire
 
-- Builds Windows (NSIS) et macOS (zip non signé), release `v0.1.1`.
 - Shell produit (M5) : tray, quick capture, notifications, démarrage auto.
 - Branding (M6) : nouveau nom et logo de l'application (à décider), appId, icônes, deep link.
+- Optionnel : build mac Intel (x64), signatures certifiées (cert Apple + cert Windows), dmg correct
+  via un runner macOS.
+
+Nouveau nom et logo : à réfléchir ensemble (décidé en session du 24/10).

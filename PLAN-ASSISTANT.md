@@ -69,9 +69,11 @@ auth`). Le point clé : les serveurs MCP de la config user (n8n, postsdeck, runp
   message ; vérifier qu'il tourne sur le répertoire assistant).
 - **M5 Shell produit** : tray + menu contextuel, raccourci global quick capture, notifications,
   démarrage auto.
-- **M6 Branding & distribution** : identité (appId, nom, icônes, deep link), packaging CI des 3
-  plateformes (dmg, NSIS, deb), signatures macOS (certificat Apple requis) et Windows, serveur
-  d'auto-update.
+- **M6 Branding & distribution** : identité (appId, nom, icônes, deep link), signatures macOS
+  (certificat Apple requis) et Windows, serveur d'auto-update. Packaging CI en place :
+  Linux local (AppImage/deb, release `v0.1.0`), Windows NSIS + zip mac Apple Silicon via le
+  workflow GitHub Actions (release `assistant-v0.1.1`, builds non signés). Reste : dmg, build mac
+  Intel, signatures, nouveau nom/logo.
 - **M7 Flavor Sover (optionnel)** : provider par défaut vers vLLM de Sover.tech.
 - **M8 Stats usage abonnement OpenCode Go (fait)** : carte "OpenCode Go" dans la sidebar (histogramme
   des 3 fenêtres : 5 h / semaine / mois, poll 5 min). Endpoint `GET
