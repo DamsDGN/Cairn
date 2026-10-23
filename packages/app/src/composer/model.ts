@@ -14,6 +14,7 @@ import { useExtensionHost } from "@/runtime/extension/host"
 import { useExtensionAttachment } from "@/runtime/extension/host-apis"
 import { usePlatform } from "@/runtime/platform/platform"
 import { useWorkspaceLocation } from "@/workspaces/location"
+import { pathKey } from "@/workspaces/path-key"
 import { resolveBlobUrl } from "@/runtime/persistence/drafts"
 import { useData, useServer } from "@/runtime/server/current"
 import { showToast } from "@/shell/notifications/toast"
@@ -55,6 +56,15 @@ export function createComposerModel(adapter: ComposerAdapter, options?: { queue?
   const platform = usePlatform()
   const prompt = adapter.state
   let editor: HTMLDivElement | undefined
+
+  // Assistant fork: in the dedicated Conversations directory the composer only exposes the persona
+  // agents, not the coding defaults.
+  const BUILTIN_AGENTS = new Set(["Build", "Plan", "General", "Explore", "Compaction", "Title"])
+  const assistantOnly = () => {
+    const directory = platform.assistantDirectory
+
+    return !!directory && pathKey(sdk().directory) === pathKey(directory)
+  }
 
   const interaction = createComposerEditorState(prompt.mode.current())
   createEffect(
@@ -205,7 +215,9 @@ export function createComposerModel(adapter: ComposerAdapter, options?: { queue?
     })),
     ...adapter
       .controls()
-      .agents.available.filter((agent) => !agent.hidden && agent.mode !== "primary")
+      .agents.available.filter(
+        (agent) => !agent.hidden && agent.mode !== "primary" && !(assistantOnly() && BUILTIN_AGENTS.has(agent.name)),
+      )
       .map((agent) => ({
         id: `agent:${agent.name}`,
         kind: "agent" as const,
@@ -393,7 +405,11 @@ export function createComposerModel(adapter: ComposerAdapter, options?: { queue?
 
         return agents.visible && agents.options.length > 0
           ? {
-              options: () => adapter.controls().agents.options.map((name) => ({ id: name, label: name })),
+              options: () =>
+                adapter
+                  .controls()
+                  .agents.options.filter((name) => !assistantOnly() || !BUILTIN_AGENTS.has(name))
+                  .map((name) => ({ id: name, label: name })),
               current: () => adapter.controls().agents.current,
               onSelect: (value: string) => adapter.controls().agents.select(value),
               keybind: () => command.keybindParts("agent.cycle"),
