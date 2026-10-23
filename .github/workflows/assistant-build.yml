@@ -2,7 +2,7 @@ name: assistant-build
 
 on:
   push:
-    tags: ["v*"]
+    tags: ["assistant-v*"]
   workflow_dispatch:
 
 jobs:
