@@ -3,6 +3,7 @@ import { createStore } from "solid-js/store"
 import { createMediaQuery } from "@solid-primitives/media"
 import { ResizeHandle } from "@opencode/ui/resize-handle"
 import { Titlebar } from "@/shell/titlebar/titlebar"
+import { AssistantSidebar } from "@/assistant/sidebar"
 import { usePlatform } from "@/runtime/platform/platform"
 import { ToastRegion } from "@/shell/notifications/toast"
 import { UploadToastHost } from "@/composer/attachments/uploads"
@@ -25,6 +26,8 @@ export default function Layout(props: ParentProps) {
 
   const verticalTabs = () => preferences.appearance.tabLayout() === "vertical" && !mobile()
   const bottomTitlebar = () => mobile() && preferences.general.mobileTitlebarPosition() === "bottom"
+  // Fork: the assistant rail hides on narrow windows and while the full-screen settings surface is open.
+  const assistantRail = () => (mobile() || settings.active() ? undefined : platform.assistantDirectory)
 
   return (
     <TitlebarRightProvider>
@@ -47,6 +50,10 @@ export default function Layout(props: ParentProps) {
       >
         <Titlebar verticalTabs={verticalTabs() ? { mount: state.tabsMount } : undefined} />
         <div class="flex flex-1 min-h-0 min-w-0 flex-row">
+          {/* Fork: chat-first rail with chats, projects, artifacts and settings shortcuts on the assistant directory. */}
+          <Show when={assistantRail()} keyed>
+            {(directory) => <AssistantSidebar directory={directory} />}
+          </Show>
           <Show when={verticalTabs()}>
             <aside
               ref={(element) => setState("tabsMount", element)}

@@ -522,6 +522,14 @@ export const dict = {
   "home.providerTip": "Connect to 75+ providers to use other models, including Claude, GPT, Gemini, etc",
   "home.workspaceTip": "Start next session in a new workspace to keep changes isolated",
 
+  "assistant.new": "New chat",
+  "assistant.chats": "Chats",
+  "assistant.chats.empty": "No chats yet",
+  "assistant.artifacts": "Artifacts",
+  "assistant.artifacts.empty": "No files yet",
+  "assistant.connectors": "Connectors",
+  "assistant.settings": "Settings",
+
   "session.tab.session": "Session",
   "session.tab.more": "More...",
   "session.view.select": "Session view",

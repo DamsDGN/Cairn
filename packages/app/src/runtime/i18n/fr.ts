@@ -599,6 +599,13 @@ export const dict = {
   "home.sessions.group.older": "Plus anciennes",
   "home.providerTip":
     "Connectez-vous à plus de 75 fournisseurs pour utiliser d’autres modèles, notamment Claude, GPT, Gemini, etc.",
+  "assistant.new": "Nouvelle conversation",
+  "assistant.chats": "Historique",
+  "assistant.chats.empty": "Pas encore de conversation",
+  "assistant.artifacts": "Artefacts",
+  "assistant.artifacts.empty": "Aucun fichier",
+  "assistant.connectors": "Connecteurs",
+  "assistant.settings": "Réglages",
   "session.tab.session": "Session",
   "session.tab.unknown": "Session inconnue",
   "session.panel.reviewAndFiles": "Revue et fichiers",
