@@ -144,19 +144,26 @@ https://opencode.ai/zen/go/v1/usage` (Bearer, ref paquet `pi-opencode-go-usage`)
   `check` passe (lint + typecheck turbo, 34 tasks OK), push effectif.
 - Release : assets AppImage + deb attachés au tag `v0.1.0` du repo fork.
 
-## Builds cross-plateformes (en cours)
+## Builds cross-plateformes (CI en place le 23/10)
 
-- Points d'appui connus : `OPENCODE_CLI_TARGET` (scripts/utils.ts, cibles dans `CLI_BINARIES`) pour
-  le CLI embarqué, prebuilds node-pty par plateforme (`@lydell/node-pty-<os>-<cpu>` à installer dans
-  `packages/desktop/node_modules` avant packaging), `bun run package:win` (NSIS) et `bun run
-  package:mac` (dmg/zip) depuis electron-builder.config.ts.
-- Windows : `signWindows` est un no-op hors win32 (build non signé OK). afterPack vérifie les
-  prebuilds `conpty.node`. NSIS fonctionne sans wine avec electron-builder récent (app-builder
-  embarque nsis linux). A tester.
-- macOS : signature + notarize impossibles sans cert Apple ; produire un zip/dmg non signé et
-  désactiver `notarize`/`hardenedRuntime` avant le build, sinon afterSign échoue. A tester.
-- Sinon fallback : GitHub Actions sur les runners windows/macos hébergés (gratuits pour repo privé
-  dans les quotas), même config electron-builder.
+- Tentative locale Windows : la chaîne passe jusqu'au `win-unpacked` complet (CLI win via
+  `OPENCODE_CLI_TARGET=x86_64-pc-windows-msvc bun ./scripts/prebuild.ts` + renommage
+  `resources/opencode-cli` en `.exe`, prébuild `@lydell/node-pty-win32-x64` copié dans
+  `node_modules/@lydell/`, electron + asar + icônes + intégrité OK), mais l'étape NSIS finale
+  exige `wine` : `spawn wine ENOENT`, pas de sudo pour l'installer. Verdict : packaging Windows
+  non faisable en local sur cette machine.
+- macOS en local : DMG impossible hors macOS (hdiutil), signature/notarize impossibles sans
+  certificat Apple ; rester sur un zip non signé.
+- Solution retenue : workflow GitHub Actions `.github/workflows/assistant-build.yml`
+  (windows-latest pour le NSIS, macos-latest pour le zip mac via la config additive
+  `electron-builder.assistant.ts`), déclenché par un tag `assistant-v*` ou manuellement
+  (`workflow_dispatch`), release automatique des artefacts sur le tag.
+- Tags : utiliser le préfixe `assistant-v*` (les centaines de tags `v*` upstream existent déjà dans
+  le clone local, collision de noms).
+- Prebuilds node-pty cross : installer via un temp dir puis copier dans
+  `packages/desktop/node_modules/@lydell/` (`bun add --os=<os> --cpu=<cpu> @lydell/node-pty-<os>-<cpu>`
+  dans un répertoire jetable), sans toucher au lockfile.
+- Première release CI : `assistant-v0.1.1` (run 40021960512).
 
 ## Risques
 

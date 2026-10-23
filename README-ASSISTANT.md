@@ -58,21 +58,24 @@ bun run build                    # electron-vite (out/main, preload, renderer)
 bunx electron-builder --linux AppImage deb --config electron-builder.config.ts
 ```
 
-Cross-builds depuis Linux (le `out/` d'electron-vite est indépendant de la plateforme) :
+Cross-builds depuis Linux :
 
-```sh
-# Windows (NSIS) : le CLI est renommé .exe, prebuilds node-pty win32 requis dans node_modules
-OPENCODE_CLI_TARGET=x86_64-pc-windows-msvc bun ./scripts/prebuild.ts
-mv resources/opencode-cli resources/opencode-cli.exe
-OPENCODE_CLI_TARGET=x86_64-pc-windows-msvc bunx electron-builder --win --config electron-builder.config.ts
-
-# macOS (zip non signé, pas de DMG hors macOS) : config additive electron-builder.assistant.ts
-OPENCODE_CLI_TARGET=aarch64-apple-darwin bun ./scripts/prebuild.ts
-OPENCODE_CLI_TARGET=aarch64-apple-darwin bunx electron-builder --mac --config electron-builder.assistant.ts
-```
-
-Le résultat Windows/macOS est non signé : SmartScreen/Gatekeeper demandent une confirmation à
-l'ouverture. La signature propre nécessite un certificat (M6).
+- Windows (NSIS) : la chaîne locale va jusqu'au `win-unpacked` complet (prébuild CLI win
+  `OPENCODE_CLI_TARGET=x86_64-pc-windows-msvc bun ./scripts/prebuild.ts`, renommer
+  `resources/opencode-cli` en `.exe`, prébuild node-pty win32 dans node_modules, `bunx
+  electron-builder --win`), mais l'étape NSIS finale exige `wine` (absent ici, pas de sudo) :
+  `spawn wine ENOENT`. Path retenu : le workflow GitHub Actions
+  (`.github/workflows/assistant-build.yml`).
+- macOS : pas de DMG hors macOS (hdiutil), pas de signature/notarize sans certificat Apple. Config
+  additive `electron-builder.assistant.ts` : zip non signé, `sign: undefined`, `notarize: false`,
+  prébuilds `@lydell/node-pty-darwin-arm64` requis dans node_modules. Lui aussi passé en CI
+  (macos-latest).
+- Workflow `assistant-build.yml` : déclenché par un tag `assistant-v*` (préfixe fork, les centaines
+  de tags `v*` upstream existent déjà en local) ou manuellement (`workflow_dispatch`). Deux jobs
+  (windows-latest, macos-latest) : `bun install`, prebuild CLI ciblé, `bun run build`,
+  `electron-builder`, upload d'artefacts, puis job `release` qui attache tout au tag GitHub.
+  Résultat non signé : SmartScreen/Gatekeeper demandent une confirmation à l'ouverture, signature
+  propre réservée à M6.
 ```
 
 ## Principes de fork
