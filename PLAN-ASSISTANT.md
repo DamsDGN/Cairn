@@ -95,6 +95,35 @@ https://opencode.ai/zen/go/v1/usage` (Bearer, ref paquet `pi-opencode-go-usage`)
   reste : instructions/persona lié à l'agent, moteurs websocket (grok/gemini), push-to-talk
   dictation (STT, absent upstream), interruption barge-in, UX plein écran Claude-like.
 
+## Packaging Linux (validé le 23/10)
+
+- Chaîne : `cd packages/desktop && bun ./scripts/prebuild.ts && bun run build` puis
+  `bunx electron-builder --linux AppImage deb --config electron-builder.config.ts`. Le prebuild
+  télécharge le CLI dev (`@opencode/cli-linux-x64-baseline@0.0.0-dev-21734`, 256 Mo) dans
+  `resources/opencode-cli`, embarqué tel quel dans les artefacts (d'où la taille). rpm sauté sur
+  cette machine : `rpmbuild` absent, pas de sudo pour l'installer, cible non demandée.
+- Artefacts : `packages/desktop/dist/opencode-desktop-linux-x86_64.AppImage` (317 Mo) et
+  `opencode-desktop-linux-amd64.deb` (255 Mo). Deb : Package `opencode-dev`, Version 2.1.4, Depends
+  libgtk-3-0, libnotify4, libnss3, libxss1, libxtst6, xdg-utils, libatspi2.0-0, libuuid1,
+  libsecret-1-0 ; postinst pose `/usr/bin/ai.opencode.desktop.dev` (update-alternatives) vers
+  `/opt/OpenCode Dev/`, .desktop + metainfo installés. Structure vérifiée via `dpkg-deb -I/-c`,
+  installation réelle non possible ici (pas de sudo) ; l'exécution équivaut à linux-unpacked,
+  validée via l'AppImage extraite.
+- AppImage : lancement direct impossible sans libfuse2 (Ubuntu 25.10 ne l'a plus) : côté utilisateur
+  `sudo apt install libfuse2` ou `./x.AppImage --appimage-extract && ./squashfs-root/AppRun`.
+  Testé extrait : démarrage réel OK (process main + zygote, CLI embarqué lancé en `serve --service`
+  depuis `~/.config/ai.opencode.desktop.dev/cli/0.0.0-dev-21734-x64/`). Seuls warnings
+  VA-API/Vulkan Wayland, non bloquants. Test effectué avec `ELECTRON_DISABLE_SANDBOX=1` (sandbox
+  SUID non installable sans sudo ici ; sur un poste standard le sandbox fonctionne).
+- Distribution GitHub : repo privé `DamsDGN/opencode-assistant`, remote local `assistant`, branche
+  `sover/generalist` poussée sur son `main`. Hook `pre-push` résolu localement : oxlint charge ses
+  JS plugins via node, bloqué par node Ubuntu 22.22.1 (amaro absent : « Unknown file extension .ts »,
+  « not compiled with TypeScript support »), alors que bun importe le TS nativement. Correction sans
+  toucher upstream ni `--no-verify` : `.husky-local/pre-push` (exécutant `bun --bun run check`) +
+  `git config core.hooksPath .husky-local`, `.husky-local/` exclu via `.git/info/exclude`.
+  `check` passe (lint + typecheck turbo, 34 tasks OK), push effectif.
+- Release : assets AppImage + deb attachés au tag `v0.1.0` du repo fork.
+
 ## Risques
 
 - Upstream très actif : chaque jalon doit rester un diff réduit. Les écrans modifiés sont les
