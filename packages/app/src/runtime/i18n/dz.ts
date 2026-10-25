@@ -3,7 +3,7 @@ import en from "./en"
 type Keys = keyof typeof en
 
 export const dict = {
-  "desktop.menu.app": "OpenCode",
+  "desktop.menu.app": "Cairn",
   "desktop.menu.file": "ཡིག༌སྣོད",
   "desktop.menu.edit": "ཞུན༌དག",
   "desktop.menu.view": "བསམ༌འཆར",
@@ -57,9 +57,9 @@ export const dict = {
   "desktop.recovery.action.exportLogs": "ཕྱིར་འདྲེན་དྲན་དེབ་ཚུ།",
   "desktop.recovery.action.keepWaiting": "བསྒུག་སྡོད།",
   "desktop.recovery.action.quit": "བཞག༌ནི",
-  "desktop.recovery.loadFailed": "OpenCode མངོན་གསལ་འབད་ནི་ལུ་འཐུས་ཤོར་བྱུང་ཡོདཔ།",
-  "desktop.recovery.terminated": "OpenCode སྒོ་སྒྲིག་འདི་ རེ་བ་མེད་པར་ མཇུག་བསྡུ་ཡོདཔ།",
-  "desktop.recovery.unresponsive": "OpenCodeགིས་ ལན་གསལ་འབད་མི་བཏུབ།",
+  "desktop.recovery.loadFailed": "Cairn མངོན་གསལ་འབད་ནི་ལུ་འཐུས་ཤོར་བྱུང་ཡོདཔ།",
+  "desktop.recovery.terminated": "Cairn སྒོ་སྒྲིག་འདི་ རེ་བ་མེད་པར་ མཇུག་བསྡུ་ཡོདཔ།",
+  "desktop.recovery.unresponsive": "Cairnགིས་ ལན་གསལ་འབད་མི་བཏུབ།",
   "desktop.recovery.unresponsive.detail":
     "ཁྱོད་ཀྱིས་གློག་རིམ་འདི་ལོག་སྟེ་འགོ་བཙུགས་ཚུགས། དྲན་ཐོ་ཚུ་ཁ་ཕྱེ་ཚུགས། ཡང་ན་བསྒུག་སྡོད་ཚུགས།",
   "desktop.recovery.loadFailed.detail": "སྒོ་སྒྲིག་: {{window}}\nURL: {{url}}\nའཛོལ་བ་: {{code}} {{description}}",
@@ -170,7 +170,7 @@ export const dict = {
   "provider.connect.status.waiting": "གནང་བ་ལུ་སྒུག་སྡོདཔ་ཨིན།",
   "provider.connect.status.failed": "དབང་སྤྲོད་འཐུས་ཤོར་བྱུང་ཡོདཔ།: {{error}}",
   "provider.connect.apiKey.description":
-    "ཁྱོད་རའི་རྩིས་ཐོ་མཐུད་ནིའི་དོན་ལུ་ ཁྱོད་རའི་ {{provider}} API ལྡེ་མིག་བཙུགས་ཞིནམ་ལས་ OpenCode ནང་ལུ་ {{provider}} དཔེ་ཚད་ཚུ་ལག་ལེན་འཐབ།",
+    "ཁྱོད་རའི་རྩིས་ཐོ་མཐུད་ནིའི་དོན་ལུ་ ཁྱོད་རའི་ {{provider}} API ལྡེ་མིག་བཙུགས་ཞིནམ་ལས་ Cairn ནང་ལུ་ {{provider}} དཔེ་ཚད་ཚུ་ལག་ལེན་འཐབ།",
   "provider.connect.apiKey.label": "{{provider}} APIལྡེ་མིག།",
   "provider.connect.apiKey.placeholder": "APIལྡེ་མིག།",
   "provider.connect.apiKey.required": "APIལྡེ་མིག་དགོས་མཁོ་ཡོད།",
@@ -330,7 +330,7 @@ export const dict = {
   "error.page.action.checkUpdates": "དུས་མཐུན་ཚུ་ཞིབ་དཔྱད་འབད།",
   "error.page.action.updateTo": "{{version}} ལུ་དུས་མཐུན་བཟོ།",
   "error.page.circular": "[སྒོར་ཐིག་] .",
-  "error.page.report.prefix": "འཛོལ་བ་འདི་OpenCodeསྡེ་ཚན་ལུ་སྙན་ཞུ་འབད་གནང་།",
+  "error.page.report.prefix": "འཛོལ་བ་འདི་Cairnསྡེ་ཚན་ལུ་སྙན་ཞུ་འབད་གནང་།",
   "error.page.report.discord": "on Discordལུ།",
   "error.page.version": "ཐོན་རིམ: {{version}}",
   "error.dev.rootNotFound":
@@ -355,7 +355,7 @@ export const dict = {
   "error.chain.modelNotFound": "དཔེ་ཚད་འཚོལ་མ་ཐོབ།: {{provider}}/{{model}}",
   "error.chain.checkConfig": "ཁྱོད་ཀྱི་རིམ་སྒྲིག་ (opencode.json) བྱིན་མི་/དཔེ་ཚད་མིང་ཚུ་ཞིབ་དཔྱད་འབད།",
   "error.chain.mcpFailed":
-    'MCP སར་བར་ "{{name}}" འཐུས་ཤོར་བྱུང་ཡོདཔ། དྲན་འཛིན་ OpenCode གིས་ ད་ལྟོ་ཡང་ MCP བདེན་བཤད་ལུ་རྒྱབ་སྐྱོར་མི་འབད།',
+    'MCP སར་བར་ "{{name}}" འཐུས་ཤོར་བྱུང་ཡོདཔ། དྲན་འཛིན་ Cairn གིས་ ད་ལྟོ་ཡང་ MCP བདེན་བཤད་ལུ་རྒྱབ་སྐྱོར་མི་འབད།',
   "error.chain.providerAuthFailed": "བྱིན་མི་བདེན་བཤད་འཐུས་ཤོར་བྱུང་ཡོདཔ།({{provider}}): {{message}}",
   "error.chain.providerInitFailed":
     'བྱིན་མི་ "{{provider}}" འགོ་བཙུགས་ནི་ལུ་འཐུས་ཤོར་འབྱུང་ཡོདཔ། ངོ་རྟགས་དང་རིམ་སྒྲིག་ཞིབ་དཔྱད་འབད།',
@@ -459,16 +459,16 @@ export const dict = {
   "settings.general.section.notifications": "རིམ་ལུགས་བརྡ་བསྐུལ་ཚུ།",
   "settings.general.section.sounds": "སྒྲའི་ནུས་པ།",
   "settings.general.row.language.title": "སྐད༌ཡིག",
-  "settings.general.row.language.description": "OpenCodeགི་དོན་ལུ་ བཀྲམ་སྟོན་སྐད་ཡིག་བསྒྱུར་བཅོས་འབད།",
+  "settings.general.row.language.description": "Cairnགི་དོན་ལུ་ བཀྲམ་སྟོན་སྐད་ཡིག་བསྒྱུར་བཅོས་འབད།",
   "settings.general.row.shell.title": "ཊར་མི་ནཱལ་ Shell",
   "settings.general.row.shell.description": "ཊར་མི་ནཱལ་དང་ལས་ཚབ་ལག་ཆས་ཚུ་གིས་ལག་ལེན་འཐབ་མི་ Shell",
   "settings.general.row.shell.autoDefault": "རང་བཞིན་ (སྔོན་སྒྲིག)",
   "settings.general.row.shell.terminalOnly": "ཊར་མི་ནཱལ་རྐྱངམ་ཅིག།",
   "settings.general.row.colorScheme.title": "ཚོས་གཞིའི་འཆར་གཞི།",
   "settings.general.row.colorScheme.description":
-    "OpenCode གིས་ རིམ་ལུགས་དང་ འོད་ ཡང་ན་ གནགཔོ་གི་བརྗོད་དོན་ལུ་ རྗེས་སུ་འཇུག་ནི་ཨིན་ན་ གདམ་ཁ་རྐྱབས།",
+    "Cairn གིས་ རིམ་ལུགས་དང་ འོད་ ཡང་ན་ གནགཔོ་གི་བརྗོད་དོན་ལུ་ རྗེས་སུ་འཇུག་ནི་ཨིན་ན་ གདམ་ཁ་རྐྱབས།",
   "settings.general.row.theme.title": "བརྗོད༌དོན",
-  "settings.general.row.theme.description": "OpenCodeའདི་བརྗོད་དོན་ག་དེ་སྦེ་ཡོདཔ་ཨིན་ན་སྲོལ་སྒྲིག་འབད།",
+  "settings.general.row.theme.description": "Cairnའདི་བརྗོད་དོན་ག་དེ་སྦེ་ཡོདཔ་ཨིན་ན་སྲོལ་སྒྲིག་འབད།",
   "settings.general.row.font.title": "ཨང་རྟགས་ཡིག་གཟུགས།",
   "settings.general.row.font.description": "གསང་གྲངས་སྡེབ་ཚན་ཚུ་ནང་ལག་ལེན་འཐབ་མི་ཡིག་གཟུགས་སྲོལ་སྒྲིག་འབད།",
   "settings.general.row.terminalFont.title": "ཊར་མི་ནཱལ་ཡིག་གཟུགས།",
@@ -831,7 +831,7 @@ export const dict = {
     "ཝེབ་འཚོལ་ཞིབ་འབད་ནི་ལུ་ལག་ལེན་འཐབ་མི་ འཚོལ་ཞིབ་བྱིན་མི་ལས་ཚབ་ཚུ་སེལ་འཐུ་འབད།",
   "settings.projects.search.placeholder": "ལས་གཞི་འཚོལ་ཞིབ་",
   "project.settings.name.title": "ལས་འགུལ་གྱི་མིང་",
-  "project.settings.name.description": "ལས་འགུལ་འདི་གི་དོན་ལུ་ OpenCode ཡོངས་རྫོགས་ནང་སྟོན་ཡོད་པའི་མིང་།",
+  "project.settings.name.description": "ལས་འགུལ་འདི་གི་དོན་ལུ་ Cairn ཡོངས་རྫོགས་ནང་སྟོན་ཡོད་པའི་མིང་།",
   "project.settings.icon.description": "གྲོས་འཆར་: ༡༢༨×༡༢༨px. གཟུགས་བརྙན་ཅིག་སྐྱེལ་བཙུགས་འབད་ནི་ལུ་ཨེབ་གཏང་ཡང་ན་འདྲུད།",
   "project.settings.color.description":
     "སྲོལ་སྒྲིག་གཟུགས་བརྙན་གཞི་སྒྲིག་མ་འབད་བའི་སྐབས་ལས་འགུལ་ངོས་དཔར་གྱི་དོན་ལུ་ལག་ལེན་འཐབ་ཡོདཔ་ཨིན།",
@@ -839,11 +839,11 @@ export const dict = {
   "project.settings.worktree.startup.hint.base": "གཞི་རྟེན་ལཱ་ཤིང་གི་དོན་ལུ་ $OPENCODE_WORKTREE_BASE ལག་ལེན་འཐབ།",
   "project.settings.worktree.startup.hint.new": "ལཱ་གི་ཤིང་གསརཔ་གི་དོན་ལུ་ $OPENCODE_WORKTREE_PATH ལག་ལེན་འཐབ།",
   "project.settings.extensions.empty.mcps.title": "ད་ལྟོ་ MCPs མེད།",
-  "project.settings.extensions.empty.mcps.description": "MCPs ལུ་ཐོབ་ཚུགས་པའི་ OpenCode འདི་ན་འབྱུངམ་ཨིན།",
+  "project.settings.extensions.empty.mcps.description": "MCPs ལུ་ཐོབ་ཚུགས་པའི་ Cairn འདི་ན་འབྱུངམ་ཨིན།",
   "project.settings.extensions.empty.plugins.title": "ད་ལྟོ་པ་ལག་ཨིནསི་མེད།",
-  "project.settings.extensions.empty.plugins.description": "OpenCode ལུ་ཡོད་པའི་པ་ལག་ཨིན་ཚུ་ ནཱ་ལུ་འབྱུངམ་ཨིན།",
+  "project.settings.extensions.empty.plugins.description": "Cairn ལུ་ཡོད་པའི་པ་ལག་ཨིན་ཚུ་ ནཱ་ལུ་འབྱུངམ་ཨིན།",
   "project.settings.extensions.empty.skills.title": "ད་ལྟོ་རིག་རྩལ་མེད།",
-  "project.settings.extensions.empty.skills.description": "OpenCode ལུ་ཡོད་པའི་རིག་རྩལ་ཚུ་ ནཱ་ལུ་འབྱུང་འོང་།",
+  "project.settings.extensions.empty.skills.description": "Cairn ལུ་ཡོད་པའི་རིག་རྩལ་ཚུ་ ནཱ་ལུ་འབྱུང་འོང་།",
   "project.settings.extensions.lsp.configured": "རིམ་སྒྲིག་འབད་ཡོད་པའི་སྐད་ཡིག་སར་བར་ཚུ།",
   "project.settings.extensions.lsp.status.enabled": "རིམ་སྒྲིག་ནང་ལུ་ལྕོགས་ཅན་བཟོ་ཡོདཔ།",
   "project.settings.extensions.lsp.status.disabled": "རིམ་སྒྲིག་ནང་ལུ་ལྕོགས་མིན་བཟོ་ཡོདཔ།",
@@ -865,7 +865,7 @@ export const dict = {
   "settings.timeline.collapsed.label": "{{activity}} རྡིབ་སོང་",
   "session.new.workspace.search.empty": "མཐུན་སྒྲིག་ལཱ་ཤིང་མེད།",
   "settings.workspaces.description": "ལཱ་གི་ཤིང་ཚུ་བསྐྱར་ཞིབ་འབད་དེ་ ཌིཀསི་ལག་ལེན་འཛིན་སྐྱོང་འཐབ།",
-  "settings.workspaces.empty.description": "OpenCode ནང་གསར་བསྐྲུན་འབད་ཡོད་པའི་ལཱ་ཤིང་ཚུ་ ནཱ་ལུ་འབྱུངམ་ཨིན།",
+  "settings.workspaces.empty.description": "Cairn ནང་གསར་བསྐྲུན་འབད་ཡོད་པའི་ལཱ་ཤིང་ཚུ་ ནཱ་ལུ་འབྱུངམ་ཨིན།",
   "settings.workspaces.sessions.filtered.one": "{{count}} ལཱ་ཡུན་",
   "settings.workspaces.sessions.filtered.other": "{{count}} ལཱ་ཡུན་ཚུ་",
   "settings.workspaces.deleteAll.confirm.one":
