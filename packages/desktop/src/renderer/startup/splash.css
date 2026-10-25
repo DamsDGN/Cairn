@@ -1,25 +1,33 @@
-[data-component="first-launch-splash"] path {
-  /* Outline paths use a normalized length so the drawing scales with the wordmark. */
-  stroke-dasharray: 1;
-  animation: first-launch-wordmark-draw 1000ms ease-out both;
+[data-component="first-launch-splash"] [data-slot="cairn-splash"] {
+  animation: first-launch-cairn-fade 900ms ease-out both;
 }
 
-[data-component="first-launch-splash"][data-drawing="pending"] path {
+[data-component="first-launch-splash"] [data-slot="cairn-splash-name"] {
+  color: var(--v2-text-text-base);
+  font-family: var(--cairn-font-serif, ui-serif, Georgia, serif);
+  font-size: 40px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+[data-component="first-launch-splash"][data-drawing="pending"] [data-slot="cairn-splash"] {
   animation-play-state: paused;
 }
 
-@keyframes first-launch-wordmark-draw {
+@keyframes first-launch-cairn-fade {
   from {
-    stroke-dashoffset: 1;
+    opacity: 0;
+    transform: translateY(6px);
   }
   to {
-    stroke-dashoffset: 0;
+    opacity: 1;
+    transform: none;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  [data-component="first-launch-splash"] path {
+  [data-component="first-launch-splash"] [data-slot="cairn-splash"] {
     animation: none;
-    stroke-dasharray: none;
   }
 }

@@ -1,5 +1,3 @@
-import { Splash } from "@opencode/ui/logo"
-import { Wordmark } from "@opencode/ui/wordmark"
 import type { Platform } from "@opencode/app/desktop"
 import { onCleanup, onMount, Show } from "solid-js"
 import { createStore } from "solid-js/store"
@@ -14,14 +12,21 @@ export function LoadingSplash(props: {
 }) {
   const [drawing, setDrawing] = createStore({ started: false })
   onMount(() => {
-    if (!props.preview || !props.firstLaunch) return
+    if (!props.firstLaunch) return
     const motion = window.matchMedia("(prefers-reduced-motion: reduce)")
+
+    // Without the fade there is no animationend, so the reveal has to resolve here.
+    if (motion.matches) {
+      props.onDrawEnd()
+
+      return
+    }
+
+    if (!props.preview) return
 
     const start = () => {
       if (document.visibilityState !== "visible" || !document.hasFocus()) return
       setDrawing("started", true)
-
-      if (motion.matches) props.onDrawEnd()
     }
 
     window.addEventListener("focus", start)
@@ -58,7 +63,7 @@ export function LoadingSplash(props: {
             "bg-v2-background-bg-base": !props.deep,
           }}
         >
-          <Splash class="w-16 h-20 opacity-50 animate-pulse" />
+          <img src="/assets/logo-cairn.svg" alt="" aria-hidden="true" class="size-16 opacity-50 animate-pulse" />
         </div>
       }
     >
@@ -74,18 +79,16 @@ export function LoadingSplash(props: {
           "padding-inline": "32px",
         }}
         onAnimationEnd={(event) => {
-          if (event.animationName === "first-launch-wordmark-draw") props.onDrawEnd()
+          if (event.animationName === "first-launch-cairn-fade") props.onDrawEnd()
         }}
       >
         <div class="relative size-full">
           <div class="absolute inset-x-0 top-[25.375%]">
             <div class="mx-auto w-full max-w-[720px]">
-              <Wordmark
-                outline
-                fade={false}
-                muted={false}
-                class="mx-auto block h-auto w-4/5 text-v2-icon-icon-faint opacity-50"
-              />
+              <div data-slot="cairn-splash" class="mx-auto flex w-fit flex-col items-center gap-5">
+                <img src="/assets/logo-cairn.svg" alt="" class="size-20" />
+                <span data-slot="cairn-splash-name">Cairn</span>
+              </div>
             </div>
           </div>
         </div>
