@@ -88,7 +88,7 @@ export function AssistantSidebar(props: { directory: string }) {
   const [search, setSearch] = createSignal("")
   const runSearch = debounce(setSearch, 150)
 
-  const [sessions] = createResource(
+  const [sessions, { refetch: refetchSessions }] = createResource(
     () => (ready() ? { ready: ready()!, search: search() } : undefined),
     (input) =>
       input.ready.sdk.api.session
@@ -253,6 +253,9 @@ export function AssistantSidebar(props: { directory: string }) {
 
     try {
       await local.data.session.remove(session.id)
+      // The fetched page is independent of the event store, so it still lists the removed session
+      // until it is read again.
+      void refetchSessions()
       notifySessionTabsRemoved({
         server: ServerConnection.key(conn),
         directory: session.location.directory,
