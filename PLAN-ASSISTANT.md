@@ -119,6 +119,21 @@ https://opencode.ai/zen/go/v1/usage` (Bearer, ref paquet `pi-opencode-go-usage`)
     (toggle sidebar) et le drag régional, tout le reste de la barre est vide.
   - Vérifié : `bun --bun run check` vert (lint + typecheck, 34 tasks), tests desktop 130 pass /
     1 skip / 0 fail, `bun run build` (electron-vite) OK. Commit `d2ca31fe9d` poussé sur GitHub main.
+- **M11 Sidebar conversationnelle (refonte du 25/10, fait)** : la sidebar passe d'une liste plate à un
+  vrai historique de chat.
+  - En-tête marque (logo + wordmark serif Cairn), bouton `Nouvelle conversation` contrasté, recherche.
+  - Conversations groupées par `Épinglés`, `Aujourd'hui`, `Hier`, `7 derniers jours`, `Plus
+    anciennes` ; l'ordre reste `chats`, puis `Projets`, puis `Artefacts` repliables.
+  - Ligne de conversation : renommage inline (Entrée valide, Échap annule), menu contextuel
+    (`Renommer`, `Épingler`/`Détacher`, `Supprimer…`), dialogue de confirmation, indicateurs
+    spinner (génération) et point accent (permission/formulaire en attente).
+  - Épinglage persisté dans `opencode.assistant.sidebar.pinned` (`sidebar-state.ts`), nettoyé à la
+    suppression ; navigation clavier native (boutons focusables, menu Kobalte).
+  - États vides distincts (aucune conversation vs recherche sans résultat), i18n additive en/fr.
+  - `SessionReviewToggle` masqué quand `platform.assistantDirectory` est défini : le panneau de revue
+    git n'a pas sa place dans une conversation généraliste.
+  - Vérifié : typecheck 0 erreur, `bun run test:unit` 764 pass / 0 fail, lint 0 erreur, captures
+    Electron via CDP clair/sombre et parcours renommer/épingler/supprimer.
 
 ## Packaging Linux (validé le 23/10)
 
