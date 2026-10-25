@@ -34,7 +34,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: dist-${{ matrix.os }}
-          path: packages/desktop/dist/opencode-desktop-*
+          path: packages/desktop/dist/cairn-desktop-*
 
   release:
     needs: desktop

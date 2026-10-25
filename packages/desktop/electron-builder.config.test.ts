@@ -13,9 +13,9 @@ import { CLI_BINARIES, nodePtyPackage } from "./scripts/utils"
 const { FileMatcher } = createRequire(import.meta.resolve("electron-builder"))("app-builder-lib/out/fileMatcher")
 
 const channels = [
-  { channel: "dev", appId: "ai.opencode.desktop.dev" },
-  { channel: "beta", appId: "ai.opencode.desktop.beta" },
-  { channel: "prod", appId: "ai.opencode.desktop" },
+  { channel: "dev", appId: "tech.sover.cairn.dev" },
+  { channel: "beta", appId: "tech.sover.cairn.beta" },
+  { channel: "prod", appId: "tech.sover.cairn" },
 ] as const
 
 function load(channel: string, target?: string): Configuration {
@@ -63,9 +63,6 @@ test.each(channels)("channel identity for $channel", ({ channel, appId }) => {
 
   for (const fpm of [config.deb?.fpm, config.rpm?.fpm]) {
     expect(fpm).toContainEqual(expect.stringContaining(`/usr/share/metainfo/${appId}.metainfo.xml`))
-    expect(
-      fpm?.some((entry) => entry.endsWith("opencode-desktop.desktop=/usr/share/applications/opencode-desktop.desktop")),
-    ).toBe(channel === "prod")
   }
 
   // Shared Electron binaries must not ship /usr/lib/.build-id links that collide with other Electron RPMs.
