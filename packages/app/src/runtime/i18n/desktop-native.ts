@@ -243,6 +243,8 @@ export const DESKTOP_NATIVE_ENGLISH = {
   "desktop.menu.help": "Help",
   "desktop.menu.installCli": "Install CLI…",
   "desktop.menu.settings": "Settings",
+  "desktop.menu.showApp": "Show Cairn",
+  "desktop.menu.quit": "Quit Cairn",
   "desktop.menu.reloadWebview": "Reload Webview",
   "desktop.menu.restart": "Restart",
   "desktop.menu.exportLogs": "Export Logs…",

@@ -237,6 +237,8 @@ export const dict = {
   "desktop.menu.window": "Fenêtre",
   "desktop.menu.help": "Aide",
   "desktop.menu.settings": "Paramètres",
+  "desktop.menu.showApp": "Afficher Cairn",
+  "desktop.menu.quit": "Quitter Cairn",
   "desktop.menu.reloadWebview": "Recharger la vue Web",
   "desktop.menu.restart": "Redémarrer",
   "desktop.menu.exportLogs": "Exporter les journaux…",
