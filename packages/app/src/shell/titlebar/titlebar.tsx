@@ -29,6 +29,7 @@ import { sessionTabTitle } from "./tab-title"
 import { SessionTabAvatar } from "@/shell/layout/session-tab-avatar"
 import { SessionProgressIndicatorV2 } from "@opencode/session-ui/v2/session-progress-indicator-v2"
 import { RecentlyClosedTabsMenu } from "./recently-closed-tabs-menu"
+import { WindowControls } from "./window-controls"
 import { assistantSidebar, toggleSidebarCollapsed } from "@/assistant/sidebar-state"
 import { useSettingsDialog } from "@/settings/command"
 import { rootSession } from "@/shell/routes/session"
@@ -111,7 +112,7 @@ export function Titlebar(props: { verticalTabs?: { mount?: HTMLElement } }) {
   })
 
   const titlebarItems = useTitlebarItems()
-  const hideVerticalTitlebar = createMemo(() => !!props.verticalTabs && !windows())
+  const hideVerticalTitlebar = createMemo(() => !!props.verticalTabs && !windows() && !linux())
 
   const back = () => {
     const next = backPath(history)
@@ -813,6 +814,9 @@ export function Titlebar(props: { verticalTabs?: { mount?: HTMLElement } }) {
           }}
         </Match>
       </Switch>
+      <Show when={linux() && !platform.windowFullscreen?.()}>
+        <WindowControls />
+      </Show>
     </header>
   )
 }

@@ -2,6 +2,7 @@ import type { Platform } from "@opencode/app/desktop"
 import type { ElectronAPI } from "../api-types"
 import { setPinchZoomEnabled, webviewZoom } from "../window/zoom"
 import { windowFullscreen } from "../window/fullscreen"
+import { windowMaximized } from "../window/maximized"
 import { DragCancelEvent } from "../../shared/ipc-transport"
 import { createExtensionBridge } from "../extensions"
 import { createDesktopFiles } from "./files"
@@ -39,6 +40,12 @@ export function createDesktopPlatform(api: ElectronAPI, windowState: DesktopWind
     },
     webviewZoom,
     windowFullscreen,
+    windowMaximized,
+    windowMinimize: () => api.minimizeWindow(),
+    windowToggleMaximize: async () => {
+      await api.toggleWindowMaximize()
+    },
+    windowClose: () => api.closeWindow(),
     getPinchZoomEnabled: () => api.getPinchZoomEnabled(),
     setPinchZoomEnabled,
     onDragCancel: (callback) => {

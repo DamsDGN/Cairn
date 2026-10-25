@@ -98,6 +98,18 @@ type PlatformBase = {
   /** Whether the native desktop window is fullscreen */
   windowFullscreen?: Accessor<boolean>
 
+  /** Whether the native desktop window is maximized (desktop only) */
+  windowMaximized?: Accessor<boolean>
+
+  /** Minimize the native desktop window */
+  windowMinimize?(): void | Promise<void>
+
+  /** Toggle maximize on the native desktop window */
+  windowToggleMaximize?(): void | Promise<void>
+
+  /** Close the native desktop window */
+  windowClose?(): void | Promise<void>
+
   /** Get whether native pinch/Ctrl-scroll zoom gestures are enabled (desktop only) */
   getPinchZoomEnabled?(): Promise<boolean> | boolean
 

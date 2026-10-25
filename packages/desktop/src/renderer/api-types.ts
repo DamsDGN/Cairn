@@ -57,6 +57,11 @@ export type ElectronAPI = {
   onWindowFullscreenChanged(cb: (fullscreen: boolean) => void): () => void
   setWindowFocus(): Promise<void>
   showWindow(): Promise<void>
+  minimizeWindow(): Promise<void>
+  getWindowMaximized(): Promise<boolean>
+  toggleWindowMaximize(): Promise<boolean>
+  closeWindow(): Promise<void>
+  onWindowMaximizedChanged(cb: (maximized: boolean) => void): () => void
   relaunch(): void
   getZoomFactor(): Promise<number>
   setZoomFactor(factor: number): Promise<void>

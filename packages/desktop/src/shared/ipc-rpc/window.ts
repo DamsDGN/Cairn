@@ -25,6 +25,14 @@ export const WindowSetPinchZoomEnabled = Rpc.make("WindowSetPinchZoomEnabled", {
   payload: { enabled: Schema.Boolean },
 })
 
+export const WindowMinimize = Rpc.make("WindowMinimize")
+
+export const WindowGetMaximized = Rpc.make("WindowGetMaximized", { success: Schema.Boolean })
+
+export const WindowToggleMaximize = Rpc.make("WindowToggleMaximize", { success: Schema.Boolean })
+
+export const WindowClose = Rpc.make("WindowClose")
+
 export const WindowSetTitlebar = Rpc.make("WindowSetTitlebar", {
   payload: {
     theme: Schema.Struct({
@@ -44,5 +52,9 @@ export const WindowRpcs = RpcGroup.make(
   WindowSetZoomFactor,
   WindowGetPinchZoomEnabled,
   WindowSetPinchZoomEnabled,
+  WindowMinimize,
+  WindowGetMaximized,
+  WindowToggleMaximize,
+  WindowClose,
   WindowSetTitlebar,
 )

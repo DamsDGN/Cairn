@@ -262,6 +262,7 @@ export const dict = {
   "desktop.menu.nextProject": "Projet suivant",
   "desktop.menu.minimize": "Réduire",
   "desktop.menu.maximize": "Agrandir",
+  "desktop.menu.restore": "Restaurer",
   "desktop.menu.documentation": "Documentation d'OpenCode",
   "desktop.menu.supportForum": "Forum d'assistance",
   "desktop.menu.shareFeedback": "Envoyer des commentaires",

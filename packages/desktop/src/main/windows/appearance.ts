@@ -1,7 +1,12 @@
 import { app, BrowserWindow, nativeImage, nativeTheme } from "electron"
 import type { Path } from "effect"
 import { type TitlebarTheme } from "../../shared/ipc-contract"
-import { WindowFullscreenChanged, WindowPinchZoomChanged, WindowZoomChanged } from "../../shared/ipc-rpc/events"
+import {
+  WindowFullscreenChanged,
+  WindowMaximizedChanged,
+  WindowPinchZoomChanged,
+  WindowZoomChanged,
+} from "../../shared/ipc-rpc/events"
 import { emitIpcEvent } from "../ipc-events"
 import type { DesktopPaths } from "../paths"
 import { BACKGROUND_COLOR_KEY, PINCH_ZOOM_ENABLED_KEY } from "../storage/keys"
@@ -31,6 +36,7 @@ export function windowAppearance(path: Path.Path, paths: DesktopPaths.Resolved) 
           trafficLightPosition: { x: 14, y: 14 },
         }
       : {}),
+    ...(process.platform === "linux" ? { frame: false } : {}),
     ...(process.platform === "win32"
       ? {
           frame: false,
@@ -135,6 +141,16 @@ export function wireFullscreen(win: BrowserWindow) {
 
   win.on("enter-full-screen", () => send(true))
   win.on("leave-full-screen", () => send(false))
+}
+
+export function wireMaximized(win: BrowserWindow) {
+  const send = (maximized: boolean) => {
+    if (win.isDestroyed() || win.webContents.isDestroyed()) return
+    emitIpcEvent(win.webContents, new WindowMaximizedChanged({ maximized }))
+  }
+
+  win.on("maximize", () => send(true))
+  win.on("unmaximize", () => send(false))
 }
 
 function iconsDir(path: Path.Path, paths: DesktopPaths.Resolved) {
