@@ -58,9 +58,15 @@ chat instead of a project, and a few coding surfaces are hidden.
 
 ## Releases
 
-Maintainers tag `cairn-v<version>` on `main`. `.github/workflows/cairn-release.yml` checks that the
-tag matches `packages/desktop/package.json`, builds Linux, Windows and macOS, and publishes the
-release with the files the updater reads. Do not bump versions in a pull request.
+Maintainers run the `cairn-release` workflow from the Actions tab and give it the version to publish,
+for example `0.2.2`. The workflow writes that version to `packages/desktop/package.json`, commits it,
+tags `cairn-v<version>`, builds Linux, Windows and macOS, and publishes the release with the files the
+updater reads and notes generated from the merged pull requests. Do not bump the version in a pull
+request.
+
+The repository rule that protects `main` must let the GitHub Actions application bypass it,
+otherwise the workflow cannot push the version commit. A run that fails after the commit is safe to
+retry: the preparation step skips the commit and only recreates a missing tag.
 
 ## Security
 

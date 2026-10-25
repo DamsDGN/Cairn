@@ -41,7 +41,8 @@ the system asks for confirmation on first launch. Expect rough edges.
 
 Releases: https://github.com/DamsDGN/Cairn/releases
 
-Each release is produced by `.github/workflows/cairn-release.yml` from a `cairn-v*` tag.
+Each release is produced by the `cairn-release` workflow: it bumps the version, tags it, builds the
+installers and writes the release notes.
 
 - **Linux**: `.AppImage` and `.deb`.
 - **Windows**: NSIS `.exe`. SmartScreen asks for confirmation: `More info`, then `Run anyway`.
