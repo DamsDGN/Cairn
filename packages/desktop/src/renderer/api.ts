@@ -100,6 +100,8 @@ export const api: ElectronAPI = {
   closeWindow: () => invoke("WindowClose"),
   onWindowMaximizedChanged: (cb) => listen("WindowMaximizedChanged", (event) => cb(event.maximized)),
   relaunch: () => send("AppRelaunch"),
+  launchAtLoginGet: () => invoke("AppLaunchAtLogin"),
+  launchAtLoginSet: (enabled: boolean) => invoke("AppSetLaunchAtLogin", { enabled }),
   getZoomFactor: () => invoke("WindowGetZoomFactor"),
   setZoomFactor: (factor) => invoke("WindowSetZoomFactor", { factor }),
   getPinchZoomEnabled: () => invoke("WindowGetPinchZoomEnabled"),

@@ -160,6 +160,12 @@ type PlatformBase = {
     setDefaultModel(model: string | null): Promise<AssistantMcpResult>
   }
 
+  /** Start the application when the user signs in (desktop only). */
+  launchAtLogin?: {
+    get(): Promise<boolean>
+    set(enabled: boolean): Promise<boolean>
+  }
+
   /** On-device speech models, downloaded on request (desktop fork). */
   voiceLocal?: {
     models(): Promise<VoiceLocalModel[]>
