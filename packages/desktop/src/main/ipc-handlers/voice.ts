@@ -4,7 +4,7 @@ import { Effect } from "effect"
 import { VoiceRpcs } from "../../shared/ipc-rpc"
 import { createVoiceDownloader } from "../voice/download"
 import { DEFAULT_VOICE_MODEL, VOICE_MODELS, isInstalled, modelPath } from "../voice/models"
-import { transcribe } from "../voice/transcribe"
+import { accelerationLevel, transcribe } from "../voice/transcribe"
 
 export const voiceHandlers = VoiceRpcs.toLayer(
   Effect.gen(function* () {
@@ -24,6 +24,7 @@ export const voiceHandlers = VoiceRpcs.toLayer(
         Effect.promise(() => downloader.start(id)).pipe(Effect.map((state) => ({ id, ...state }))),
       VoiceLocalState: ({ id }) => Effect.sync(() => ({ id, ...downloader.read(id) })),
       VoiceLocalRemove: ({ id }) => Effect.promise(() => downloader.remove(id)),
+      VoiceLocalAcceleration: () => Effect.sync(() => ({ level: accelerationLevel() })),
       VoiceLocalTranscribe: ({ audio, language, id }) =>
         Effect.promise(() =>
           transcribe({

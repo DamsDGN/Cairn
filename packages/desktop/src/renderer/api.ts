@@ -52,6 +52,7 @@ export const api: ElectronAPI = {
   voiceModelDownload: (id) => invoke("VoiceLocalDownload", { id }).then(mutable),
   voiceModelState: (id) => invoke("VoiceLocalState", { id }).then(mutable),
   voiceModelRemove: (id) => invoke("VoiceLocalRemove", { id }),
+  voiceAcceleration: () => invoke("VoiceLocalAcceleration").then(mutable),
   voiceTranscribe: (input) =>
     invoke("VoiceLocalTranscribe", {
       audio: new Uint8Array(input.audio),

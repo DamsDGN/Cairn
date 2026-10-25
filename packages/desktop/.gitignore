@@ -25,5 +25,6 @@ dist-ssr
 out/
 
 resources/opencode-cli*
+resources/whisper-avx2/index.node
 resources/icons
 resources/*.metainfo.xml

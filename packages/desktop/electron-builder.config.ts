@@ -1,4 +1,5 @@
 import { execFile } from "node:child_process"
+import { existsSync } from "node:fs"
 import { readdir, stat } from "node:fs/promises"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
@@ -90,6 +91,13 @@ function linuxExecutableName(appId: string): string {
   return appId.replace(/\.desktop$/, "")
 }
 
+// The AVX2 addon is built by CI and dropped into resources before packaging. Without it the app
+// falls back to the portable addon from npm, so a local package build stays valid.
+const whisperAvx2 = path.join(packageDir, "resources", "whisper-avx2")
+const whisperAvx2Resources = existsSync(path.join(whisperAvx2, "index.node"))
+  ? [{ from: whisperAvx2, to: "whisper-avx2" }]
+  : []
+
 const getBase = (appId: string): Configuration => {
   const target = getCurrentCli()
 
@@ -121,6 +129,7 @@ const getBase = (appId: string): Configuration => {
       ),
       // whisper.cpp ships an 8 MB CPU addon per platform plus CUDA (189 MB) and Vulkan (54 MB)
       // variants. Cairn runs speech on the CPU, so only the local platform's CPU addon is kept.
+      "!resources/whisper-avx2{,/**/*}",
       "!**/node_modules/@fugood/node-whisper-*{,/**/*}",
       `**/node_modules/@fugood/node-whisper-${target.os}-${target.cpu}{,/**/*}`,
       // Log export imports Zip.js as ESM. Keep index.js and lib, including its inline worker.
@@ -144,6 +153,7 @@ const getBase = (appId: string): Configuration => {
         to: "",
         filter: ["opencode-cli", "opencode-cli.exe", "opencode-cli.version"],
       },
+      ...whisperAvx2Resources,
     ],
     afterPack: async (context) => {
       const arch = Arch[context.arch]

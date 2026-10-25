@@ -25,8 +25,31 @@ jobs:
             exit 1
           fi
 
+  whisper:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: bun install --frozen-lockfile
+      # The AVX2 addon is built against glibc 2.35 (Ubuntu 22.04) so the .deb and the AppImage stay
+      # installable on every distribution Electron itself supports.
+      - name: Build the AVX2 speech addon
+        working-directory: packages/desktop
+        run: bun run whisper:avx2
+      - uses: actions/upload-artifact@v4
+        with:
+          name: whisper-linux-x64-avx2
+          if-no-files-found: error
+          path: packages/desktop/resources/whisper-avx2/index.node
+
   desktop:
-    needs: guard
+    needs: [guard, whisper]
     strategy:
       fail-fast: false
       matrix:
@@ -71,6 +94,13 @@ jobs:
         env:
           OPENCODE_CHANNEL: ""
 
+      - name: Fetch the AVX2 speech addon
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/download-artifact@v4
+        with:
+          name: whisper-linux-x64-avx2
+          path: packages/desktop/resources/whisper-avx2
+
       - name: Prepare the desktop
         working-directory: packages/desktop
         run: bun ./scripts/prebuild.ts
@@ -90,6 +120,12 @@ jobs:
         run: bunx electron-builder ${{ matrix.flag }} --config ${{ matrix.config }} --publish never
         env:
           OPENCODE_CLI_DIST: ${{ github.workspace }}/packages/cli/dist
+
+      # A packaging mistake would ship the portable addon only and nothing would look wrong, so the
+      # unpacked application is checked for the optimized binary.
+      - name: Check the Linux package carries the AVX2 addon
+        if: matrix.os == 'ubuntu-latest'
+        run: test -s packages/desktop/dist/linux-unpacked/resources/whisper-avx2/index.node
 
       - uses: actions/upload-artifact@v4
         with:

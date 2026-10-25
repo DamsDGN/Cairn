@@ -172,11 +172,15 @@ type PlatformBase = {
     download(id: VoiceLocalModelID): Promise<VoiceLocalState>
     state(id: VoiceLocalModelID): Promise<VoiceLocalState>
     remove(id: VoiceLocalModelID): Promise<boolean>
+    /** CPU kernel the local recognizer runs: AVX2, or the portable fallback. */
+    acceleration(): Promise<{ level: VoiceLocalAcceleration }>
     transcribe(input: { audio: ArrayBuffer; language?: string; id?: VoiceLocalModelID }): Promise<string>
   }
 }
 
 export type VoiceLocalModelID = "base-q5_1" | "small-q5_1" | "small"
+
+export type VoiceLocalAcceleration = "avx2" | "compatible"
 
 export type VoiceLocalModel = { id: VoiceLocalModelID; installed: boolean; size: number }
 
