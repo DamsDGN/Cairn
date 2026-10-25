@@ -55,11 +55,9 @@ export function AssistantDictationButton(props: { composer: ComposerModel }) {
 
     try {
       const audio = await current.stop()
-      const text = await platform.voiceLocal!.transcribe({
-        audio,
-        language: language.locale().split("-")[0],
-        id: selected,
-      })
+      // The language is detected from the audio: forcing the interface locale makes whisper
+      // translate a sentence spoken in another language instead of transcribing it.
+      const text = await platform.voiceLocal!.transcribe({ audio, id: selected })
 
       if (text) insert(text)
     } catch {
