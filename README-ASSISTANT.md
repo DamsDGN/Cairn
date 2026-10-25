@@ -2,7 +2,7 @@
 
 Fork d'OpenCode Desktop transformé en assistant de chat généraliste, façon Claude Desktop :
 une fenêtre, une conversation, pas d'onglets. Basé sur `anomalyco/opencode` branche `dev`,
-travail sur `sover/generalist`, publié sur `DamsDGN/Cairn` (privé).
+travail sur `sover/generalist`, publié sur [DamsDGN/Cairn](https://github.com/DamsDGN/Cairn).
 
 Le plan complet et l'état des jalons vivent dans [PLAN-ASSISTANT.md](PLAN-ASSISTANT.md).
 
@@ -27,19 +27,19 @@ Le plan complet et l'état des jalons vivent dans [PLAN-ASSISTANT.md](PLAN-ASSIS
 
 Releases : https://github.com/DamsDGN/Cairn/releases
 
-Release courante `assistant-v0.1.1` (builds non signés) :
+Les releases sont produites par GitHub Actions et publiées sur
+[DamsDGN/Cairn releases](https://github.com/DamsDGN/Cairn/releases), à partir d'un tag
+`cairn-v<version>` identique à la version de `packages/desktop/package.json`. Les builds ne sont pas
+signés : SmartScreen et Gatekeeper demandent une confirmation à l'ouverture.
 
-- **Linux** :
-  - `opencode-desktop-linux-x86_64.AppImage` (nécessite libfuse2 : `sudo apt install libfuse2`,
-    ou `./opencode-desktop-linux-x86_64.AppImage --appimage-extract && ./squashfs-root/AppRun`)
-  - `opencode-desktop-linux-amd64.deb` (installe `OpenCode Dev` + `/usr/bin/ai.opencode.desktop.dev`)
-- **Windows** : `opencode-desktop-win-x64.exe`, installeur NSIS
-  (SmartScreen : `Informations complémentaires` puis `Exécuter quand même`).
-- **macOS Apple Silicon** : `opencode-desktop-mac-arm64.zip`, app non signée
-  (étendre, puis clic droit `OpenCode Dev.app` > `Ouvrir` au premier lancement). Pas de dmg
-  (hdiutil requiert macOS), pas de build Intel pour l'instant.
+- **Linux** : `.AppImage` et `.deb` (`cairn` pour le canal prod).
+- **Windows** : `.exe`, installeur NSIS (SmartScreen : `Informations complémentaires` puis
+  `Exécuter quand même`).
+- **macOS Apple Silicon** : `.zip`, app non signée (clic droit `Cairn.app` > `Ouvrir` au premier
+  lancement). Pas de dmg, pas de build Intel.
 
-Les builds Windows et macOS sont produits par le workflow GitHub Actions sur tag `assistant-v*`.
+Les trois systèmes sont buildés par `.github/workflows/cairn-release.yml`. Chaque release embarque
+les fichiers `latest*.yml` et les `.blockmap` que lit la mise à jour intégrée.
 
 ## Développer
 
@@ -73,17 +73,21 @@ Cross-builds depuis Linux :
   `resources/opencode-cli` en `.exe`, prébuild node-pty win32 dans node_modules, `bunx
   electron-builder --win`), mais l'étape NSIS finale exige `wine` (absent ici, pas de sudo) :
   `spawn wine ENOENT`. Path retenu : le workflow GitHub Actions
-  (`.github/workflows/assistant-build.yml`).
+  (`.github/workflows/cairn-release.yml`).
 - macOS : pas de DMG hors macOS (hdiutil), pas de signature/notarize sans certificat Apple. Config
   additive `electron-builder.assistant.ts` : zip non signé, `sign: undefined`, `notarize: false`,
   prébuilds `@lydell/node-pty-darwin-arm64` requis dans node_modules. Lui aussi passé en CI
   (macos-latest).
-- Workflow `assistant-build.yml` : déclenché par un tag `assistant-v*` (préfixe fork, les centaines
-  de tags `v*` upstream existent déjà en local) ou manuellement (`workflow_dispatch`). Deux jobs
-  (windows-latest, macos-latest) : `bun install`, prebuild CLI ciblé, `bun run build`,
-  `electron-builder`, upload d'artefacts, puis job `release` qui attache tout au tag GitHub.
-  Résultat non signé : SmartScreen/Gatekeeper demandent une confirmation à l'ouverture, signature
-  propre réservée à M6.
+- Workflow `cairn-release.yml` : déclenché par un tag `cairn-v*` ou manuellement. Un job `guard`
+  vérifie que le tag correspond à la version de `packages/desktop/package.json`, puis trois jobs
+  (ubuntu-latest, windows-latest, macos-latest) buildent et uploadent leurs artefacts, et un job
+  `release` attache tout au tag GitHub. `electron-builder` reçoit `--publish never` : la release est
+  créée par l'action, pas par electron-builder.
+- Workflow `cairn-ci.yml` : lint, typecheck app et desktop, tests app et desktop sur chaque PR et
+  sur les pushes de `main` et `sover/**`.
+- Mise à jour intégrée : la GUI extension `updater` utilise `electron-updater` et lit le feed
+  GitHub du fork (`publish: { provider: github, owner: DamsDGN, repo: Cairn }`). Une installation
+  Cairn ne propose donc que des builds Cairn.
 ```
 
 ## Principes de fork
@@ -98,8 +102,7 @@ Cross-builds depuis Linux :
 ## À faire
 
 - Shell produit (M5) : tray, quick capture, notifications, démarrage auto.
-- Branding (M6) : nouveau nom et logo de l'application (à décider), appId, icônes, deep link.
-- Optionnel : build mac Intel (x64), signatures certifiées (cert Apple + cert Windows), dmg correct
-  via un runner macOS.
-
-Nouveau nom et logo : à réfléchir ensemble (décidé en session du 24/10).
+- Voix locale (M14) : dictée et lecture sur la machine, modèles téléchargés à la demande.
+- Distributions signées et build mac Intel : hors périmètre de ce dépôt, pris en charge séparément.
+- Page Réglages > Modèles : aligner la liste sur le dossier Conversations, comme le sélecteur de
+  modèle par défaut.

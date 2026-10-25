@@ -256,6 +256,25 @@ https://opencode.ai/zen/go/v1/usage` (Bearer, ref paquet `pi-opencode-go-usage`)
   (AppImage + deb) rebuildé localement avec la sidebar M10 puis uploadé sur la même release :
   les 3 OS sont dans `assistant-v0.1.1` (boot AppImage revalidé).
 
+## CI, releases et mises à jour (25/10)
+
+- Dépôt public : `DamsDGN/Cairn` (branche `main`). Travail sur `sover/generalist`, fusion par PR.
+- Version produit : `packages/desktop/package.json` passe à `0.2.0`, première version Cairn. Les
+  releases `assistant-v0.1.1` restent en historique.
+- Tag de release : `cairn-v<version>`, vérifié par un job `guard` contre la version du paquet. Un
+  tag qui ne correspond pas échoue avant tout build.
+- `.github/workflows/cairn-release.yml` : trois OS (ubuntu, windows, macos), prebuild CLI ciblé,
+  `electron-builder --publish never`, artefacts limités aux installeurs, `.blockmap` et
+  `latest*.yml`, puis un job `release` qui attache tout au tag.
+- `.github/workflows/cairn-ci.yml` : lint, typecheck app et desktop, tests app et desktop sur PR et
+  sur les pushes de `main` et `sover/**`.
+- Auto-update : `electron-updater` est déjà câblé par la GUI extension `updater`, et lit
+  `app-update.yml` généré depuis `publish`. La config electron-builder pointe désormais sur
+  `provider: github, owner: DamsDGN, repo: Cairn`, donc une installation Cairn ne reçoit que des
+  builds Cairn. macOS non signé : Squirrel refuse la mise à jour automatique, à traiter avec le
+  collègue qui signe les builds.
+- L'ancien workflow `assistant-build.yml` est supprimé (remplacé).
+
 ## Ordre de travail (25/10)
 
 1. M14 voix locale : socle main, STT puis TTS, UI dictée et lecture.

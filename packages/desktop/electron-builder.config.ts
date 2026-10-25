@@ -63,9 +63,13 @@ function resolveChannel() {
   return "dev"
 }
 
-// The fork does not ship an update feed: pointing the updater at opencode.ai would
-// offer upstream OpenCode builds and overwrite Cairn. Releases stay manual GitHub
-// artifacts until Cairn publishes its own channel.
+// Cairn publishes its own releases: the updater reads the GitHub release feed of the fork, never
+// the upstream one, so an installed Cairn is offered Cairn builds only.
+const PUBLISH = {
+  provider: "github" as const,
+  owner: "DamsDGN",
+  repo: "Cairn",
+}
 
 const APP_IDS = {
   dev: "tech.sover.cairn.dev",
@@ -254,6 +258,7 @@ export function getConfig() {
         appId,
         productName: "Cairn Beta",
         protocols: { name: "Cairn Beta", schemes: ["opencode"] },
+        publish: PUBLISH,
         deb: { fpm: [metainfoFpm(appId)] },
         rpm: { packageName: "cairn-beta", fpm: [rpmNoBuildIdLinksFpm, metainfoFpm(appId)] },
       }
@@ -265,6 +270,7 @@ export function getConfig() {
         appId,
         productName: "Cairn",
         protocols: { name: "Cairn", schemes: ["opencode"] },
+        publish: PUBLISH,
         deb: { fpm: [metainfoFpm(appId)] },
         rpm: { packageName: "cairn", fpm: [rpmNoBuildIdLinksFpm, metainfoFpm(appId)] },
       }
