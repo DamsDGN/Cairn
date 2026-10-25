@@ -115,6 +115,10 @@ const getBase = (appId: string): Configuration => {
       ...CLI_BINARIES.filter((item) => item.os !== target.os || item.cpu !== target.cpu).map(
         (item) => `!**/node_modules/@lydell/node-pty-${item.os}-${item.cpu}{,/**/*}`,
       ),
+      // whisper.cpp ships an 8 MB CPU addon per platform plus CUDA (189 MB) and Vulkan (54 MB)
+      // variants. Cairn runs speech on the CPU, so only the local platform's CPU addon is kept.
+      "!**/node_modules/@fugood/node-whisper-*{,/**/*}",
+      `**/node_modules/@fugood/node-whisper-${target.os}-${target.cpu}{,/**/*}`,
       // Log export imports Zip.js as ESM. Keep index.js and lib, including its inline worker.
       "!**/node_modules/@zip.js/zip.js/dist{,/**/*}",
       "!**/node_modules/@zip.js/zip.js/{index.cjs,index.min.js,index-fflate.js,deno.json,eslint.config.mjs}",
