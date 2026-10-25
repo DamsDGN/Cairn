@@ -32,33 +32,69 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
-            args: --linux --config electron-builder.config.ts
+            flag: --linux AppImage deb
+            config: electron-builder.config.ts
+            cli: opencode-linux-x64-baseline
             target: x86_64-unknown-linux-gnu
           - os: windows-latest
-            args: --win --config electron-builder.config.ts
+            flag: --win
+            config: electron-builder.config.ts
+            cli: opencode-windows-x64-baseline
             target: x86_64-pc-windows-msvc
           - os: macos-latest
-            args: --mac --config electron-builder.assistant.ts
+            flag: --mac --arm64
+            config: electron-builder.assistant.ts
+            cli: opencode-darwin-arm64
             target: aarch64-apple-darwin
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 90
+    env:
+      OPENCODE_CHANNEL: prod
+      OPENCODE_CLI_TARGET: ${{ matrix.target }}
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.4
       - run: bun install --frozen-lockfile
-      - run: bun ./scripts/prebuild.ts
-        working-directory: packages/desktop
+
+      - name: Resolve the version
+        run: node -e "const p=require('./packages/desktop/package.json');require('fs').appendFileSync(process.env.GITHUB_ENV,`OPENCODE_VERSION=${p.version}\n`)"
+
+      # The desktop bundles the CLI built here, so the engine matches the tag. The target is the
+      # CLI package name, not the Rust triple: desktop builds use the baseline (no AVX2) x64
+      # binaries, the ones that run on every machine. The CLI is built without OPENCODE_CHANNEL so
+      # a versioned build reports itself as `latest`, the release name of the engine; the desktop
+      # app uses `prod` for its identity and its update feed.
+      - name: Build the CLI
+        run: bun packages/cli/script/build.ts --target=${{ matrix.cli }}
         env:
-          OPENCODE_CLI_TARGET: ${{ matrix.target }}
-      - run: bun run build
+          OPENCODE_CHANNEL: ""
+
+      - name: Prepare the desktop
         working-directory: packages/desktop
+        run: bun ./scripts/prebuild.ts
+        env:
+          OPENCODE_CLI_DIST: ${{ github.workspace }}/packages/cli/dist
+
+      - name: Build the desktop
+        working-directory: packages/desktop
+        run: bun run build
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+          OPENCODE_CLI_DIST: ${{ github.workspace }}/packages/cli/dist
+
       # The release job uploads the artifacts, so electron-builder must not publish on its own.
-      - run: bunx electron-builder ${{ matrix.args }} --publish never
+      - name: Package
         working-directory: packages/desktop
+        run: bunx electron-builder ${{ matrix.flag }} --config ${{ matrix.config }} --publish never
         env:
-          OPENCODE_CLI_TARGET: ${{ matrix.target }}
+          OPENCODE_CLI_DIST: ${{ github.workspace }}/packages/cli/dist
+
       - uses: actions/upload-artifact@v4
         with:
           name: dist-${{ matrix.os }}
+          if-no-files-found: error
           path: |
             packages/desktop/dist/*.AppImage
             packages/desktop/dist/*.deb
