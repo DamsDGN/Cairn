@@ -1,6 +1,7 @@
 import type { DesktopMenuAction } from "@opencode/app/desktop-menu"
 import type { GoUsage } from "@opencode/app/desktop"
 import type { DesktopNativeBundle } from "@opencode/app/i18n/desktop-native"
+import type { AssistantConfigResult, McpServerConfig } from "../shared/ipc-rpc/assistant"
 import type { WindowBootstrap } from "../shared/window-bootstrap"
 import type {
   ClipboardImage,
@@ -49,6 +50,8 @@ export type ElectronAPI = {
   openPath(path: string, app?: string): Promise<string | undefined>
   revealPath(path: string): Promise<boolean>
   goUsage(): Promise<GoUsage | null>
+  assistantMcpAdd(server: string, config: McpServerConfig): Promise<AssistantConfigResult>
+  assistantMcpRemove(server: string): Promise<AssistantConfigResult>
   readClipboardImage(): Promise<ClipboardImage | null>
   writeClipboardText(text: string): Promise<void>
   goUsage(): Promise<GoUsage | null>

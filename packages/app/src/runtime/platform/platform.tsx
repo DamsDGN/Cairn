@@ -145,6 +145,22 @@ type PlatformBase = {
 
   /** Usage of the OpenCode Go subscription, null when it cannot be fetched (desktop fork). */
   goUsage?(): Promise<GoUsage | null>
+
+  /** Persist MCP servers in the assistant folder configuration (desktop fork). */
+  assistantMcp?: {
+    add(server: string, config: AssistantMcpConfig): Promise<AssistantMcpResult>
+    remove(server: string): Promise<AssistantMcpResult>
+  }
+}
+
+export type AssistantMcpConfig =
+  | { type: "remote"; url: string; headers?: Record<string, string> }
+  | { type: "local"; command: string[]; environment?: Record<string, string> }
+
+export type AssistantMcpResult = {
+  ok: boolean
+  path?: string
+  error?: "not-ready" | "invalid-config" | "not-found" | "unknown"
 }
 
 export type Platform = PlatformBase &

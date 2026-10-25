@@ -68,6 +68,8 @@ export const api: ElectronAPI = {
   openPath: (path, app) => invoke("FilesOpenPath", { path, application: app }).then((value) => value ?? undefined),
   revealPath: (path) => invoke("FilesRevealPath", { path }),
   goUsage: () => invoke("GoUsage").then(mutable),
+  assistantMcpAdd: (server, config) => invoke("AssistantMcpAdd", { server, config }).then(mutable),
+  assistantMcpRemove: (server) => invoke("AssistantMcpRemove", { server }).then(mutable),
   readClipboardImage: () =>
     invoke("FilesReadClipboardImage").then((image) =>
       image ? { ...image, buffer: toArrayBuffer(image.buffer) } : null,
