@@ -140,7 +140,7 @@ https://opencode.ai/zen/go/v1/usage` (Bearer, ref paquet `pi-opencode-go-usage`)
   depuis `~/.config/ai.opencode.desktop.dev/cli/0.0.0-dev-21734-x64/`). Seuls warnings
   VA-API/Vulkan Wayland, non bloquants. Test effectué avec `ELECTRON_DISABLE_SANDBOX=1` (sandbox
   SUID non installable sans sudo ici ; sur un poste standard le sandbox fonctionne).
-- Distribution GitHub : repo privé `DamsDGN/opencode-assistant`, remote local `assistant`, branche
+- Distribution GitHub : repo privé `DamsDGN/Cairn`, remote local `assistant`, branche
   `sover/generalist` poussée sur son `main`. Hook `pre-push` résolu localement : oxlint charge ses
   JS plugins via node, bloqué par node Ubuntu 22.22.1 (amaro absent : « Unknown file extension .ts »,
   « not compiled with TypeScript support »), alors que bun importe le TS nativement. Correction sans

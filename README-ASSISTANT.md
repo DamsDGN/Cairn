@@ -2,7 +2,7 @@
 
 Fork d'OpenCode Desktop transformé en assistant de chat généraliste, façon Claude Desktop :
 une fenêtre, une conversation, pas d'onglets. Basé sur `anomalyco/opencode` branche `dev`,
-travail sur `sover/generalist`, publié sur `DamsDGN/opencode-assistant` (privé).
+travail sur `sover/generalist`, publié sur `DamsDGN/Cairn` (privé).
 
 Le plan complet et l'état des jalons vivent dans [PLAN-ASSISTANT.md](PLAN-ASSISTANT.md).
 
@@ -25,7 +25,7 @@ Le plan complet et l'état des jalons vivent dans [PLAN-ASSISTANT.md](PLAN-ASSIS
 
 ## Installation
 
-Releases : https://github.com/DamsDGN/opencode-assistant/releases
+Releases : https://github.com/DamsDGN/Cairn/releases
 
 Release courante `assistant-v0.1.1` (builds non signés) :
 
