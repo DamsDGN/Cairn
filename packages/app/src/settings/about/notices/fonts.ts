@@ -45,6 +45,11 @@ export const fonts = {
       copyright: ["Copyright 2020 The Inter Project Authors (https://github.com/rsms/inter)"],
     },
     {
+      name: "Source Serif 4",
+      url: "https://github.com/adobe-fonts/source-serif",
+      copyright: ["Google Inc."],
+    },
+    {
       name: "Roboto",
       url: "https://github.com/googlefonts/roboto-classic",
       copyright: ["Copyright 2011 The Roboto Project Authors (https://github.com/googlefonts/roboto-classic)"],

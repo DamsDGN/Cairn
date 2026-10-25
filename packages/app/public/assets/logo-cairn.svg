@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="Cairn">
+  <rect width="256" height="256" rx="56" fill="#F5F3EC"/>
+  <ellipse cx="128" cy="184" rx="66" ry="28" fill="#2B2A27"/>
+  <ellipse cx="128" cy="136" rx="48" ry="23" fill="#5B5852"/>
+  <ellipse cx="128" cy="96" rx="31" ry="18" fill="#C2562F"/>
+</svg>

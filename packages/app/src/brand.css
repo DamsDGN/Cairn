@@ -1,0 +1,133 @@
+/* Cairn brand layer. Additive tokens and typography on top of the upstream token set. */
+
+@font-face {
+  font-family: "Source Serif 4 Variable";
+  src: url("/assets/source-serif-4-latin-wght-normal.woff2") format("woff2-variations");
+  font-weight: 200 900;
+  font-style: normal;
+  font-display: swap;
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC,
+    U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Source Serif 4 Variable";
+  src: url("/assets/source-serif-4-latin-ext-wght-normal.woff2") format("woff2-variations");
+  font-weight: 200 900;
+  font-style: normal;
+  font-display: swap;
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F,
+    U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: "Source Serif 4 Variable";
+  src: url("/assets/source-serif-4-latin-wght-italic.woff2") format("woff2-variations");
+  font-weight: 200 900;
+  font-style: italic;
+  font-display: swap;
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC,
+    U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Source Serif 4 Variable";
+  src: url("/assets/source-serif-4-latin-ext-wght-italic.woff2") format("woff2-variations");
+  font-weight: 200 900;
+  font-style: italic;
+  font-display: swap;
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F,
+    U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+:root {
+  --cairn-font-serif: "Source Serif 4 Variable", ui-serif, Georgia, Cambria, "Times New Roman", serif;
+
+  --cairn-content-width: 46rem;
+  --cairn-content-width-wide: 56rem;
+
+  --cairn-radius-sm: 6px;
+  --cairn-radius-control: 8px;
+  --cairn-radius-md: 10px;
+  --cairn-radius-lg: 14px;
+  --cairn-radius-xl: 20px;
+
+  --cairn-duration-fast: 120ms;
+  --cairn-duration-base: 180ms;
+  --cairn-duration-slow: 280ms;
+  --cairn-ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  --cairn-prose-size: 16px;
+  --cairn-prose-leading: 1.65;
+  --cairn-prose-measure: 68ch;
+
+  --cairn-user-message-bg: #efe9dc;
+  --cairn-user-message-fg: #2b2a27;
+  --cairn-code-bg: #efe9dc;
+  --cairn-quote-border: #d8d2c4;
+}
+
+:root[data-color-scheme="dark"] {
+  --cairn-user-message-bg: #2a2825;
+  --cairn-user-message-fg: #eceae3;
+  --cairn-code-bg: #26241f;
+  --cairn-quote-border: #3d3a35;
+}
+
+@layer base {
+  :where(a, button, [role="button"], [tabindex]):focus-visible {
+    outline: 2px solid var(--v2-border-border-focus);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  [data-component="button-v2"],
+  [data-component="icon-button-v2"],
+  [data-component="text-input-v2"],
+  [data-component="select-v2"],
+  [data-component="keybind-v2"] {
+    border-radius: var(--cairn-radius-control);
+  }
+
+  [data-component="icon-button-v2"][data-size="small"],
+  [data-component="button-v2"][data-size="small"] {
+    border-radius: var(--cairn-radius-sm);
+  }
+}
+
+.cairn-user-message {
+  background: var(--cairn-user-message-bg);
+  color: var(--cairn-user-message-fg);
+}
+
+.cairn-prose {
+  max-width: var(--cairn-prose-measure);
+  font-family: var(--cairn-font-serif);
+  font-size: var(--cairn-prose-size);
+  line-height: var(--cairn-prose-leading);
+  font-weight: 400;
+  letter-spacing: -0.003em;
+  text-wrap: pretty;
+}
+
+.cairn-prose :where(h1, h2, h3, h4) {
+  font-family: var(--cairn-font-serif);
+  letter-spacing: -0.012em;
+  text-wrap: balance;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
