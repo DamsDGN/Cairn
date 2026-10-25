@@ -7,11 +7,14 @@ import { FileRpcs } from "./ipc-rpc/files"
 import { GoRpcs } from "./ipc-rpc/go"
 import { MenuRpcs } from "./ipc-rpc/menu"
 import { StorageRpcs } from "./ipc-rpc/storage"
+import { VoiceRpcs } from "./ipc-rpc/voice"
 import { WindowRpcs } from "./ipc-rpc/window"
 
 export { AppRpcs } from "./ipc-rpc/app"
 
 export { AssistantRpcs } from "./ipc-rpc/assistant"
+
+export { VoiceRpcs } from "./ipc-rpc/voice"
 
 export { EventRpcs } from "./ipc-rpc/events"
 
@@ -36,6 +39,7 @@ export const DesktopRpcs = AppRpcs.merge(
   ExtensionRpcs,
   GoRpcs,
   AssistantRpcs,
+  VoiceRpcs,
 )
 
 export type DesktopRpcClient = RpcClient.FromGroup<typeof DesktopRpcs, RpcClientError.RpcClientError>

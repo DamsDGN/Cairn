@@ -30,6 +30,13 @@ export function createDesktopPlatform(api: ElectronAPI, windowState: DesktopWind
       add: (server, config) => api.assistantMcpAdd(server, config),
       remove: (server) => api.assistantMcpRemove(server),
     },
+    voiceLocal: {
+      models: () => api.voiceModelList().then((result) => result.models),
+      download: (id) => api.voiceModelDownload(id),
+      state: (id) => api.voiceModelState(id),
+      remove: (id) => api.voiceModelRemove(id),
+      transcribe: (input) => api.voiceTranscribe(input),
+    },
     ...createDesktopFiles(api, os),
     ...createDesktopStorage(api),
     exportDebugLogs: () => api.exportDebugLogs(),

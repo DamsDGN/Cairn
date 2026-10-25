@@ -151,6 +151,26 @@ type PlatformBase = {
     add(server: string, config: AssistantMcpConfig): Promise<AssistantMcpResult>
     remove(server: string): Promise<AssistantMcpResult>
   }
+
+  /** On-device speech models, downloaded on request (desktop fork). */
+  voiceLocal?: {
+    models(): Promise<VoiceLocalModel[]>
+    download(id: VoiceLocalModelID): Promise<VoiceLocalState>
+    state(id: VoiceLocalModelID): Promise<VoiceLocalState>
+    remove(id: VoiceLocalModelID): Promise<boolean>
+    transcribe(input: { audio: ArrayBuffer; language?: string; id?: VoiceLocalModelID }): Promise<string>
+  }
+}
+
+export type VoiceLocalModelID = "base-q5_1" | "small-q5_1" | "small"
+
+export type VoiceLocalModel = { id: VoiceLocalModelID; installed: boolean }
+
+export type VoiceLocalState = {
+  id: VoiceLocalModelID
+  status: "idle" | "downloading" | "installed" | "failed"
+  received: number
+  total: number
 }
 
 export type AssistantMcpConfig =

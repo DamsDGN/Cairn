@@ -1,3 +1,4 @@
+import type { VoiceModelID, VoiceModelState } from "../shared/ipc-rpc/voice"
 import type { DesktopMenuAction } from "@opencode/app/desktop-menu"
 import type { GoUsage } from "@opencode/app/desktop"
 import type { DesktopNativeBundle } from "@opencode/app/i18n/desktop-native"
@@ -32,6 +33,11 @@ export type ElectronAPI = {
   draftSet(key: string, value: string, strict: boolean): Promise<string[]>
   draftDelete(key: string): Promise<void>
   draftBlobPut(data: ArrayBuffer): Promise<string>
+  voiceModelList(): Promise<{ models: Array<{ id: VoiceModelID; installed: boolean }> }>
+  voiceModelDownload(id: VoiceModelID): Promise<VoiceModelState>
+  voiceModelState(id: VoiceModelID): Promise<VoiceModelState>
+  voiceModelRemove(id: VoiceModelID): Promise<boolean>
+  voiceTranscribe(input: { audio: ArrayBuffer; language?: string; id?: VoiceModelID }): Promise<string>
   draftBlobGet(id: string): Promise<ArrayBuffer | null>
   getWindowID(): string
   getWindowBootstrap(): WindowBootstrap
