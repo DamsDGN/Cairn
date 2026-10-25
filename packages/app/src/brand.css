@@ -197,6 +197,38 @@
   border-radius: var(--cairn-radius-xl);
 }
 
+[data-component="connect-server"] .server-connect-brand img {
+  display: block;
+  width: 48px;
+  height: 48px;
+  margin-inline: auto;
+  border-radius: 12px;
+  box-shadow: var(--v2-elevation-raised);
+}
+
+[data-slot="about-brand"] {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+[data-slot="about-brand"] img {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  box-shadow: var(--v2-elevation-raised);
+}
+
+[data-slot="about-brand"] span {
+  color: var(--v2-text-text-base);
+  font-family: var(--cairn-font-serif);
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

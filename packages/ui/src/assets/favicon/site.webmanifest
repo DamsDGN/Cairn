@@ -1,6 +1,6 @@
 {
-  "name": "OpenCode",
-  "short_name": "OpenCode",
+  "name": "Cairn",
+  "short_name": "Cairn",
   "id": "/",
   "start_url": "/",
   "scope": "/",
@@ -18,7 +18,7 @@
       "purpose": "maskable"
     }
   ],
-  "theme_color": "#080808",
-  "background_color": "#080808",
+  "theme_color": "#F5F3EC",
+  "background_color": "#F5F3EC",
   "display": "standalone"
 }

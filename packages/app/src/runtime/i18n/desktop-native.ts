@@ -279,7 +279,7 @@ export const DESKTOP_NATIVE_ENGLISH = {
   "desktop.menu.supportForum": "Support Forum",
   "desktop.menu.shareFeedback": "Share Feedback",
   "desktop.menu.reportBug": "Report a Bug",
-  "desktop.menu.ariaLabel": "OpenCode menu",
+  "desktop.menu.ariaLabel": "Cairn menu",
 
   "desktop.cli.installed.title": "CLI Installed",
   "desktop.cli.installed.message": "CLI installed to {{path}}\n\nRestart your terminal to use the 'opencode' command.",
