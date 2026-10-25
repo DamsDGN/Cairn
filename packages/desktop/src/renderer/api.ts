@@ -81,6 +81,9 @@ export const api: ElectronAPI = {
   assistantMcpAdd: (server, config) => invoke("AssistantMcpAdd", { server, config }).then(mutable),
   assistantMcpRemove: (server) => invoke("AssistantMcpRemove", { server }).then(mutable),
   assistantMcpList: () => invoke("AssistantMcpList").then((result) => result.servers).then(mutable),
+  assistantProviderSave: (input) => invoke("AssistantProviderSave", input).then(mutable),
+  assistantDefaultModel: () => invoke("AssistantDefaultModel").then((result) => result.model),
+  assistantDefaultModelSet: (model) => invoke("AssistantDefaultModelSet", { model }).then(mutable),
   readClipboardImage: () =>
     invoke("FilesReadClipboardImage").then((image) =>
       image ? { ...image, buffer: toArrayBuffer(image.buffer) } : null,

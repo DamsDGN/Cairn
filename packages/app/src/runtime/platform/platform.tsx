@@ -153,6 +153,13 @@ type PlatformBase = {
     list(): Promise<Array<string>>
   }
 
+  /** Providers and the default model of the assistant folder (desktop fork). */
+  assistantConfig?: {
+    saveProvider(input: AssistantProviderInput): Promise<AssistantMcpResult>
+    defaultModel(): Promise<string | undefined>
+    setDefaultModel(model: string | null): Promise<AssistantMcpResult>
+  }
+
   /** On-device speech models, downloaded on request (desktop fork). */
   voiceLocal?: {
     models(): Promise<VoiceLocalModel[]>
@@ -177,6 +184,15 @@ export type VoiceLocalState = {
 export type AssistantMcpConfig =
   | { type: "remote"; url: string; headers?: Record<string, string> }
   | { type: "local"; command: string[]; environment?: Record<string, string> }
+
+export type AssistantProviderInput = {
+  id: string
+  name: string
+  baseURL: string
+  apiKey?: string
+  headers?: Record<string, string>
+  models: Array<{ id: string; name: string }>
+}
 
 export type AssistantMcpResult = {
   ok: boolean

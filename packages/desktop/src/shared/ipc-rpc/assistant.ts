@@ -40,4 +40,41 @@ export const AssistantMcpList = Rpc.make("AssistantMcpList", {
   success: Schema.Struct({ servers: Schema.Array(Schema.String) }),
 })
 
-export const AssistantRpcs = RpcGroup.make(AssistantMcpAdd, AssistantMcpRemove, AssistantMcpList)
+export const AssistantProviderSave = Rpc.make("AssistantProviderSave", {
+  payload: {
+    id: Schema.String,
+    name: Schema.String,
+    baseURL: Schema.String,
+    apiKey: Schema.optional(Schema.String),
+    headers: Schema.optional(Schema.Record(Schema.String, Schema.String)),
+    models: Schema.Array(Schema.Struct({ id: Schema.String, name: Schema.String })),
+  },
+  success: AssistantConfigResultSchema,
+})
+
+export type AssistantProviderInput = {
+  id: string
+  name: string
+  baseURL: string
+  apiKey?: string
+  headers?: Record<string, string>
+  models: Array<{ id: string; name: string }>
+}
+
+export const AssistantDefaultModel = Rpc.make("AssistantDefaultModel", {
+  success: Schema.Struct({ model: Schema.optional(Schema.String) }),
+})
+
+export const AssistantDefaultModelSet = Rpc.make("AssistantDefaultModelSet", {
+  payload: { model: Schema.NullOr(Schema.String) },
+  success: AssistantConfigResultSchema,
+})
+
+export const AssistantRpcs = RpcGroup.make(
+  AssistantMcpAdd,
+  AssistantMcpRemove,
+  AssistantMcpList,
+  AssistantProviderSave,
+  AssistantDefaultModel,
+  AssistantDefaultModelSet,
+)

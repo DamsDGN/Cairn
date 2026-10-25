@@ -9,6 +9,8 @@ import { batch, For } from "solid-js"
 import { createStore, produce } from "solid-js/store"
 import { ExternalLink } from "@/runtime/platform/external-link"
 import { useData } from "@/runtime/server/current"
+import { useServerSDK } from "@/runtime/server/client"
+import { usePlatform } from "@/runtime/platform/platform"
 import { useLanguage } from "@/runtime/i18n/language"
 import { type FormState, headerRow, modelRow, validateCustomProvider } from "./form"
 import { CustomManagedProviderIcon } from "@/providers/models/provider-group"
@@ -17,6 +19,8 @@ export function CustomProviderForm(props: { autofocus?: boolean } = {}) {
   const dialog = useDialog()
   const data = useData()
   const language = useLanguage()
+  const platform = usePlatform()
+  const serverSDK = useServerSDK()
 
   const [form, setForm] = createStore<FormState>({
     providerID: "",
@@ -107,8 +111,30 @@ export function CustomProviderForm(props: { autofocus?: boolean } = {}) {
 
   const saveMutation = useMutation(() => ({
     mutationFn: async (result: NonNullable<ReturnType<typeof validate>>): Promise<typeof result> => {
-      // TODO: Restore custom providers when V2 exposes config and arbitrary credential APIs.
-      throw new Error(language.t("provider.custom.unavailable"))
+      // V2 exposes no route to write a provider, so the desktop main process writes the assistant
+      // folder configuration and the credential file the server already reads.
+      if (!platform.assistantConfig) throw new Error(language.t("provider.custom.unavailable"))
+
+      const models = Object.entries(result.config.models).map(([id, model]) => ({ id, name: model.name }))
+      const saved = await platform.assistantConfig.saveProvider({
+        id: result.providerID,
+        name: result.name,
+        baseURL: result.config.options.baseURL,
+        headers: result.config.options.headers,
+        apiKey: result.key,
+        models,
+      })
+
+      if (!saved.ok) throw new Error(language.t("provider.custom.error.save"))
+
+      const directory = data.location.default().directory
+      await serverSDK.api.location.reload()
+      await Promise.all([
+        data.location.provider.sync({ directory }),
+        data.location.model.sync({ directory }),
+      ]).catch(() => undefined)
+
+      return result
     },
     onSuccess: (result) => {
       dialog.close()

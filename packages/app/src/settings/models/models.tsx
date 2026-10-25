@@ -11,6 +11,7 @@ import { popularProviders } from "@/providers/catalog/providers"
 import { Persist, persisted } from "@/runtime/persistence/storage"
 import { SettingsList } from "@/settings/list"
 import { SettingsRow } from "@/settings/row"
+import { DefaultModelSetting } from "./default-model"
 import { CONSOLE_GROUP_KEY, consoleModelGroup, ProviderModelSections } from "@/providers/models/provider-group"
 import { SettingsSearchEmpty } from "@/settings/search-empty"
 import { SettingsSearchField } from "@/settings/search-field"
@@ -156,6 +157,11 @@ export const SettingsModels: Component<{
       </div>
 
       <div class="settings-tab-body settings-models">
+        <Show when={!list.filter()}>
+          <div class="settings-section">
+            <DefaultModelSetting />
+          </div>
+        </Show>
         <Show
           when={!list.grouped.loading}
           fallback={

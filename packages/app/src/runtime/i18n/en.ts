@@ -212,6 +212,7 @@ export const dict = {
   "provider.connect.toast.connected.description": "{{provider}} models are now available to use.",
 
   "provider.custom.title": "Custom provider",
+  "provider.custom.error.save": "The provider could not be saved",
   "provider.custom.unavailable": "Custom providers are unavailable on this server",
   "provider.custom.description.prefix": "Configure an OpenAI-compatible provider. See the ",
   "provider.custom.description.link": "provider config docs",
@@ -1016,6 +1017,13 @@ export const dict = {
   "settings.providers.tag.custom": "Custom",
   "settings.providers.tag.account": "Account",
   "settings.providers.tag.other": "Other",
+  "settings.models.default.title": "Default model",
+  "settings.models.default.description":
+    "Used when a conversation starts, before you pick another one.",
+  "settings.models.default.none": "Not set",
+  "settings.models.default.dialog": "Choose the model new conversations start on.",
+  "settings.models.default.search": "Search a model",
+  "settings.models.default.error": "The default model could not be saved.",
   "settings.models.title": "Models",
   "settings.models.description": "Choose which models appear in model picker",
   "settings.models.enableAll": "Enable all models",
