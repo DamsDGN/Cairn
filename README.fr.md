@@ -1,114 +1,94 @@
 <p align="center">
-  <a href="https://opencode.ai">
-    <picture>
-      <source srcset="packages/console/app/src/asset/logo-ornate-dark.svg" media="(prefers-color-scheme: dark)">
-      <source srcset="packages/console/app/src/asset/logo-ornate-light.svg" media="(prefers-color-scheme: light)">
-      <img src="packages/console/app/src/asset/logo-ornate-light.svg" alt="Logo OpenCode">
-    </picture>
-  </a>
+  <picture>
+    <img src="packages/app/public/assets/logo-cairn.svg" alt="Cairn" width="72">
+  </picture>
 </p>
-<p align="center">L'agent de codage IA open source.</p>
+
+<h1 align="center">Cairn</h1>
+
 <p align="center">
-  <a href="https://opencode.ai/discord"><img alt="Discord" src="https://img.shields.io/discord/1391832426048651334?style=flat-square&label=discord" /></a>
-  <a href="https://www.npmjs.com/package/@opencode/cli"><img alt="npm" src="https://img.shields.io/npm/v/@opencode/cli?style=flat-square" /></a>
-  <a href="https://github.com/anomalyco/opencode/actions/workflows/publish.yml"><img alt="Build status" src="https://img.shields.io/github/actions/workflow/status/anomalyco/opencode/publish.yml?style=flat-square&branch=dev" /></a>
+  Un assistant de bureau pour le travail quotidien, bâti sur <a href="https://github.com/anomalyco/opencode">OpenCode</a>.
 </p>
 
 <p align="center">
-  <a href="README.md">English</a> |
-  <a href="README.zh.md">简体中文</a> |
-  <a href="README.zht.md">繁體中文</a> |
-  <a href="README.ko.md">한국어</a> |
-  <a href="README.de.md">Deutsch</a> |
-  <a href="README.es.md">Español</a> |
-  <a href="README.fr.md">Français</a> |
-  <a href="README.it.md">Italiano</a> |
-  <a href="README.da.md">Dansk</a> |
-  <a href="README.ja.md">日本語</a> |
-  <a href="README.pl.md">Polski</a> |
-  <a href="README.ru.md">Русский</a> |
-  <a href="README.bs.md">Bosanski</a> |
-  <a href="README.ar.md">العربية</a> |
-  <a href="README.no.md">Norsk</a> |
-  <a href="README.br.md">Português (Brasil)</a> |
-  <a href="README.th.md">ไทย</a> |
-  <a href="README.tr.md">Türkçe</a> |
-  <a href="README.uk.md">Українська</a> |
-  <a href="README.bn.md">বাংলা</a> |
-  <a href="README.gr.md">Ελληνικά</a> |
-  <a href="README.vi.md">Tiếng Việt</a>
+  <a href="README.md">English</a>
 </p>
 
-[![OpenCode Terminal UI](packages/web/src/assets/lander/screenshot.png)](https://opencode.ai)
+Cairn est un fork d'OpenCode Desktop transformé en assistant généraliste. Une fenêtre, une
+conversation, pas de sélecteur de projet : tout vit dans un seul dossier `Conversations`, et
+l'interface parle de discussions et de connecteurs plutôt que de dépôts et d'agents.
 
----
+Il reprend le moteur, les fournisseurs et les outils d'OpenCode, et conserve sa licence MIT et ses
+crédits.
 
-### Installation
+## État
 
-```bash
-# YOLO
-curl -fsSL https://opencode.ai/v2/install | bash
+Alpha, `0.2.0`. Les builds Linux sont les plus testés. Les builds macOS et Windows ne sont pas
+signés, le système demande donc une confirmation au premier lancement. Des aspérités sont à
+attendre.
 
-# Gestionnaires de paquets
-npm i -g @opencode/cli@latest      # ou bun/pnpm/yarn
-brew install anomalyco/tap/opencode-v2 # macOS et Linux (recommandé, toujours à jour)
-brew install opencode              # macOS et Linux (formule officielle brew, mise à jour moins fréquente)
-sudo pacman -S opencode            # Arch Linux (Stable)
-paru -S opencode-beta              # Arch Linux (Latest from AUR)
-mise use -g opencode               # n'importe quel OS
-nix run github:anomalyco/opencode  # Nix
+## Ce qu'il fait
+
+- **Fenêtre centrée sur les conversations** : sidebar avec recherche, épinglage et suppression ; pas
+  d'onglets.
+- **Persona d'assistant** : un `opencode.json` généré dans le dossier `Conversations` définit
+  l'agent par défaut, ses permissions et les modèles qu'il peut utiliser.
+- **Connecteurs** : les serveurs MCP s'ajoutent et se retirent depuis les réglages, clés et OAuth
+  compris.
+- **Fournisseurs** : connecter n'importe quel endpoint compatible OpenAI depuis l'interface, et
+  choisir le modèle sur lequel s'ouvrent les nouvelles conversations.
+- **Voix locale** (en cours) : Whisper tourne sur la machine, les modèles se téléchargent à la
+  demande. L'interface d'enregistrement n'est pas encore livrée.
+- **Mises à jour** : les installations suivent les releases GitHub de ce dépôt.
+
+## Installation
+
+Releases : https://github.com/DamsDGN/Cairn/releases
+
+Chaque release est produite par `.github/workflows/cairn-release.yml` à partir d'un tag `cairn-v*`.
+
+- **Linux** : `.AppImage` et `.deb`.
+- **Windows** : `.exe` NSIS. SmartScreen demande une confirmation : `Informations complémentaires`,
+  puis `Exécuter quand même`.
+- **macOS (Apple Silicon)** : `.zip`, non signé. Clic droit sur `Cairn.app`, puis `Ouvrir`, au
+  premier lancement.
+
+## Développement
+
+Prérequis : Bun 1.4 et une machine Linux, macOS ou Windows avec une session graphique.
+
+```sh
+bun install
+bun run --cwd packages/desktop dev
 ```
 
-> [!TIP]
-> Supprimez les versions antérieures à 0.1.x avant d'installer.
+Sous Linux, le sandbox Electron exige un binaire aux droits root qu'un clone local n'a pas :
 
-### Application de bureau (BETA)
-
-OpenCode est aussi disponible en application de bureau. Téléchargez-la depuis [opencode.ai/download](https://opencode.ai/download).
-
-| Plateforme            | Téléchargement                     |
-| --------------------- | ---------------------------------- |
-| macOS (Apple Silicon) | `opencode-desktop-mac-arm64.dmg`   |
-| macOS (Intel)         | `opencode-desktop-mac-x64.dmg`     |
-| Windows               | `opencode-desktop-win-x64.exe`     |
-| Linux                 | `.deb`, `.rpm`, ou AppImage        |
-
-```bash
-# macOS (Homebrew)
-brew install --cask opencode-desktop
+```sh
+ELECTRON_DISABLE_SANDBOX=1 bun run --cwd packages/desktop dev
 ```
 
-#### Répertoire d'installation
+Packaging :
 
-Le script d'installation installe OpenCode dans `$HOME/.opencode/bin`.
+```sh
+cd packages/desktop
+bun ./scripts/prebuild.ts
+bun run build
+bunx electron-builder --linux AppImage deb --config electron-builder.config.ts
+```
 
-### Agents
+`packages/desktop` est la coque Electron, `packages/app` l'interface, `packages/core` le moteur.
+L'essentiel du fork vit dans `packages/app/src/assistant` et dans le processus principal du desktop.
 
-OpenCode inclut deux agents intégrés que vous pouvez basculer avec la touche `Tab`.
+## Contribuer
 
-- **build** - Par défaut, agent avec accès complet pour le travail de développement
-- **plan** - Agent en lecture seule pour l'analyse et l'exploration du code
-  - Refuse les modifications de fichiers par défaut
-  - Demande l'autorisation avant d'exécuter des commandes bash
-  - Idéal pour explorer une base de code inconnue ou planifier des changements
+Les pull requests sont bienvenues, en anglais. Lire [CONTRIBUTING.md](CONTRIBUTING.md) d'abord : il
+couvre la CI, le style des commits et le processus de revue.
 
-Un sous-agent **general** est aussi inclus pour les recherches complexes et les tâches en plusieurs étapes.
-Il est utilisé en interne et peut être invoqué via `@general` dans les messages.
+La branche par défaut est `main`. Le travail se fait sur des branches `sover/*`, fusionnées par une
+pull request qui doit passer `cairn-ci`.
 
-En savoir plus sur les [agents](https://opencode.ai/v2/docs/agents).
+## Licence
 
-### Documentation
-
-Pour plus d'informations sur la configuration d'OpenCode, [**consultez notre documentation**](https://opencode.ai/v2/docs).
-
-### Contribuer
-
-Si vous souhaitez contribuer à OpenCode, lisez nos [docs de contribution](./CONTRIBUTING.md) avant de soumettre une pull request.
-
-### Construire avec OpenCode
-
-Si vous travaillez sur un projet lié à OpenCode et que vous utilisez "opencode" dans le nom du projet (par exemple, "opencode-dashboard" ou "opencode-mobile"), ajoutez une note dans votre README pour préciser qu'il n'est pas construit par l'équipe OpenCode et qu'il n'est pas affilié à nous.
-
----
-
-**Rejoignez notre communauté** [Discord](https://discord.gg/opencode) | [X.com](https://x.com/opencode)
+MIT. Cairn repose sur OpenCode, par Anomaly Innovations ; la mention de copyright d'origine est
+conservée dans [LICENSE](LICENSE) et les crédits OpenCode restent dans la page À propos.

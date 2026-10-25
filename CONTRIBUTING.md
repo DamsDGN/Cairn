@@ -1,112 +1,67 @@
-# Contributing to OpenCode
+# Contributing to Cairn
 
-The changes most likely to be accepted are:
+Thanks for taking the time. Cairn is a fork of OpenCode, so the engine, the tooling and most of the
+interface come from upstream: small, focused changes are much easier to review and to keep across
+upstream rebases.
 
-- Bug fixes
-- Additional LSPs and formatters
-- LLM performance improvements
-- Environment-specific fixes
-- Missing standard behavior
-- Documentation improvements
+## Language
 
-UI and core product features require design review before implementation. If you are unsure whether a change fits, ask a maintainer or choose an issue labeled [`help wanted`](https://github.com/anomalyco/opencode/issues?q=is%3Aissue%20state%3Aopen%20label%3Ahelp-wanted), [`good first issue`](https://github.com/anomalyco/opencode/issues?q=is%3Aissue%20state%3Aopen%20label%3A%22good%20first%20issue%22), [`bug`](https://github.com/anomalyco/opencode/issues?q=is%3Aissue%20state%3Aopen%20label%3Abug), or [`perf`](https://github.com/anomalyco/opencode/issues?q=is%3Aopen%20is%3Aissue%20label%3A%22perf%22).
+Write pull requests, issues, commit messages, code comments and documentation in English. French is
+fine in conversation with the maintainer, not in the repository.
 
-Want to take on an issue? Leave a comment and a maintainer may assign it unless it is already being worked on.
+## Before opening a pull request
 
-> [!NOTE]
-> PRs that ignore these guardrails will likely be closed.
+- Open an issue first for anything that changes the product beyond a fix: a new screen, a new
+  setting, a different default. Design happens before code.
+- Branch from `main`, never commit to it directly. Use a descriptive branch, `sover/<topic>` for the
+  maintainer's own work, `fix/<topic>` or `feat/<topic>` for contributions.
+- Keep the change additive where possible. The fork is rebased on `anomalyco/opencode` regularly, and
+  every touched shared file is a future conflict.
 
-## Adding Providers
+## Commit style
 
-New providers should rarely require OpenCode changes. Add the provider to [models.dev](https://github.com/anomalyco/models.dev) first.
+Conventional Commits, one logical change per commit:
 
-## Development
+```
+feat(assistant): add MCP servers from the settings
+fix(assistant): refresh the chat list after a deletion
+docs: record the title bar milestone
+```
 
-OpenCode requires Bun 1.3 or newer. From the repository root:
+The body explains why the change exists, not what the diff already shows.
 
-```bash
+## Checks
+
+Every pull request runs `.github/workflows/cairn-ci.yml`:
+
+```sh
 bun install
-bun dev [directory]
+bun run lint
+bun run --cwd packages/app check --no-script -b
+bun run --cwd packages/desktop check --no-script -b
+bun run --cwd packages/app run test:unit
+bun run --cwd packages/desktop test
 ```
 
-`bun dev` runs the V2 CLI and TUI. Pass a directory to open another project, or `.` to open this repository.
+Run the same commands locally before pushing. On Linux, `bun run lint` needs Bun on the `PATH`.
 
-To test a development TUI against your installed OpenCode V2 background service and live sessions:
+## Architecture in one minute
 
-```bash
-bun run dev:live [directory]
-```
+- `packages/desktop`: Electron main process, window, packaging, IPC.
+- `packages/app`: the SolidJS interface.
+- `packages/core`: the engine, providers, sessions, tools.
+- `packages/app/src/assistant`: the fork's sidebar and assistant-specific screens.
+- `PLAN-ASSISTANT.md`: milestones and decisions of the fork.
 
-For web development, run the backend and app in separate terminals. Other interfaces have root scripts:
+The assistant mode is driven by `platform.assistantDirectory`. When it is set, the window opens on a
+chat instead of a project, and a few coding surfaces are hidden.
 
-```bash
-bun dev serve --port 4096
-bun run dev:web
-bun run dev:desktop
-bun run dev:www
-```
+## Releases
 
-### Packages
+Maintainers tag `cairn-v<version>` on `main`. `.github/workflows/cairn-release.yml` checks that the
+tag matches `packages/desktop/package.json`, builds Linux, Windows and macOS, and publishes the
+release with the files the updater reads. Do not bump versions in a pull request.
 
-- `packages/schema`: shared wire and storage contracts
-- `packages/core`: domain behavior and persistence
-- `packages/protocol`: public API definitions
-- `packages/server`: HTTP server and runtime composition
-- `packages/client`: generated TypeScript clients
-- `packages/cli`: command-line entrypoint and service lifecycle
-- `packages/tui`: terminal interface
-- `packages/app`: shared web interface
-- `packages/desktop`: Electron desktop application
-- `packages/plugin`: plugin API
+## Security
 
-### Verification
-
-Run typechecks, and tests where defined, from the affected package rather than the repository root:
-
-```bash
-cd packages/core
-bun run test
-bun typecheck
-```
-
-Follow package-specific instructions in nearby `AGENTS.md` files. After changing the public Protocol or Server `HttpApi`, run `bun run generate` from `packages/client`; never edit generated client files directly.
-
-Follow the repository [style guide](./AGENTS.md).
-
-## Pull Requests
-
-### Link Issues When Required
-
-Bug fixes, chores, and tests must reference an existing issue. Documentation, refactor, and feature PRs are exempt from the automated linked-issue check. When required, use `Fixes #123` or `Closes #123` in the PR description.
-
-Before implementing new functionality, open a feature request describing the problem, why it belongs in OpenCode, and your proposed approach if you have one. Wait for design approval before opening the implementation PR.
-
-Base branches on `dev` and complete the provided pull request template.
-
-### Keep It Focused
-
-- Keep PRs small and focused.
-- Explain the problem and why the change fixes it.
-- Check whether the functionality already exists.
-- For UI changes, include before-and-after screenshots or video.
-- For logic changes, explain what you tested and how a reviewer can verify it.
-
-### Keep It Brief
-
-Long, AI-generated PR descriptions and issues may be ignored. Write a short explanation in your own words. If the change cannot be explained briefly, the PR may be too large.
-
-### Use Conventional Titles
-
-Use `type(scope): summary`. Supported types are `feat`, `fix`, `docs`, `chore`, `refactor`, and `test`. The scope is optional.
-
-Examples:
-
-- `docs: update contributing guide`
-- `fix(tui): restore scroll position`
-- `feat(app): add workspace search`
-
-## Issues
-
-Bug reports and feature requests must use their issue templates. Blank issues are not allowed; ask support and how-to questions in the [Discord community](https://discord.gg/opencode).
-
-Automated checks flag missing templates, placeholder text, AI-generated walls of text, and missing meaningful content. You have two hours to correct a flagged issue before it closes automatically. Ask a maintainer if an issue was flagged incorrectly.
+Do not open a public issue for a vulnerability. See [SECURITY.md](SECURITY.md).
