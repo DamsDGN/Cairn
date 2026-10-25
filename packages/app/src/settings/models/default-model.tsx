@@ -2,22 +2,28 @@ import { Button } from "@opencode/ui/button"
 import { useDialog } from "@opencode/ui/context/dialog"
 import { Dialog, DialogBody, DialogHeader, DialogTitleGroup } from "@opencode/ui/dialog"
 import { ScrollView } from "@opencode/ui/scroll-view"
-import { createMemo, createResource, createSignal, For, Show } from "solid-js"
+import { createEffect, createMemo, createResource, createSignal, For, Show } from "solid-js"
 import { useLanguage } from "@/runtime/i18n/language"
 import { usePlatform } from "@/runtime/platform/platform"
-import { useModels } from "@/providers/models/models"
+import { useData } from "@/runtime/server/current"
+import { normalizeProviderList } from "@/runtime/server/global-sync/utils"
 import { showToast } from "@/shell/notifications/toast"
 import { SettingsRow } from "@/settings/row"
 import "./default-model.css"
 
-type ModelItem = ReturnType<ReturnType<typeof useModels>["list"]>[number]
+type ModelItem = {
+  id: string
+  name: string
+  providerID: string
+  provider: { id: string; name: string }
+}
 
 // The default model lives in the Conversations folder configuration, not in the session selection,
-// so a new conversation starts on it before anything is picked.
+// so a new conversation starts on it before anything is picked. Its catalog comes from that folder
+// too, which is where the providers connected from the app are declared.
 export function DefaultModelSetting() {
   const language = useLanguage()
   const platform = usePlatform()
-  const models = useModels()
   const dialog = useDialog()
 
   const [current, { refetch }] = createResource(
@@ -29,14 +35,15 @@ export function DefaultModelSetting() {
 
     if (!value) return language.t("settings.models.default.none")
 
-    const item = models.list().find((model) => `${model.provider.id}/${model.id}` === value)
-
-    return item?.name ?? value
+    return value
   })
 
   return (
     <Show when={platform.assistantConfig}>
-      <SettingsRow title={language.t("settings.models.default.title")} description={language.t("settings.models.default.description")}>
+      <SettingsRow
+        title={language.t("settings.models.default.title")}
+        description={language.t("settings.models.default.description")}
+      >
         <Button
           variant="outline"
           size="small"
@@ -54,21 +61,52 @@ export function DefaultModelSetting() {
 function DefaultModelDialog(props: { current?: string; onPicked?: () => void }) {
   const language = useLanguage()
   const platform = usePlatform()
-  const models = useModels()
+  const data = useData()
   const dialog = useDialog()
   const [query, setQuery] = createSignal("")
   const [busy, setBusy] = createSignal(false)
 
-  const items = createMemo(() => {
+  const reference = () => {
+    const value = platform.assistantDirectory
+
+    return value ? { directory: value } : undefined
+  }
+
+  createEffect(() => {
+    const ref = reference()
+
+    if (!ref) return
+
+    void data.location.provider.sync(ref).catch(() => undefined)
+    void data.location.model.sync(ref).catch(() => undefined)
+  })
+
+  const items = createMemo<ModelItem[]>(() => {
+    const ref = reference()
+    const provider = data.location.provider.list(ref)
+    const model = data.location.model.list(ref)
+
+    if (!provider || !model) return []
+
+    const catalog = normalizeProviderList(provider, model)
+    const all = [...catalog.all.values()].flatMap((entry) =>
+      Object.values(entry.models).map((item) => ({
+        id: item.id,
+        name: item.name,
+        providerID: entry.id,
+        provider: { id: entry.id, name: entry.name },
+      })),
+    )
     const needle = query().trim().toLowerCase()
-    const list = models.list()
 
-    if (!needle) return list
+    if (!needle) return all
 
-    return list.filter((model) =>
-      `${model.provider.name} ${model.name} ${model.id}`.toLowerCase().includes(needle),
+    return all.filter((item) =>
+      `${item.provider.name} ${item.name} ${item.id}`.toLowerCase().includes(needle),
     )
   })
+
+  const key = (model: ModelItem) => `${model.providerID}/${model.id}`
 
   const pick = async (value: string) => {
     if (busy() || !platform.assistantConfig) return
@@ -86,8 +124,6 @@ function DefaultModelDialog(props: { current?: string; onPicked?: () => void }) 
     await props.onPicked?.()
     dialog.close()
   }
-
-  const key = (model: ModelItem) => `${model.provider.id}/${model.id}`
 
   return (
     <Dialog class="settings-server-dialog">
