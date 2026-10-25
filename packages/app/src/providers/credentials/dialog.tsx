@@ -127,6 +127,19 @@ export function CustomProviderForm(props: { autofocus?: boolean } = {}) {
 
       if (!saved.ok) throw new Error(language.t("provider.custom.error.save"))
 
+      // The runtime reads provider keys from the credential store, not from auth.json, so a key
+      // typed here has to become an active connection for the provider to send it.
+      if (result.key) {
+        await serverSDK.api.credential
+          .create({
+            integrationID: result.providerID,
+            label: result.name,
+            value: { type: "key", key: result.key },
+            activate: true,
+          })
+          .catch(() => undefined)
+      }
+
       const directory = data.location.default().directory
       await serverSDK.api.location.reload()
       await Promise.all([
