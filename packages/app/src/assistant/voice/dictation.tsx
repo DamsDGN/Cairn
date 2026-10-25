@@ -55,9 +55,14 @@ export function AssistantDictationButton(props: { composer: ComposerModel }) {
 
     try {
       const audio = await current.stop()
-      // The language is detected from the audio: forcing the interface locale makes whisper
-      // translate a sentence spoken in another language instead of transcribing it.
-      const text = await platform.voiceLocal!.transcribe({ audio, id: selected })
+      // Without an explicit language the recognizer falls back to English and translates instead of
+      // transcribing. The interface language is the best available hint until dictation has its own
+      // spoken-language setting.
+      const text = await platform.voiceLocal!.transcribe({
+        audio,
+        id: selected,
+        language: language.locale().split("-")[0],
+      })
 
       if (text) insert(text)
     } catch {
