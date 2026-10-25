@@ -55,9 +55,15 @@ multi-fournisseurs (intel local, OpenAI, Anthropic, vLLM Sover...).
   mode auto, exp 10 min ; attempt annulé après test (côté CLI, repli interactif : `opencode mcp
 auth`). Le point clé : les serveurs MCP de la config user (n8n, postsdeck, runpod, qonto,
   pennylane, hf-mcp-server) sont listés globalement par `integration.list`, le toggle attire la
-  cible sur le répertoire courant (le répertoire assistant) ; aucun fork nécessaire. Reste :
-  UI d'ajout d'un nouveau serveur MCP distant dans le répertoire assistant si le path upstream ne
-  suffit pas (mcp-dialog hérité devrait suffire), test visuel avec un vrai connecteur OAuth.
+  cible sur le répertoire courant (le répertoire assistant) ; aucun fork nécessaire.
+  Ajout depuis l'UI fait le 25/10 : bouton « Ajouter un serveur » dans Réglages > Extensions,
+  dialog distant (URL) ou local (commande), nom validé `[a-zA-Z0-9_-]+`. Le main-process écrit
+  l'entrée dans le `opencode.json` du dossier Conversations, puis un `mcp.add` runtime rend le
+  serveur utilisable sans redémarrage. RPC `AssistantMcpAdd` / `AssistantMcpRemove`, logique pure
+  testée dans `src/main/mcp-config.test.ts`. Écart assumé : pas de suppression par ligne dans l'UI,
+  le switch existant ne fait que connecter/déconnecter ; le RPC de retrait est en place pour la
+  suite. Vérifié live : dialog, sauvegarde fichier, row affichée. Reste : test avec un vrai
+  connecteur OAuth ajouté depuis l'UI.
 - **M4 Historique chat (partiel fait)** : sidebar fork `packages/app/src/assistant/sidebar.tsx`
   montée dans `shell.tsx` quand `assistantDirectory` existe (cachée en mobile et sous la surface
   réglages) : nouvelle conversation, historique (30 dernières du répertoire), recherche inline
@@ -69,11 +75,13 @@ auth`). Le point clé : les serveurs MCP de la config user (n8n, postsdeck, runp
   message ; vérifier qu'il tourne sur le répertoire assistant).
 - **M5 Shell produit** : tray + menu contextuel, raccourci global quick capture, notifications,
   démarrage auto.
-- **M6 Branding & distribution** : identité (appId, nom, icônes, deep link), signatures macOS
-  (certificat Apple requis) et Windows, serveur d'auto-update. Packaging CI en place :
-  Linux local (AppImage/deb, release `v0.1.0`), Windows NSIS + zip mac Apple Silicon via le
-  workflow GitHub Actions (release `assistant-v0.1.1`, builds non signés). Identité Cairn faite
-  (M13). Reste : dmg, build mac Intel, signatures.
+- **M6 Distribution (périmètre réduit le 25/10)** : identité Cairn faite (M13). Le build macOS et
+  Windows (dmg, mac Intel, signatures, notarisation) sort du périmètre de ce fork : un collègue s'en
+  charge. Reste ici uniquement ce qui touche la config partagée quand il en aura besoin, et le
+  serveur d'auto-update, toujours non tranché (le bloc `publish` a été retiré pour qu'une install
+  Cairn ne télécharge jamais un build OpenCode). Packaging CI en place : Linux local
+  (AppImage/deb, release `v0.1.0`), workflow GitHub Actions pour Windows NSIS et zip mac Apple
+  Silicon (release `assistant-v0.1.1`, builds non signés).
 - **M7 Flavor Sover (optionnel)** : provider par défaut vers vLLM de Sover.tech.
 - **M8 Stats usage abonnement OpenCode Go (fait)** : carte "OpenCode Go" dans la sidebar (histogramme
   des 3 fenêtres : 5 h / semaine / mois, poll 5 min). Endpoint `GET
@@ -201,6 +209,9 @@ https://opencode.ai/zen/go/v1/usage` (Bearer, ref paquet `pi-opencode-go-usage`)
 
 ## Builds cross-plateformes (CI en place le 23/10)
 
+> Depuis le 25/10, le build macOS et Windows est délégué à un collègue : cette section reste comme
+> référence des contraintes rencontrées, pas comme travail à reprendre ici.
+
 - Tentative locale Windows : la chaîne passe jusqu'au `win-unpacked` complet (CLI win via
   `OPENCODE_CLI_TARGET=x86_64-pc-windows-msvc bun ./scripts/prebuild.ts` + renommage
   `resources/opencode-cli` en `.exe`, prébuild `@lydell/node-pty-win32-x64` copié dans
@@ -222,11 +233,21 @@ https://opencode.ai/zen/go/v1/usage` (Bearer, ref paquet `pi-opencode-go-usage`)
   (AppImage + deb) rebuildé localement avec la sidebar M10 puis uploadé sur la même release :
   les 3 OS sont dans `assistant-v0.1.1` (boot AppImage revalidé).
 
+## Ordre de travail (25/10)
+
+1. Phase 4B : filtrer Build/Plan/General du picker en mode assistant, vérifier slash commands et
+   docks de permission en live.
+2. Reliquat M4 : titre auto sur le répertoire assistant, home chat-first.
+3. M5 shell produit : tray, démarrage auto, notifications, quick capture.
+4. Serveur d'auto-update Cairn, quand l'hébergement sera tranché.
+5. Hors périmètre : build macOS/Windows et signatures (collègue), phase 2 voix (clés), M7 (optionnel).
+
 ## Risques
 
 - Upstream très actif : chaque jalon doit rester un diff réduit. Les écrans modifiés sont les
   plus instables, rebaser tôt et souvent.
-- Signature applicative : bloquant pour la distribution "propre" macOS/Windows, indépendant du code.
+- Signature applicative : hors périmètre de ce fork (délégué), bloquant seulement pour une
+  distribution macOS/Windows "propre".
 - Radars dev Linux connus : GPU sous Wayland, sandbox SUID (voir M0).
 - Attention aux fichiers partagés (`packages/app`) : l'upstream les modifie en continu.
 
