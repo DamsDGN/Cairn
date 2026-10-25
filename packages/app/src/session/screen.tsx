@@ -16,6 +16,7 @@ import { Slot, type BackgroundTask, type MountedSession, type SessionScreen } fr
 import { MessageTimeline } from "@/session/timeline/message-timeline"
 import { ComposerDropzone } from "@/composer/dropzone"
 import { useSettings } from "@/settings/model"
+import { usePlatform } from "@/runtime/platform/platform"
 import type { SessionModel } from "@/session/model"
 import { SESSION_PANEL_WIDTH_MIN } from "@/session/session-panel-width"
 import { SessionPanelFrame } from "@/session/session-frame"
@@ -66,6 +67,7 @@ function SessionScreenContent(props: {
   const host = useExtensionHost()
   const attachment = useExtensionAttachment()
   const settings = useSettings()
+  const platform = usePlatform()
   const isDesktop = session.isDesktop
   const bottomMobileTabs = () => settings.general.mobileTitlebarPosition() === "bottom"
   const sidebar = createPanelSidebar()
@@ -375,7 +377,7 @@ function SessionScreenContent(props: {
       <div class="flex-1 min-h-0 flex flex-col gap-2 px-[var(--shell-inline-inset,8px)] pb-[var(--shell-bottom-inset,8px)] pt-[var(--shell-top-inset,8px)]">
         <div ref={screen.panel.ref} class="relative flex-1 min-h-0 flex flex-col md:flex-row gap-2">
           {/* Keep the control outside panel animations. */}
-          <Show when={isDesktop() && messagesReady() && session.identity.params.id}>
+          <Show when={isDesktop() && !platform.assistantDirectory && messagesReady() && session.identity.params.id}>
             <div
               class="absolute end-3 top-0 z-30 h-12 flex items-center"
               data-slot="session-review-toggle"
