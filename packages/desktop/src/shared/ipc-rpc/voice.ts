@@ -15,15 +15,16 @@ const ModelState = Schema.Struct({
 export type VoiceModelID = typeof ModelID.Type
 export type VoiceModelState = typeof ModelState.Type
 
-const InstalledModel = Schema.Struct({
+const ModelInfo = Schema.Struct({
   id: ModelID,
   installed: Schema.Boolean,
+  size: Schema.Number,
 })
 
 // The local voice models live in the app data folder and are downloaded on request, so a fresh
 // install stays small and the download is an explicit choice instead of a surprise.
 export const VoiceLocalModels = Rpc.make("VoiceLocalModels", {
-  success: Schema.Struct({ models: Schema.Array(InstalledModel) }),
+  success: Schema.Struct({ models: Schema.Array(ModelInfo) }),
 })
 
 export const VoiceLocalDownload = Rpc.make("VoiceLocalDownload", {

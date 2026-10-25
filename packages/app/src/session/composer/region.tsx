@@ -10,7 +10,7 @@ import { useComposerState } from "@/composer/persistence"
 import { createComposerControls } from "@/composer/selection"
 import { setCursorPosition } from "@/composer/editor/dom"
 import { promptLength } from "@/composer/prompt-parts"
-import { AssistantVoiceButton } from "@/assistant/voice/voice-dialog"
+import { AssistantVoiceControls } from "@/assistant/voice/voice-control"
 import { useCommand } from "@/shell/commands/command"
 import { useLanguage } from "@/runtime/i18n/language"
 import { useData } from "@/runtime/server/current"
@@ -360,7 +360,7 @@ export function ActiveSessionComposerRegion(props: {
                   borderUnderlay
                   readOnly={props.model.queue.undoing()}
                   suggestionBoundary={props.suggestionBoundary}
-                  voiceControl={<AssistantVoiceButton />}
+                  voiceControl={<AssistantVoiceControls composer={props.model.composer} />}
                 />
               </div>
             </div>

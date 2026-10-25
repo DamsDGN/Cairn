@@ -49,10 +49,11 @@ reference for contributors; the user-facing description lives in `README.md`.
   their exact sizes, packaging identity, favicons and web manifest.
 - **M14 Local voice (in progress)**: speech recognition and synthesis on the user's machine, CPU
   only, models downloaded on request. `@fugood/whisper.node` provides prebuilt whisper.cpp binaries
-  for every desktop platform, so nothing compiles on the user's machine. The main-process side
-  (model catalogue, verified download, transcription) is done; the recording interface, the model
-  download screen and read-aloud are still missing. Release builds keep only the CPU addon of
-  the packaged platform: the CUDA and Vulkan variants would add 240 MB to every installer.
+  for every desktop platform, so nothing compiles on the user's machine. Dictation works end to
+  end: the composer records 16 kHz PCM, transcribes it in the main process and inserts the text,
+  and the first attempt offers the model download. Settings > Voice manages the models. Read-aloud
+  is still missing. Release builds keep only the CPU addon of the packaged platform: the CUDA and
+  Vulkan variants would add 240 MB to every installer.
 
 ## Decisions
 

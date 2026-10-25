@@ -33,7 +33,7 @@ export type ElectronAPI = {
   draftSet(key: string, value: string, strict: boolean): Promise<string[]>
   draftDelete(key: string): Promise<void>
   draftBlobPut(data: ArrayBuffer): Promise<string>
-  voiceModelList(): Promise<{ models: Array<{ id: VoiceModelID; installed: boolean }> }>
+  voiceModelList(): Promise<{ models: Array<{ id: VoiceModelID; installed: boolean; size: number }> }>
   voiceModelDownload(id: VoiceModelID): Promise<VoiceModelState>
   voiceModelState(id: VoiceModelID): Promise<VoiceModelState>
   voiceModelRemove(id: VoiceModelID): Promise<boolean>

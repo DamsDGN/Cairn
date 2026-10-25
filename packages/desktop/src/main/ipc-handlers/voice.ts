@@ -17,6 +17,7 @@ export const voiceHandlers = VoiceRpcs.toLayer(
           models: VOICE_MODELS.map((model) => ({
             id: model.id,
             installed: isInstalled(modelPath(dataDirectory, model), model),
+            size: model.size,
           })),
         })),
       VoiceLocalDownload: ({ id }) =>
