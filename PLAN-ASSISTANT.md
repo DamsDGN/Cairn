@@ -72,8 +72,8 @@ auth`). Le point clé : les serveurs MCP de la config user (n8n, postsdeck, runp
 - **M6 Branding & distribution** : identité (appId, nom, icônes, deep link), signatures macOS
   (certificat Apple requis) et Windows, serveur d'auto-update. Packaging CI en place :
   Linux local (AppImage/deb, release `v0.1.0`), Windows NSIS + zip mac Apple Silicon via le
-  workflow GitHub Actions (release `assistant-v0.1.1`, builds non signés). Reste : dmg, build mac
-  Intel, signatures, nouveau nom/logo.
+  workflow GitHub Actions (release `assistant-v0.1.1`, builds non signés). Identité Cairn faite
+  (M13). Reste : dmg, build mac Intel, signatures.
 - **M7 Flavor Sover (optionnel)** : provider par défaut vers vLLM de Sover.tech.
 - **M8 Stats usage abonnement OpenCode Go (fait)** : carte "OpenCode Go" dans la sidebar (histogramme
   des 3 fenêtres : 5 h / semaine / mois, poll 5 min). Endpoint `GET
@@ -150,6 +150,25 @@ https://opencode.ai/zen/go/v1/usage` (Bearer, ref paquet `pi-opencode-go-usage`)
   - Vérifié : typecheck app 1 592 fichiers et desktop 2 622 fichiers 0 erreur, tests app 764 pass,
     desktop 130 pass / 1 skip, lint 0 erreur, maximiser/restaurer live (1280x800 vers 1920x1200,
     libellé et icône restaurer qui suivent), `outerWidth == innerWidth` (plus de cadre natif).
+- **M13 Identité Cairn (25/10, fait)** :
+  - UI : wordmark OpenCode retiré de l'écran Nouvelle conversation en mode assistant, page À propos
+    reconstruite autour du logo Cairn et de sover.tech (crédits OpenCode, mention MIT et trademark
+    Anomaly conservés), écran Pairing et menu burger rebrandés, favicons et manifest web régénérés.
+  - Identité : appId `tech.sover.cairn` (+ `.dev`, `.beta`), productName `Cairn` / `Cairn Dev` /
+    `Cairn Beta`, artefacts `cairn-desktop-*`, paquets rpm `cairn` / `cairn-dev` / `cairn-beta`,
+    metainfo Flathub-like régénéré (`tech.sover.cairn*.metainfo.xml`), titres de fenêtre Cairn.
+  - Icônes : les 18 fichiers de chaque canal (PNG 16 à 1024, `icon.ico`, `icon.icns`) sont rendus
+    depuis `logo-cairn.svg` à la taille exacte, sans rasteriseur système (rendu Playwright, conteneurs
+    ICO et ICNS assemblés à la main).
+  - Écarts assumés : le scheme `opencode://` est conservé (le retour OAuth du console le renvoie) et
+    seul le nom du protocole devient Cairn ; le bloc `publish` d'electron-builder est retiré pour
+    qu'une install Cairn ne télécharge jamais un build OpenCode en mise à jour ; l'`icon.icns` n'a pas
+    l'inset Big Sur d'Image2Icon, le mark occupant toute la tuile.
+  - Profils : l'appId change le répertoire de données, les profils dev existants ont été copiés vers
+    `tech.sover.cairn.dev` (réglages, chats, brouillons, window state), vérifié live : thème Cairn,
+    historique et `assistantDirectory` restaurés.
+  - Vérifié : typecheck app 1 591 et desktop 2 621 fichiers 0 erreur, tests app 764 pass, desktop
+    131 pass / 1 skip, config builder 7 pass, lint 0 erreur.
 
 ## Packaging Linux (validé le 23/10)
 
