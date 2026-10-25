@@ -3,6 +3,10 @@
 // would raise SIGILL, so the flags are checked before the addon is imported.
 const AVX2_FLAGS = ["avx", "avx2", "fma", "f16c", "bmi2"] as const
 
+// Eight threads was the best result on the reference machine; more did not help, and the smaller
+// cores of a hybrid processor only add latency. One core stays free for the interface.
+const MAX_THREADS = 8
+
 export type Acceleration = "avx2" | "compatible"
 
 export function cpuFlags(cpuinfo: string): string[] {
@@ -25,4 +29,8 @@ export function acceleration(platform: string, arch: string, cpuinfo: string): A
   if (platform !== "linux" || arch !== "x64") return "compatible"
 
   return supportsAvx2(cpuFlags(cpuinfo)) ? "avx2" : "compatible"
+}
+
+export function voiceThreads(parallelism: number): number {
+  return Math.max(1, Math.min(MAX_THREADS, parallelism - 1))
 }

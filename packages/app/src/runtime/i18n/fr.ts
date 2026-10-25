@@ -688,6 +688,13 @@ export const dict = {
   "settings.voice.acceleration.compatible": "Compatible",
   "settings.voice.acceleration.compatible.description":
     "Ce processeur n'a pas AVX2, la transcription utilise donc le noyau portable et elle est bien plus lente.",
+  "settings.voice.dictation.title": "Dictée",
+  "settings.voice.dictation.language.title": "Langue parlée",
+  "settings.voice.dictation.language.description": "La langue que tu parles. La laisser deviner fait traduire au lieu de transcrire.",
+  "settings.voice.dictation.vocabulary.title": "Vocabulaire",
+  "settings.voice.dictation.vocabulary.description": "Noms propres et jargon à attendre, séparés par des virgules.",
+  "settings.voice.dictation.vocabulary.placeholder": "Cairn, Sover, Traefik",
+  "settings.voice.model.silero-v6.2.0": "Détection de voix",
   "settings.voice.models": "Modèles vocaux",
   "settings.voice.unavailable": "La voix locale n'est disponible que dans l'application de bureau.",
   "settings.voice.model.base-q5_1": "Base",

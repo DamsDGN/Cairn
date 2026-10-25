@@ -53,10 +53,13 @@ export const api: ElectronAPI = {
   voiceModelState: (id) => invoke("VoiceLocalState", { id }).then(mutable),
   voiceModelRemove: (id) => invoke("VoiceLocalRemove", { id }),
   voiceAcceleration: () => invoke("VoiceLocalAcceleration").then(mutable),
+  voicePreferences: () => invoke("VoiceLocalPreferences").then(mutable),
+  voicePreferencesSet: (input) => invoke("VoiceLocalPreferencesSet", input).then(mutable),
   voiceTranscribe: (input) =>
     invoke("VoiceLocalTranscribe", {
       audio: new Uint8Array(input.audio),
       language: input.language,
+      prompt: input.prompt,
       id: input.id,
     }).then((result) => result.text),
   draftBlobGet: (id) => invoke("DraftsGetBlob", { id }).then((data) => (data ? toArrayBuffer(data) : null)),

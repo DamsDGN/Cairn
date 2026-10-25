@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test"
-import { acceleration, cpuFlags, supportsAvx2 } from "./cpu"
+import { acceleration, cpuFlags, supportsAvx2, voiceThreads } from "./cpu"
 
 const intel = `processor\t: 0
 model name\t: 13th Gen Intel(R) Core(TM) i7-1360P
@@ -44,4 +44,16 @@ test.each([
   { name: "Windows keeps its own addon", platform: "win32", arch: "x64", cpuinfo: intel, level: "compatible" },
 ])("$name", ({ platform, arch, cpuinfo, level }) => {
   expect(acceleration(platform, arch, cpuinfo)).toBe(level as "avx2" | "compatible")
+})
+
+test.each([
+  { name: "a single core keeps one thread", cores: 1, threads: 1 },
+  { name: "two cores leave one for the interface", cores: 2, threads: 1 },
+  { name: "four cores use three", cores: 4, threads: 3 },
+  { name: "eight cores use seven", cores: 8, threads: 7 },
+  { name: "sixteen logical cores cap at eight", cores: 16, threads: 8 },
+  { name: "a large machine still caps at eight", cores: 64, threads: 8 },
+  { name: "an unreadable core count keeps one thread", cores: 0, threads: 1 },
+])("$name", ({ cores, threads }) => {
+  expect(voiceThreads(cores)).toBe(threads)
 })

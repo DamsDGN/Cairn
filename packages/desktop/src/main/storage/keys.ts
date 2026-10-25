@@ -13,3 +13,7 @@ export const BUNDLED_CLI_VERSION_KEY = "bundledCliVersion"
 export const ASSISTANT_DIRECTORY_KEY = "assistantDirectory"
 
 export const LAUNCH_AT_LOGIN_KEY = "launchAtLogin"
+
+export const VOICE_LANGUAGE_KEY = "voiceLanguage"
+
+export const VOICE_PROMPT_KEY = "voicePrompt"

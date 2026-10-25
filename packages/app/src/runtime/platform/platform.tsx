@@ -174,15 +174,29 @@ type PlatformBase = {
     remove(id: VoiceLocalModelID): Promise<boolean>
     /** CPU kernel the local recognizer runs: AVX2, or the portable fallback. */
     acceleration(): Promise<{ level: VoiceLocalAcceleration }>
-    transcribe(input: { audio: ArrayBuffer; language?: string; id?: VoiceLocalModelID }): Promise<string>
+    preferences(): Promise<VoiceLocalPreferences>
+    setPreferences(input: VoiceLocalPreferences): Promise<VoiceLocalPreferences>
+    transcribe(input: {
+      audio: ArrayBuffer
+      language: string
+      prompt?: string
+      id?: VoiceLocalModelID
+    }): Promise<string>
   }
 }
 
-export type VoiceLocalModelID = "base-q5_1" | "small-q5_1" | "small"
+export type VoiceLocalModelID = "base-q5_1" | "small-q5_1" | "small" | "silero-v6.2.0"
 
 export type VoiceLocalAcceleration = "avx2" | "compatible"
 
-export type VoiceLocalModel = { id: VoiceLocalModelID; installed: boolean; size: number }
+export type VoiceLocalPreferences = { language?: string; prompt?: string }
+
+export type VoiceLocalModel = {
+  id: VoiceLocalModelID
+  kind: "speech" | "detector"
+  installed: boolean
+  size: number
+}
 
 export type VoiceLocalState = {
   id: VoiceLocalModelID
