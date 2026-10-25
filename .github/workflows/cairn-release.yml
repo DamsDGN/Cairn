@@ -59,7 +59,7 @@ jobs:
       - run: bun install --frozen-lockfile
 
       - name: Resolve the version
-        run: node -e "const p=require('./packages/desktop/package.json');require('fs').appendFileSync(process.env.GITHUB_ENV,`OPENCODE_VERSION=${p.version}\n`)"
+        run: node -e 'const p=require("./packages/desktop/package.json");require("fs").appendFileSync(process.env.GITHUB_ENV,"OPENCODE_VERSION=" + p.version + "\n")'
 
       # The desktop bundles the CLI built here, so the engine matches the tag. The target is the
       # CLI package name, not the Rust triple: desktop builds use the baseline (no AVX2) x64
