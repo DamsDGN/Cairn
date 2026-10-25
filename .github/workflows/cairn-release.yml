@@ -1,35 +1,80 @@
 name: cairn-release
 
 on:
-  push:
-    tags: ["cairn-v*"]
   workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release, without the cairn-v prefix (for example 0.2.2)"
+        required: true
+        type: string
 
 permissions:
   contents: write
 
 jobs:
-  guard:
+  # One button: the requested version is written to the package, committed, tagged, and every later
+  # job checks out that tag. The tag and the version cannot disagree, which is what the updater
+  # compares.
+  prepare:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      tag: ${{ steps.version.outputs.tag }}
     steps:
       - uses: actions/checkout@v4
-      # A release tag that disagrees with the packaged version makes the updater compare apples to
-      # oranges, so the tag and packages/desktop/package.json have to match.
-      - name: Check the tag matches the package version
-        if: startsWith(github.ref, 'refs/tags/cairn-v')
+        with:
+          fetch-depth: 0
+      - name: Validate the requested version
+        id: version
+        env:
+          REQUESTED: ${{ inputs.version }}
         run: |
-          tag="${GITHUB_REF_NAME#cairn-v}"
-          version="$(node -p "require('./packages/desktop/package.json').version")"
-          if [ "$tag" != "$version" ]; then
-            echo "tag $tag does not match package version $version" >&2
+          version="${REQUESTED#cairn-v}"
+          if ! [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "not a version: $version" >&2
             exit 1
           fi
+          current="$(node -p "require('./packages/desktop/package.json').version")"
+          if [ "$version" != "$current" ] && [ "$version" != "$(printf '%s\n%s\n' "$current" "$version" | sort -V | tail -n 1)" ]; then
+            echo "$version is older than the current $current" >&2
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=cairn-v$version" >> "$GITHUB_OUTPUT"
+
+      # A retried run finds the package already bumped: it only recreates a missing tag, so the
+      # button can be pressed again after a build failure without a second commit.
+      - name: Bump the version and tag
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          current="$(node -p "require('./packages/desktop/package.json').version")"
+          if [ "$current" != "$VERSION" ]; then
+            node -e 'const fs = require("fs"); const file = "packages/desktop/package.json"; const pkg = JSON.parse(fs.readFileSync(file, "utf8")); pkg.version = process.env.VERSION; fs.writeFileSync(file, JSON.stringify(pkg, null, 2) + "\n")'
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add packages/desktop/package.json
+            git commit -m "chore(release): $VERSION"
+            git push origin HEAD:main
+          else
+            echo "the package already carries $VERSION"
+          fi
+          if git rev-parse -q --verify "refs/tags/$TAG"; then
+            echo "$TAG already exists"
+            exit 0
+          fi
+          git tag "$TAG"
+          git push origin "$TAG"
 
   whisper:
+    needs: prepare
     runs-on: ubuntu-22.04
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.tag }}
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.4.4
@@ -49,7 +94,7 @@ jobs:
           path: packages/desktop/resources/whisper-avx2/index.node
 
   desktop:
-    needs: [guard, whisper]
+    needs: [prepare, whisper]
     strategy:
       fail-fast: false
       matrix:
@@ -76,10 +121,15 @@ jobs:
       OPENCODE_CLI_TARGET: ${{ matrix.target }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.tag }}
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.4.4
       - run: bun install --frozen-lockfile
+
+      - name: Check the tag carries the released version
+        run: test "$(node -p "require('./packages/desktop/package.json').version")" = "${{ needs.prepare.outputs.version }}"
 
       - name: Resolve the version
         run: node -e 'const p=require("./packages/desktop/package.json");require("fs").appendFileSync(process.env.GITHUB_ENV,"OPENCODE_VERSION=" + p.version + "\n")'
@@ -140,8 +190,7 @@ jobs:
             packages/desktop/dist/latest*.yml
 
   release:
-    needs: desktop
-    if: startsWith(github.ref, 'refs/tags/cairn-v')
+    needs: [prepare, desktop]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v4
@@ -150,6 +199,8 @@ jobs:
           path: dist
       - uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ needs.prepare.outputs.tag }}
+          name: Cairn ${{ needs.prepare.outputs.version }}
           files: |
             dist/*.AppImage
             dist/*.deb
