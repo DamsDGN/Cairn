@@ -327,7 +327,7 @@ export function AssistantSidebar(props: { directory: string }) {
         {language.t("assistant.new")}
       </Button>
       <TextInput
-        class="mb-1"
+        class="mb-1 w-full"
         value={search()}
         autocomplete="off"
         spellcheck={false}
