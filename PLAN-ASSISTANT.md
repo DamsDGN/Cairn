@@ -40,11 +40,16 @@ multi-fournisseurs (intel local, OpenAI, Anthropic, vLLM Sover...).
   quand le répertoire est le répertoire assistant ; bouton "+" d'onglet par défaut sur le répertoire
   assistant ; tips du draft adaptés. Résolution du répertoire ordonnée après la détection de premier
   lancement (sinon une install neuve est prise pour un upgrade) et adoption au montage du premier draft.
-- **M2 Persona & permissions (fait)** : génération idempotente du `opencode.json` du répertoire
-  Conversations (agent "Assistant" en défaut : read/edit autorisés dedans, websearch ok, webfetch et
-  le reste à approuver). Validé via le serveur standalone + `GET /api/agent?location[directory]=...`
-  : l'agent apparaît en tête de liste. Reste à polir quoi quévers : cacher Build/Plan/General du
-  picker dans ce mode, tester l'écriture réelle depuis le chat.
+- **M2 Persona & permissions (fait, picker et commandes filtrés le 25/10)** : génération idempotente
+  du `opencode.json` du répertoire Conversations (agent "Assistant" en défaut : read/edit autorisés
+  dedans, websearch ok, webfetch et le reste à approuver). Validé via le serveur standalone +
+  `GET /api/agent?location[directory]=...` : l'agent apparaît en tête de liste. Le picker ne liste
+  plus que les agents déclarés dans la configuration du dossier (`agents` + `default_agent` lus via
+  `config.list`), donc Build/Plan/General n'apparaissent plus en mode assistant ; le menu slash
+  masque `init`, `review` et `agent`, qui n'ont pas de sens dans un dossier sans dépôt, et garde
+  `model` et `connect`. Vérifié live : picker à une seule entrée « Assistant », menu slash réduit à
+  `/model` et `/connect`. Écart : le dock de permission n'a pas pu être déclenché en live, le quota
+  des modèles gratuits était épuisé au moment du test ; le composant n'est pas modifié par le fork.
 - **M3 Connecteurs MCP (hérité fait, OAuth validé)** : l'écran Connecteurs de l'upstream
   (`settings.extensions`, atteint via le sidebar) gère déjà tout : liste/toggle des serveurs,
   `mcp.connect` puis sur `needs_auth` le flow OAuth (`integration.oauth.connect` + ouverture du
@@ -235,12 +240,10 @@ https://opencode.ai/zen/go/v1/usage` (Bearer, ref paquet `pi-opencode-go-usage`)
 
 ## Ordre de travail (25/10)
 
-1. Phase 4B : filtrer Build/Plan/General du picker en mode assistant, vérifier slash commands et
-   docks de permission en live.
-2. Reliquat M4 : titre auto sur le répertoire assistant, home chat-first.
-3. M5 shell produit : tray, démarrage auto, notifications, quick capture.
-4. Serveur d'auto-update Cairn, quand l'hébergement sera tranché.
-5. Hors périmètre : build macOS/Windows et signatures (collègue), phase 2 voix (clés), M7 (optionnel).
+1. Reliquat M4 : titre auto sur le répertoire assistant, home chat-first.
+2. M5 shell produit : tray, démarrage auto, notifications, quick capture.
+3. Serveur d'auto-update Cairn, quand l'hébergement sera tranché.
+4. Hors périmètre : build macOS/Windows et signatures (collègue), phase 2 voix (clés), M7 (optionnel).
 
 ## Risques
 
@@ -249,6 +252,9 @@ https://opencode.ai/zen/go/v1/usage` (Bearer, ref paquet `pi-opencode-go-usage`)
 - Signature applicative : hors périmètre de ce fork (délégué), bloquant seulement pour une
   distribution macOS/Windows "propre".
 - Radars dev Linux connus : GPU sous Wayland, sandbox SUID (voir M0).
+- E2E Playwright inutilisables sur cette machine : la version épinglée (1.60) ne supporte pas
+  ubuntu 26.04 et les navigateurs de son cache ont disparu. Les vérifications live passent par CDP
+  sur l'app Electron (`connectOverCDP`), les tests unitaires et les tests desktop.
 - Attention aux fichiers partagés (`packages/app`) : l'upstream les modifie en continu.
 
 ## Commandes dev
