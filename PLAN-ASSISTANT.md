@@ -275,6 +275,12 @@ https://opencode.ai/zen/go/v1/usage` (Bearer, ref paquet `pi-opencode-go-usage`)
   collègue qui signe les builds.
 - L'ancien workflow `assistant-build.yml` est supprimé (remplacé).
 
+- Workflows upstream : les 26 workflows d'OpenCode (build, test, nix, deploys, publish, triage,
+  PR standards) sont supprimés du fork. Ils ciblent l'infrastructure d'`anomalyco/opencode`
+  (`TEAM_MEMBERS` sur `dev`, secrets de déploiement) et échouaient ou lançaient des heures de CI
+  pour rien sur nos PR. Au rebase upstream, résoudre en les supprimant à nouveau. Seuls
+  `cairn-ci.yml` et `cairn-release.yml` restent.
+
 ## Ordre de travail (25/10)
 
 1. M14 voix locale : socle main, STT puis TTS, UI dictée et lecture.
