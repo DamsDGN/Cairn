@@ -1,13 +1,18 @@
 [data-component="new-session-wordmark"] {
-  --icon-strong-base: var(--icon-base);
+  color: var(--icon-base);
   --wordmark-shimmer-opacity: 0.45;
 
-  .wordmark-shimmer {
-    --icon-base: white;
-    --icon-strong-base: white;
-    --icon-weak-base: transparent;
+  [data-slot="wordmark-reveal"] {
+    font-size: clamp(52px, 8vw, 88px);
+  }
 
-    /* Blend above the base logo's opacity so the sweep only adds light in either theme. */
+  [data-slot="wordmark-mark"] {
+    height: 0.86em;
+    width: auto;
+  }
+
+  .wordmark-shimmer {
+    /* Blend above the base lockup's opacity so the sweep only adds light in either theme. */
     color: white;
     mix-blend-mode: screen;
     opacity: 0;
@@ -16,10 +21,6 @@
     mask-repeat: no-repeat;
     animation: new-session-wordmark-shimmer 800ms linear both;
   }
-}
-
-[data-color-scheme="light"] [data-component="new-session-wordmark"] {
-  --icon-weak-base: color-mix(in srgb, var(--icon-base) 30%, transparent);
 }
 
 [data-color-scheme="dark"] [data-component="new-session-wordmark"] {
