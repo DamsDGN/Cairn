@@ -93,7 +93,6 @@ export function AssistantSidebar(props: { directory: string }) {
     (input) =>
       input.ready.sdk.api.session
         .list({
-          directory,
           limit: SESSION_LIMIT,
           order: "desc",
           parentID: null,
@@ -105,14 +104,14 @@ export function AssistantSidebar(props: { directory: string }) {
 
   const chats = createMemo(() => {
     // Merge the fetched page with the event store, newest first; the store wins on conflict
-    // exactly like the Home index does. The query also filters by title on the server when
-    // a search term is active.
+    // exactly like the Home index does. Every conversation is listed, whatever folder it runs in,
+    // because earlier chats were created before the assistant had its own folder. The query also
+    // filters by title on the server when a search term is active.
     const query = search().trim().toLowerCase()
     const byID = new Map<string, SessionInfo>()
     for (const session of sessions.latest ?? []) byID.set(session.id, session)
     for (const session of ready()?.data.session.list() ?? []) {
       if (session.parentID || typeof session.time.archived === "number") continue
-      if (pathKey(session.location.directory) !== pathKey(directory)) continue
       if (query && !sessionLabel(session).toLowerCase().includes(query)) continue
       byID.set(session.id, session)
     }
@@ -214,8 +213,8 @@ export function AssistantSidebar(props: { directory: string }) {
       const tab = tabs.addSessionTab({ server: ServerConnection.key(conn), sessionId: session.id })
       tabs.select(tab)
       local.data.session.remember(session)
-      local.projects.open(directory)
-      local.projects.touch(directory)
+      local.projects.open(session.location.directory)
+      local.projects.touch(session.location.directory)
     })
   }
 
