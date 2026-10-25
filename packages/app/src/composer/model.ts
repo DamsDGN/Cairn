@@ -234,16 +234,25 @@ export function createComposerModel(adapter: ComposerAdapter, options?: { queue?
     })),
   ])
 
+  // The assistant folder has no repository to initialise or review, and a single visible agent, so its
+  // slash menu keeps only what a personal assistant uses: model and connect.
+  const assistantSlashHidden = createMemo((): Set<string> | undefined =>
+    platform.assistantDirectory ? new Set(["init", "review", "agent"]) : undefined,
+  )
+
   const slashCommands = createMemo(() => [
-    ...(data.location.command.list({ directory: sdk().directory }) ?? []).map((item) => ({
-      id: `custom.${item.name}`,
-      trigger: item.name,
-      title: item.name,
-      description: item.description,
-      type: "custom" as const,
-    })),
+    ...(data.location.command.list({ directory: sdk().directory }) ?? [])
+      .filter((item) => !assistantSlashHidden()?.has(item.name))
+      .map((item) => ({
+        id: `custom.${item.name}`,
+        trigger: item.name,
+        title: item.name,
+        description: item.description,
+        type: "custom" as const,
+      })),
     ...command.options
       .filter((item) => !item.disabled && !item.id.startsWith("suggested.") && item.slash)
+      .filter((item) => !assistantSlashHidden()?.has(item.slash!))
       .map((item) => ({
         id: item.id,
         trigger: item.slash!,
