@@ -64,9 +64,11 @@ tags `cairn-v<version>`, builds Linux, Windows and macOS, and publishes the rele
 updater reads and notes generated from the merged pull requests. Do not bump the version in a pull
 request.
 
-The repository rule that protects `main` must let the GitHub Actions application bypass it,
-otherwise the workflow cannot push the version commit. A run that fails after the commit is safe to
-retry: the preparation step skips the commit and only recreates a missing tag.
+The workflow pushes the version commit to `main`, which the repository rule protects. Store a classic
+personal access token with the `public_repo` scope as the `RELEASE_TOKEN` secret, and add the
+repository administrator role to the bypass list of that rule: the default `GITHUB_TOKEN` cannot
+bypass it. A run that fails after the commit is safe to retry, because the preparation step skips
+the commit and only recreates a missing tag.
 
 ## Security
 
