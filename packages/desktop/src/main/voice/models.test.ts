@@ -4,14 +4,36 @@ import { tmpdir } from "node:os"
 import path from "node:path"
 
 import { downloadFile, type DownloadState } from "./download"
-import { DEFAULT_VOICE_MODEL, VOICE_MODELS, isInstalled, modelPath, modelsDirectory, partialPath } from "./models"
+import {
+  DEFAULT_VOICE_MODEL,
+  DETECTOR_VOICE_MODEL,
+  VOICE_MODELS,
+  isInstalled,
+  modelPath,
+  modelsDirectory,
+  partialPath,
+  visibleVoiceModels,
+} from "./models"
 
-test("the catalog keeps unique ids and exact sizes", () => {
+const digest = (data: Uint8Array) => new Bun.CryptoHasher("sha256").update(data).digest("hex")
+
+test("the catalog keeps unique ids, exact sizes and a digest", () => {
   const ids = new Set(VOICE_MODELS.map((model) => model.id))
 
   expect(ids.size).toBe(VOICE_MODELS.length)
   expect(VOICE_MODELS.every((model) => model.size > 0 && model.file.endsWith(".bin"))).toBe(true)
+  expect(VOICE_MODELS.every((model) => /^[0-9a-f]{64}$/.test(model.sha256))).toBe(true)
   expect(ids.has(DEFAULT_VOICE_MODEL)).toBe(true)
+  expect(ids.has(DETECTOR_VOICE_MODEL)).toBe(true)
+})
+
+test("the default model is offered, the unmeasured small models are not", () => {
+  const ids = visibleVoiceModels().map((model) => model.id)
+
+  expect(ids).toContain(DEFAULT_VOICE_MODEL)
+  expect(ids).toContain(DETECTOR_VOICE_MODEL)
+  expect(ids).not.toContain("small-q5_1")
+  expect(ids).not.toContain("small")
 })
 
 test("paths stay under the voice directory", () => {
@@ -54,6 +76,7 @@ test("a download lands on the target once the size matches", async () => {
       url: `http://127.0.0.1:${server.port}/model.bin`,
       target,
       size: body.byteLength,
+      sha256: digest(body),
       report: (state) => states.push(state),
     })
 
@@ -77,6 +100,31 @@ test("a short body is rejected and left as a partial file", async () => {
       url: `http://127.0.0.1:${server.port}/model.bin`,
       target,
       size: 8,
+      sha256: digest(new Uint8Array([1, 2, 3])),
+      report: () => undefined,
+    })
+
+    expect(result.status).toBe("failed")
+    expect(await Bun.file(target).exists()).toBe(false)
+    expect(await Bun.file(partialPath(target)).exists()).toBe(false)
+  } finally {
+    server.stop(true)
+    await rm(root, { recursive: true, force: true })
+  }
+})
+
+test("a body with the right size but the wrong digest is rejected", async () => {
+  const body = new Uint8Array([1, 2, 3, 4])
+  const server = Bun.serve({ port: 0, fetch: () => new Response(body) })
+  const root = await mkdtemp(path.join(tmpdir(), "cairn-voice-"))
+  const target = path.join(root, "model.bin")
+
+  try {
+    const result = await downloadFile({
+      url: `http://127.0.0.1:${server.port}/model.bin`,
+      target,
+      size: body.byteLength,
+      sha256: digest(new Uint8Array([4, 3, 2, 1])),
       report: () => undefined,
     })
 
@@ -97,6 +145,7 @@ test("a failing server reports failure", async () => {
       url: `http://127.0.0.1:${server.port}/model.bin`,
       target: path.join(tmpdir(), "cairn-voice-404", "model.bin"),
       size: 8,
+      sha256: digest(new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8])),
       report: () => undefined,
     })
 

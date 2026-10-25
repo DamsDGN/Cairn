@@ -28,6 +28,11 @@ if (acquireApplicationLock()) {
     const tray = await import("./native/tray")
     tray.createTray()
 
+    // The recognizer loads its model in the background once the window is up, so the first
+    // dictation does not wait for it. A machine without a model does nothing.
+    const voice = await import("./voice/transcribe")
+    setTimeout(() => voice.preload(app.getPath("userData")), 4000)
+
     // The login item lives in the OS (or an autostart entry on Linux), so it is re-applied at every
     // start: a profile restored from a backup, or a system that dropped the entry, converges.
     const launchAtLogin = await import("./lifecycle/launch-at-login")

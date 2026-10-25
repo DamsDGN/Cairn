@@ -46,6 +46,8 @@ export function createDesktopPlatform(api: ElectronAPI, windowState: DesktopWind
       state: (id) => api.voiceModelState(id),
       remove: (id) => api.voiceModelRemove(id),
       acceleration: () => api.voiceAcceleration(),
+      preferences: () => api.voicePreferences(),
+      setPreferences: (input) => api.voicePreferencesSet(input),
       transcribe: (input) => api.voiceTranscribe(input),
     },
     ...createDesktopFiles(api, os),

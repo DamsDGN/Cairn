@@ -601,6 +601,13 @@ export const dict = {
   "settings.voice.acceleration.compatible": "Compatible",
   "settings.voice.acceleration.compatible.description":
     "This processor lacks AVX2, so transcription runs on the portable kernel and is much slower.",
+  "settings.voice.dictation.title": "Dictation",
+  "settings.voice.dictation.language.title": "Spoken language",
+  "settings.voice.dictation.language.description": "The language you speak. Guessing it makes the recognizer translate instead of transcribe.",
+  "settings.voice.dictation.vocabulary.title": "Vocabulary",
+  "settings.voice.dictation.vocabulary.description": "Names and jargon the recognizer should expect, separated by commas.",
+  "settings.voice.dictation.vocabulary.placeholder": "Cairn, Sover, Traefik",
+  "settings.voice.model.silero-v6.2.0": "Voice detection",
   "settings.voice.models": "Speech models",
   "settings.voice.unavailable": "Local speech is only available in the desktop application.",
   "settings.voice.model.base-q5_1": "Base",

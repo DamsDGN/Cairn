@@ -62,6 +62,13 @@ reference for contributors; the user-facing description lives in `README.md`.
   addon, which cannot raise SIGILL. Measured on the reference machine, a 6.3 s French clip with
   `base-q5_1`: 24.3 s with the portable addon at any thread count, 1.1 s with the AVX2 addon on
   8 threads, against 0.96 s for the official `whisper-cli` built from whisper.cpp 1.9.3.
+  Dictation sends an explicit spoken language (the interface locale until the user picks another),
+  `translate: false`, one processor and at most eight threads, and the recognizer receives a
+  vocabulary hint from Settings > Voice. Base is the only offered speech model: the small ones were
+  slower and hallucinated subtitles on this machine. The Silero detector from the same project trims
+  the recording and skips transcription when nobody spoke, and a short list drops transcripts that
+  are only closing credits. A 5.4 s clip transcribes in 1.2 s, and the vocabulary turns "Kearn chez sauver
+  à brest, tréfique" into "Kairn chez Sover à Brest, Traefik".
 
 ## Decisions
 

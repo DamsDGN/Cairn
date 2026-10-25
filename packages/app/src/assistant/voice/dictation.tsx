@@ -6,6 +6,7 @@ import { useLanguage } from "@/runtime/i18n/language"
 import { usePlatform, type VoiceLocalModelID } from "@/runtime/platform/platform"
 import type { ComposerModel } from "@/composer/model"
 import { showToast } from "@/shell/notifications/toast"
+import { dictationLanguage } from "./languages"
 import { DialogVoiceModels } from "./model-dialog"
 import { useVoiceModels } from "./models"
 import { RECORDING_LIMIT_MS, startRecorder, type Recorder } from "./recorder"
@@ -30,6 +31,8 @@ export function AssistantDictationButton(props: { composer: ComposerModel }) {
 
   let recorder: Recorder | undefined
   let selected: VoiceLocalModelID | undefined
+  let spoken = "en"
+  let vocabulary: string | undefined
   let timer: ReturnType<typeof setInterval> | undefined
 
   const stopTimer = () => {
@@ -55,13 +58,11 @@ export function AssistantDictationButton(props: { composer: ComposerModel }) {
 
     try {
       const audio = await current.stop()
-      // Without an explicit language the recognizer falls back to English and translates instead of
-      // transcribing. The interface language is the best available hint until dictation has its own
-      // spoken-language setting.
       const text = await platform.voiceLocal!.transcribe({
         audio,
         id: selected,
-        language: language.locale().split("-")[0],
+        language: spoken,
+        prompt: vocabulary,
       })
 
       if (text) insert(text)
@@ -99,6 +100,14 @@ export function AssistantDictationButton(props: { composer: ComposerModel }) {
 
       return
     }
+
+    // Without an explicit language the recognizer falls back to English and translates instead of
+    // transcribing, so the setting always has a value: the user's choice, or their interface
+    // language.
+    const preferences = await platform.voiceLocal!.preferences()
+
+    spoken = preferences.language ?? dictationLanguage(language.locale())
+    vocabulary = preferences.prompt
 
     try {
       selected = voice.best()

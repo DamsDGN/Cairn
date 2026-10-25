@@ -6,13 +6,20 @@ import { useLanguage } from "@/runtime/i18n/language"
 import type { VoiceLocalModel, VoiceLocalModelID } from "@/runtime/platform/platform"
 import type { VoiceModels } from "./models"
 
-const LABEL: Record<VoiceLocalModelID, "settings.voice.model.base-q5_1" | "settings.voice.model.small-q5_1" | "settings.voice.model.small"> = {
+const LABEL: Record<
+  VoiceLocalModelID,
+  | "settings.voice.model.base-q5_1"
+  | "settings.voice.model.small-q5_1"
+  | "settings.voice.model.small"
+  | "settings.voice.model.silero-v6.2.0"
+> = {
   "base-q5_1": "settings.voice.model.base-q5_1",
   "small-q5_1": "settings.voice.model.small-q5_1",
   small: "settings.voice.model.small",
+  "silero-v6.2.0": "settings.voice.model.silero-v6.2.0",
 }
 
-const RECOMMENDED: VoiceLocalModelID = "small-q5_1"
+const RECOMMENDED: VoiceLocalModelID = "base-q5_1"
 
 export function formatSize(bytes: number) {
   return `${Math.round(bytes / 1_000_000)} MB`

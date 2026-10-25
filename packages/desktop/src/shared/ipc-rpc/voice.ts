@@ -2,7 +2,7 @@ import { Schema } from "effect"
 import { Rpc, RpcGroup } from "effect/rpc"
 import { Transferable } from "effect/workers"
 
-const ModelID = Schema.Literals(["base-q5_1", "small-q5_1", "small"])
+const ModelID = Schema.Literals(["base-q5_1", "small-q5_1", "small", "silero-v6.2.0"])
 const ModelStatus = Schema.Literals(["idle", "downloading", "installed", "failed"])
 const Acceleration = Schema.Literals(["avx2", "compatible"])
 
@@ -14,10 +14,17 @@ const ModelState = Schema.Struct({
 })
 
 export type VoiceModelID = typeof ModelID.Type
+export type VoicePreferences = typeof Preferences.Type
 export type VoiceModelState = typeof ModelState.Type
+
+const Preferences = Schema.Struct({
+  language: Schema.optional(Schema.String),
+  prompt: Schema.optional(Schema.String),
+})
 
 const ModelInfo = Schema.Struct({
   id: ModelID,
+  kind: Schema.Literals(["speech", "detector"]),
   installed: Schema.Boolean,
   size: Schema.Number,
 })
@@ -43,6 +50,18 @@ export const VoiceLocalState = Rpc.make("VoiceLocalState", {
   success: ModelState,
 })
 
+export const VoiceLocalPreferences = Rpc.make("VoiceLocalPreferences", {
+  success: Preferences,
+})
+
+export const VoiceLocalPreferencesSet = Rpc.make("VoiceLocalPreferencesSet", {
+  payload: {
+    language: Schema.optional(Schema.String),
+    prompt: Schema.optional(Schema.String),
+  },
+  success: Preferences,
+})
+
 export const VoiceLocalAcceleration = Rpc.make("VoiceLocalAcceleration", {
   success: Schema.Struct({ level: Acceleration }),
 })
@@ -50,7 +69,8 @@ export const VoiceLocalAcceleration = Rpc.make("VoiceLocalAcceleration", {
 export const VoiceLocalTranscribe = Rpc.make("VoiceLocalTranscribe", {
   payload: {
     audio: Transferable.Uint8Array,
-    language: Schema.optional(Schema.String),
+    language: Schema.String,
+    prompt: Schema.optional(Schema.String),
     id: Schema.optional(ModelID),
   },
   success: Schema.Struct({ text: Schema.String }),
@@ -61,6 +81,8 @@ export const VoiceRpcs = RpcGroup.make(
   VoiceLocalDownload,
   VoiceLocalState,
   VoiceLocalRemove,
+  VoiceLocalPreferences,
+  VoiceLocalPreferencesSet,
   VoiceLocalAcceleration,
   VoiceLocalTranscribe,
 )

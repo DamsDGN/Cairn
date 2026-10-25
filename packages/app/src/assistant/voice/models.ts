@@ -9,8 +9,9 @@ import {
 
 const POLL_MS = 400
 
-// Largest first: dictation should use the best model the user has downloaded, not the first one.
-const PREFERENCE: VoiceLocalModelID[] = ["small", "small-q5_1", "base-q5_1"]
+// Dictation uses the default model when it is installed, then any other speech model. Older
+// profiles still hold one of the small models, which are no longer offered.
+const PREFERENCE: VoiceLocalModelID[] = ["base-q5_1", "small", "small-q5_1"]
 
 export function useVoiceModels() {
   const platform = usePlatform()
@@ -85,9 +86,11 @@ export function useVoiceModels() {
 
   const installed = () => (models() ?? []).filter((model) => model.installed)
 
+  const speech = () => (models() ?? []).filter((model) => model.kind === "speech")
+
   const best = () => PREFERENCE.find((id) => installed().some((model) => model.id === id))
 
-  return { models, states, state, progress, download, remove, installed, best, refetch }
+  return { models, states, state, progress, download, remove, installed, speech, best, refetch }
 }
 
 export type VoiceModels = ReturnType<typeof useVoiceModels>

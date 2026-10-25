@@ -19,7 +19,7 @@ export function DialogVoiceModels(props?: { onInstalled?: () => void }) {
       </DialogHeader>
       <DialogBody class="flex flex-col gap-2">
         <p class="text-[13px] text-v2-text-text-muted">{language.t("assistant.dictation.model.description")}</p>
-        <For each={voice.models()}>
+        <For each={voice.speech()}>
           {(model) => <VoiceModelRow model={model} voice={voice} onInstalled={props?.onInstalled} />}
         </For>
       </DialogBody>

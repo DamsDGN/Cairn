@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto"
 import { createWriteStream } from "node:fs"
 import { mkdir, rename, rm } from "node:fs/promises"
 import path from "node:path"
@@ -45,6 +46,7 @@ export function createVoiceDownloader(dataDirectory: string) {
       url: model.url,
       target,
       size: model.size,
+      sha256: model.sha256,
       report: (state) => states.set(id, state),
     })
       .then((state) => {
@@ -83,6 +85,7 @@ export async function downloadFile(input: {
   url: string
   target: string
   size: number
+  sha256: string
   report: (state: DownloadState) => void
 }): Promise<DownloadState> {
   const partial = partialPath(input.target)
@@ -100,10 +103,12 @@ export async function downloadFile(input: {
   }
 
   const sink = createWriteStream(partial)
+  const hash = createHash("sha256")
   let received = 0
 
   try {
     for await (const chunk of response.body) {
+      hash.update(chunk)
       received += chunk.byteLength
       input.report({ status: "downloading", received, total: input.size })
       if (!sink.write(chunk)) await new Promise<void>((resolve) => sink.once("drain", () => resolve()))
@@ -122,6 +127,14 @@ export async function downloadFile(input: {
   })
 
   if (received !== input.size) {
+    await rm(partial, { force: true })
+    input.report(failed)
+
+    return failed
+  }
+
+  // The size proves the transfer completed; the digest proves it is the file that was published.
+  if (hash.digest("hex") !== input.sha256) {
     await rm(partial, { force: true })
     input.report(failed)
 
