@@ -30,6 +30,7 @@ import { SettingsAppearance } from "./appearance/appearance"
 import { experimentalSettingsAvailable, SettingsExperimental } from "./experimental/experimental"
 import { SettingsKeybinds } from "./keybinds/keybinds"
 import { SettingsNotifications } from "./notifications/notifications"
+import { SettingsVoice } from "./voice/voice"
 import { SettingsProviders } from "./providers/providers"
 import { SettingsModels } from "./models/models"
 import { SettingsServerGeneral } from "./servers/servers"
@@ -60,6 +61,7 @@ const rootClientTabs = [
   { value: "general", icon: pageIcons.general, label: "settings.tab.preferences" },
   { value: "appearance", icon: pageIcons.appearance, label: "settings.general.section.appearance" },
   { value: "notifications", icon: pageIcons.notifications, label: "settings.tab.notifications" },
+  { value: "voice", icon: pageIcons.voice, label: "settings.tab.voice" },
   { value: "shortcuts", icon: pageIcons.shortcuts, label: "settings.tab.shortcuts" },
 ] as const
 
@@ -363,6 +365,9 @@ function RootSettings() {
       </Tabs.Content>
       <Tabs.Content value="notifications" class="settings-panel">
         <SettingsNotifications />
+      </Tabs.Content>
+      <Tabs.Content value="voice" class="settings-panel">
+        <SettingsVoice />
       </Tabs.Content>
       <Tabs.Content value="shortcuts" class="settings-panel">
         <SettingsKeybinds active={surface.view().tab === "shortcuts"} />

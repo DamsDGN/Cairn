@@ -172,7 +172,7 @@ type PlatformBase = {
 
 export type VoiceLocalModelID = "base-q5_1" | "small-q5_1" | "small"
 
-export type VoiceLocalModel = { id: VoiceLocalModelID; installed: boolean }
+export type VoiceLocalModel = { id: VoiceLocalModelID; installed: boolean; size: number }
 
 export type VoiceLocalState = {
   id: VoiceLocalModelID
