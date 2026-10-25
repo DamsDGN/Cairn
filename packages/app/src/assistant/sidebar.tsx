@@ -2,12 +2,25 @@ import type { SessionInfo } from "@opencode/client/promise"
 import type { GoUsage, GoUsageWindow } from "@/runtime/platform/platform"
 import { skipToken, useQuery } from "@tanstack/solid-query"
 import { Button } from "@opencode/ui/button"
+import { IconButton } from "@opencode/ui/icon-button"
 import { Icon } from "@opencode/ui/icon"
 import type { IconName } from "@opencode/ui/icons/catalog"
+import { Menu } from "@opencode/ui/menu"
 import { TextInput } from "@opencode/ui/text-input"
+import { InlineInput } from "@opencode/ui/inline-input"
 import { ScrollView } from "@opencode/ui/scroll-view"
 import { ResizeHandle } from "@opencode/ui/resize-handle"
-import { For, Show, createMemo, createResource, createSignal, startTransition, type JSX } from "solid-js"
+import { Dialog, DialogFooter, DialogHeader, DialogTitleGroup } from "@opencode/ui/dialog"
+import { useDialog } from "@opencode/ui/context/dialog"
+import {
+  For,
+  Show,
+  createMemo,
+  createResource,
+  createSignal,
+  startTransition,
+  type JSX,
+} from "solid-js"
 import { debounce } from "@solid-primitives/scheduled"
 import { useLanguage } from "@/runtime/i18n/language"
 import { usePlatform } from "@/runtime/platform/platform"
@@ -16,35 +29,42 @@ import { useServerCtx } from "@/runtime/server/runtime"
 import { sessionLabel } from "@/session/title"
 import { useSettingsSurface } from "@/settings/surface"
 import { useTabs } from "@/shell/tabs/tabs"
-import type { LocalProject } from "@/shell/state/layout"
+import { useCurrentRoute, type LocalProject } from "@/shell/state/layout"
+import { useSessionTabAvatarState } from "@/shell/layout/project-avatar-state"
+import { notifySessionTabsRemoved } from "@/shell/titlebar/session-events"
+import { sessionTreeIDs } from "@/session/requests/session-request-tree"
+import { showToast } from "@/shell/notifications/toast"
+import { errorMessage } from "@/shell/layout/helpers"
 import {
   SIDEBAR_COLLAPSE_THRESHOLD,
   SIDEBAR_MAX_WIDTH,
   SIDEBAR_MIN_WIDTH,
   assistantSidebar,
+  isSessionPinned,
   persistSidebarCollapsed,
   persistSidebarWidth,
+  toggleSessionPinned,
   toggleSidebarSection,
 } from "@/assistant/sidebar-state"
 import { pathKey } from "@/workspaces/path-key"
 
-const SESSION_LIMIT = 30
+const SESSION_LIMIT = 60
 
 const ROW = `
-  flex h-9 min-w-0 w-full shrink-0 items-center gap-2 rounded-[6px] px-2.5 text-start
-  text-v2-text-text-base [font-weight:440] outline-none
-  transition-[background-color] duration-[120ms] ease-in-out
+  flex h-8 min-w-0 w-full shrink-0 items-center gap-2 rounded-[6px] px-2 text-start
+  text-[13px] text-v2-text-text-base [font-weight:440] outline-none
+  transition-[background-color,color] duration-[120ms] ease-in-out
   hover:bg-v2-overlay-simple-overlay-hover focus-visible:bg-v2-overlay-simple-overlay-hover
 `
 
-const LABEL_ROW = `
-  flex h-7 min-w-0 w-full shrink-0 items-center gap-2 rounded-[6px] px-2.5 text-start
-  text-[12px] text-v2-text-text-muted [font-weight:440] outline-none
-  transition-[background-color] duration-[120ms] ease-in-out
-  hover:bg-v2-overlay-simple-overlay-hover focus-visible:bg-v2-overlay-simple-overlay-hover
-`
+const GROUP_LABEL = "px-2.5 pb-1 pt-3 text-[11px] text-v2-text-text-faint [font-weight:520]"
 
-const EMPTY = "ps-2.5 text-[12px] text-v2-text-text-faint"
+const EMPTY = "px-2.5 py-1.5 text-[12px] text-v2-text-text-faint"
+
+const CHAT_ACTION =
+  "pointer-events-none absolute inset-y-0 end-0 flex items-center pe-0.5 opacity-0 transition-opacity duration-[120ms] group-hover/chat:pointer-events-auto group-hover/chat:opacity-100 group-focus-within/chat:pointer-events-auto group-focus-within/chat:opacity-100 data-[visible=true]:pointer-events-auto data-[visible=true]:opacity-100"
+
+type ChatGroup = { id: string; title: string; sessions: SessionInfo[] }
 
 export function AssistantSidebar(props: { directory: string }) {
   const platform = usePlatform()
@@ -52,6 +72,8 @@ export function AssistantSidebar(props: { directory: string }) {
   const tabs = useTabs()
   const language = useLanguage()
   const settings = useSettingsSurface()
+  const dialog = useDialog()
+  const route = useCurrentRoute()
 
   const directory = props.directory
 
@@ -66,7 +88,7 @@ export function AssistantSidebar(props: { directory: string }) {
   const [search, setSearch] = createSignal("")
   const runSearch = debounce(setSearch, 150)
 
-  const [sessions] = createResource(
+  const [sessions, { refetch: refetchSessions }] = createResource(
     () => (ready() ? { ready: ready()!, search: search() } : undefined),
     (input) =>
       input.ready.sdk.api.session
@@ -99,6 +121,46 @@ export function AssistantSidebar(props: { directory: string }) {
       .toSorted((a, b) => (b.time.updated ?? b.time.created) - (a.time.updated ?? a.time.created))
       .slice(0, SESSION_LIMIT)
   })
+
+  const groups = createMemo<ChatGroup[]>(() => {
+    const now = new Date()
+    const today = localDay(now)
+    const yesterday = localDay(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1))
+    const week = localDay(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7))
+    const pinned: SessionInfo[] = []
+    const todayChats: SessionInfo[] = []
+    const yesterdayChats: SessionInfo[] = []
+    const weekChats: SessionInfo[] = []
+    const olderChats: SessionInfo[] = []
+
+    for (const session of chats()) {
+      if (isSessionPinned(session.id)) {
+        pinned.push(session)
+        continue
+      }
+
+      const day = localDay(new Date(session.time.updated ?? session.time.created))
+
+      if (day === today) todayChats.push(session)
+      else if (day === yesterday) yesterdayChats.push(session)
+      else if (day >= week) weekChats.push(session)
+      else olderChats.push(session)
+    }
+
+    return [
+      { id: "pinned", title: language.t("assistant.pinned"), sessions: pinned },
+      { id: "today", title: language.t("assistant.group.today"), sessions: todayChats },
+      { id: "yesterday", title: language.t("assistant.group.yesterday"), sessions: yesterdayChats },
+      { id: "week", title: language.t("assistant.group.week"), sessions: weekChats },
+      { id: "older", title: language.t("assistant.group.older"), sessions: olderChats },
+    ].filter((group) => group.sessions.length > 0)
+  })
+
+  const activeSessionID = () => {
+    const current = route()
+
+    return current.type === "session" ? current.sessionId : undefined
+  }
 
   const projects = createMemo(() =>
     (ready()?.projects.list() ?? []).filter((project) => pathKey(project.worktree) !== pathKey(directory)),
@@ -157,6 +219,65 @@ export function AssistantSidebar(props: { directory: string }) {
     })
   }
 
+  const renameChat = async (session: SessionInfo, title: string) => {
+    const local = ready()
+
+    if (!local) return false
+    const next = title.trim()
+
+    if (!next || next === sessionLabel(session)) return true
+
+    try {
+      await local.sdk.api.session.update({ sessionID: session.id, title: next })
+      local.data.session.remember({ ...(local.data.session.get(session.id) ?? session), title: next })
+      local.data.session.invalidate(session.id)
+      void local.data.session.sync(session.id).catch(() => undefined)
+
+      return true
+    } catch (cause) {
+      showToast({
+        title: language.t("common.requestFailed"),
+        description: errorMessage(cause, language.t("common.requestFailed")),
+      })
+
+      return false
+    }
+  }
+
+  const removeChat = async (session: SessionInfo) => {
+    const conn = sidecar()
+    const local = ready()
+
+    if (!conn || !local) return false
+    const ids = sessionTreeIDs(local.data.session.list(), session.id)
+
+    try {
+      await local.data.session.remove(session.id)
+      // The fetched page is independent of the event store, so it still lists the removed session
+      // until it is read again.
+      void refetchSessions()
+      notifySessionTabsRemoved({
+        server: ServerConnection.key(conn),
+        directory: session.location.directory,
+        sessionIDs: ids,
+      })
+      if (isSessionPinned(session.id)) toggleSessionPinned(session.id)
+
+      return true
+    } catch (cause) {
+      showToast({
+        title: language.t("session.delete.failed.title"),
+        description: errorMessage(cause, language.t("session.delete.failed.title")),
+      })
+
+      return false
+    }
+  }
+
+  const confirmDelete = (session: SessionInfo) => {
+    void dialog.show(() => <DeleteChatDialog session={session} onConfirm={() => removeChat(session)} />)
+  }
+
   const openProject = (project: LocalProject) => {
     const conn = sidecar()
     const local = ready()
@@ -186,11 +307,30 @@ export function AssistantSidebar(props: { directory: string }) {
         onResize={persistSidebarWidth}
         onCollapse={() => persistSidebarCollapsed(true)}
       />
-      <Button class="mb-2 w-full justify-start" variant="submit" icon="plus-small" onClick={newChat}>
+      <div data-slot="assistant-brand" class="flex h-9 items-center gap-2.5 px-1.5">
+        <img
+          src="/assets/logo-cairn.svg"
+          alt=""
+          aria-hidden="true"
+          class="size-6 shrink-0 rounded-[7px] shadow-[0_0_0_1px_var(--v2-border-border-weaker)]"
+        />
+        <span
+          class="truncate text-[15px] text-v2-text-text-base"
+          style={{ "font-family": "var(--cairn-font-serif)", "font-weight": "600", "letter-spacing": "-0.01em" }}
+        >
+          Cairn
+        </span>
+      </div>
+      <Button
+        class="mb-2 mt-1 h-8 w-full justify-start"
+        variant="contrast"
+        icon="plus-small"
+        onClick={newChat}
+      >
         {language.t("assistant.new")}
       </Button>
       <TextInput
-        class="mb-2"
+        class="mb-1 w-full"
         value={search()}
         autocomplete="off"
         spellcheck={false}
@@ -198,7 +338,46 @@ export function AssistantSidebar(props: { directory: string }) {
         leadingIcon={<Icon name="magnifying-glass" class="text-v2-icon-icon-muted" />}
         onInput={(event) => runSearch(event.currentTarget.value)}
       />
-      <ScrollView class="min-h-0 flex-1 overflow-y-auto">
+      <ScrollView class="min-h-0 flex-1 overflow-y-auto pt-1">
+        <Show
+          when={groups().length > 0}
+          fallback={
+            <div class="flex flex-col gap-1 px-2.5 py-3">
+              <span class="text-[12px] text-v2-text-text-faint">
+                {search().trim() ? language.t("assistant.search.empty") : language.t("assistant.chats.empty")}
+              </span>
+              <Show when={!search().trim()}>
+                <span class="text-[12px] text-v2-text-text-faint">{language.t("assistant.chats.emptyHint")}</span>
+              </Show>
+            </div>
+          }
+        >
+          <For each={groups()}>
+            {(group) => (
+              <section data-slot="assistant-chat-group" data-group={group.id} class="mb-1">
+                <div class={GROUP_LABEL}>{group.title}</div>
+                <For each={group.sessions}>
+                  {(session) => (
+                    <ChatRow
+                      session={session}
+                      server={() => {
+                        const conn = sidecar()
+
+                        return conn ? ServerConnection.key(conn) : undefined
+                      }}
+                      active={activeSessionID() === session.id}
+                      pinned={isSessionPinned(session.id)}
+                      onOpen={() => openChat(session)}
+                      onRename={(title) => renameChat(session, title)}
+                      onTogglePin={() => toggleSessionPinned(session.id)}
+                      onDelete={() => confirmDelete(session)}
+                    />
+                  )}
+                </For>
+              </section>
+            )}
+          </For>
+        </Show>
         <Show when={projects().length > 0}>
           <CollapsibleSection
             label={language.t("home.projects")}
@@ -239,23 +418,8 @@ export function AssistantSidebar(props: { directory: string }) {
             </For>
           </Show>
         </CollapsibleSection>
-        <CollapsibleSection
-          label={language.t("assistant.chats")}
-          open={assistantSidebar.sections.recents}
-          onToggle={() => toggleSidebarSection("recents")}
-        >
-          <Show when={chats().length > 0} fallback={<div class={EMPTY}>{language.t("assistant.chats.empty")}</div>}>
-            <For each={chats()}>
-              {(session) => (
-                <button type="button" class={ROW} onClick={() => openChat(session)}>
-                  <span class="truncate">{sessionLabel(session)}</span>
-                </button>
-              )}
-            </For>
-          </Show>
-        </CollapsibleSection>
       </ScrollView>
-      <div class="mt-2 flex flex-col gap-0.5">
+      <div class="mt-2 flex flex-col gap-0.5 border-t border-v2-border-border-weaker pt-2">
         <GoCard />
         <button type="button" class={ROW} onClick={() => settings.open("extensions")}>
           <Icon name="outline-globe-plus" class="shrink-0 text-v2-icon-icon-muted" />
@@ -270,6 +434,196 @@ export function AssistantSidebar(props: { directory: string }) {
   )
 }
 
+function ChatRow(props: {
+  session: SessionInfo
+  server: () => ServerConnection.Key | undefined
+  active: boolean
+  pinned: boolean
+  onOpen: () => void
+  onRename: (title: string) => Promise<boolean>
+  onTogglePin: () => void
+  onDelete: () => void
+}) {
+  const language = useLanguage()
+  const [editing, setEditing] = createSignal(false)
+  const [draft, setDraft] = createSignal("")
+  const [saving, setSaving] = createSignal(false)
+  const [menuOpen, setMenuOpen] = createSignal(false)
+  let input: HTMLInputElement | undefined
+  let row: HTMLButtonElement | undefined
+  let cancelled = false
+
+  const status = useSessionTabAvatarState(
+    () => props.server() ?? ServerConnection.Key.make(""),
+    () => props.session.id,
+  )
+
+  const loading = () => status.loading()
+  const unread = () => status.unread() && !loading()
+  const title = () => sessionLabel(props.session)
+
+  const startRename = () => {
+    cancelled = false
+    setDraft(title())
+    setEditing(true)
+    requestAnimationFrame(() => {
+      input?.focus()
+      input?.select()
+    })
+  }
+
+  const save = async () => {
+    if (saving() || cancelled) return
+    setSaving(true)
+    const saved = await props.onRename(draft())
+    setSaving(false)
+
+    if (!saved) {
+      requestAnimationFrame(() => {
+        input?.focus()
+        input?.select()
+      })
+
+      return
+    }
+
+    setEditing(false)
+    requestAnimationFrame(() => row?.focus())
+  }
+
+  const cancel = () => {
+    if (saving()) return
+    cancelled = true
+    setEditing(false)
+    requestAnimationFrame(() => row?.focus())
+  }
+
+  return (
+    <div
+      data-slot="assistant-chat-row"
+      data-session-id={props.session.id}
+      class="group/chat relative flex min-w-0 items-center"
+    >
+      <Show
+        when={!editing()}
+        fallback={
+          <div class="flex h-8 min-w-0 w-full items-center gap-2 rounded-[6px] bg-v2-overlay-simple-overlay-hover px-2">
+            <span class="flex size-3.5 shrink-0 items-center justify-center">
+              <Show when={loading()}>
+                <span class="size-3 animate-spin rounded-full border border-v2-border-border-muted border-t-v2-icon-icon-base" />
+              </Show>
+              <Show when={unread()}>
+                <span class="size-[5px] rounded-full bg-v2-icon-icon-accent" />
+              </Show>
+            </span>
+            <InlineInput
+              ref={(element) => (input = element)}
+              class="min-w-0 flex-1 bg-transparent text-[13px] text-v2-text-text-base outline-none"
+              value={draft()}
+              disabled={saving()}
+              onInput={(event) => setDraft(event.currentTarget.value)}
+              onBlur={() => void save()}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault()
+                  void save()
+                }
+
+                if (event.key === "Escape") {
+                  event.preventDefault()
+                  cancel()
+                }
+              }}
+            />
+          </div>
+        }
+      >
+        <button
+          ref={row}
+          type="button"
+          class={ROW}
+          classList={{
+            "bg-v2-overlay-simple-overlay-hover": props.active,
+            "pe-7": true,
+          }}
+          aria-current={props.active ? "page" : undefined}
+          onClick={props.onOpen}
+        >
+          <span class="flex size-3.5 shrink-0 items-center justify-center">
+            <Show when={loading()}>
+              <span
+                data-slot="assistant-chat-loading"
+                class="size-3 animate-spin rounded-full border border-v2-border-border-muted border-t-v2-icon-icon-base"
+              />
+            </Show>
+            <Show when={unread()}>
+              <span data-slot="assistant-chat-unread" class="size-[5px] rounded-full bg-v2-icon-icon-accent" />
+            </Show>
+          </span>
+          <span class="truncate">{title()}</span>
+        </button>
+        <div class={CHAT_ACTION} data-visible={menuOpen()}>
+          <Menu
+            gutter={6}
+            modal={false}
+            placement="bottom-end"
+            open={menuOpen()}
+            onOpenChange={setMenuOpen}
+          >
+            <Menu.Trigger
+              as={IconButton}
+              variant="ghost-muted"
+              size="small"
+              icon={<Icon name="outline-dots" />}
+              aria-label={language.t("common.moreOptions")}
+            />
+            <Menu.Portal>
+              <Menu.Content>
+                <Menu.Item onSelect={startRename}>{language.t("common.rename")}</Menu.Item>
+                <Menu.Item onSelect={props.onTogglePin}>
+                  {props.pinned ? language.t("assistant.unpin") : language.t("assistant.pin")}
+                </Menu.Item>
+                <Menu.Separator />
+                <Menu.Item onSelect={props.onDelete}>{language.t("common.delete")}…</Menu.Item>
+              </Menu.Content>
+            </Menu.Portal>
+          </Menu>
+        </div>
+      </Show>
+    </div>
+  )
+}
+
+function DeleteChatDialog(props: { session: SessionInfo; onConfirm: () => Promise<boolean> }) {
+  const language = useLanguage()
+  const dialog = useDialog()
+  const name = () => sessionLabel(props.session)
+
+  const confirm = async () => {
+    await props.onConfirm()
+    dialog.close()
+  }
+
+  return (
+    <Dialog fit>
+      <DialogHeader hideClose>
+        <DialogTitleGroup
+          title={language.t("assistant.delete.title")}
+          description={language.t("assistant.delete.confirm", { name: name() })}
+        />
+      </DialogHeader>
+      <DialogFooter>
+        <Button variant="ghost" onClick={() => dialog.close()}>
+          {language.t("common.cancel")}
+        </Button>
+        <Button variant="danger" onClick={confirm}>
+          {language.t("assistant.delete.button")}
+        </Button>
+      </DialogFooter>
+    </Dialog>
+  )
+}
+
 function CollapsibleSection(props: {
   label: string
   icon?: IconName
@@ -278,8 +632,13 @@ function CollapsibleSection(props: {
   children: JSX.Element
 }) {
   return (
-    <div class="mb-3">
-      <button type="button" class={props.icon ? ROW : LABEL_ROW} onClick={props.onToggle} aria-expanded={props.open}>
+    <div class="mt-2">
+      <button
+        type="button"
+        class="flex h-7 min-w-0 w-full shrink-0 items-center gap-2 rounded-[6px] px-2.5 text-start text-[11px] text-v2-text-text-faint [font-weight:520] outline-none transition-[background-color] duration-[120ms] ease-in-out hover:bg-v2-overlay-simple-overlay-hover focus-visible:bg-v2-overlay-simple-overlay-hover"
+        onClick={props.onToggle}
+        aria-expanded={props.open}
+      >
         <Show when={props.icon} keyed>
           {(icon) => <Icon name={icon} class="shrink-0 text-v2-icon-icon-muted" />}
         </Show>
@@ -295,6 +654,10 @@ function CollapsibleSection(props: {
       </Show>
     </div>
   )
+}
+
+function localDay(date: Date) {
+  return date.getFullYear() * 10_000 + date.getMonth() * 100 + date.getDate()
 }
 
 const GO_REFRESH = 300_000

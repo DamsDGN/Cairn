@@ -2,6 +2,7 @@ import type { Platform } from "@opencode/app/desktop"
 import type { ElectronAPI } from "../api-types"
 import { setPinchZoomEnabled, webviewZoom } from "../window/zoom"
 import { windowFullscreen } from "../window/fullscreen"
+import { windowMaximized } from "../window/maximized"
 import { DragCancelEvent } from "../../shared/ipc-transport"
 import { createExtensionBridge } from "../extensions"
 import { createDesktopFiles } from "./files"
@@ -25,6 +26,23 @@ export function createDesktopPlatform(api: ElectronAPI, windowState: DesktopWind
     windowID: windowState.id,
     assistantDirectory: windowState.assistantDirectory,
     goUsage: () => api.goUsage(),
+    assistantMcp: {
+      add: (server, config) => api.assistantMcpAdd(server, config),
+      remove: (server) => api.assistantMcpRemove(server),
+      list: () => api.assistantMcpList(),
+    },
+    assistantConfig: {
+      saveProvider: (input) => api.assistantProviderSave(input),
+      defaultModel: () => api.assistantDefaultModel(),
+      setDefaultModel: (model) => api.assistantDefaultModelSet(model),
+    },
+    voiceLocal: {
+      models: () => api.voiceModelList().then((result) => result.models),
+      download: (id) => api.voiceModelDownload(id),
+      state: (id) => api.voiceModelState(id),
+      remove: (id) => api.voiceModelRemove(id),
+      transcribe: (input) => api.voiceTranscribe(input),
+    },
     ...createDesktopFiles(api, os),
     ...createDesktopStorage(api),
     exportDebugLogs: () => api.exportDebugLogs(),
@@ -39,6 +57,12 @@ export function createDesktopPlatform(api: ElectronAPI, windowState: DesktopWind
     },
     webviewZoom,
     windowFullscreen,
+    windowMaximized,
+    windowMinimize: () => api.minimizeWindow(),
+    windowToggleMaximize: async () => {
+      await api.toggleWindowMaximize()
+    },
+    windowClose: () => api.closeWindow(),
     getPinchZoomEnabled: () => api.getPinchZoomEnabled(),
     setPinchZoomEnabled,
     onDragCancel: (callback) => {

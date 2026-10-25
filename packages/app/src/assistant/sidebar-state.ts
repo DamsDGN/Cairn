@@ -2,6 +2,7 @@ import { createStore } from "solid-js/store"
 
 const WIDTH_KEY = "opencode.assistant.sidebar.width"
 const COLLAPSED_KEY = "opencode.assistant.sidebar.collapsed"
+const PINNED_KEY = "opencode.assistant.sidebar.pinned"
 const SECTION_PREFIX = "opencode.assistant.sidebar.section."
 
 export const SIDEBAR_DEFAULT_WIDTH = 264
@@ -13,12 +14,24 @@ export type SidebarSection = "projects" | "artifacts" | "recents"
 
 const savedWidth = Number(localStorage.getItem(WIDTH_KEY))
 
+const readPinned = () => {
+  try {
+    const parsed: unknown = JSON.parse(localStorage.getItem(PINNED_KEY) ?? "[]")
+
+    if (!Array.isArray(parsed)) return []
+    return parsed.filter((id): id is string => typeof id === "string")
+  } catch {
+    return []
+  }
+}
+
 const [assistantSidebar, setAssistantSidebar] = createStore({
   width:
     Number.isFinite(savedWidth) && savedWidth > 0
       ? Math.min(SIDEBAR_MAX_WIDTH, Math.max(SIDEBAR_MIN_WIDTH, savedWidth))
       : SIDEBAR_DEFAULT_WIDTH,
   collapsed: localStorage.getItem(COLLAPSED_KEY) === "1",
+  pinned: readPinned(),
   sections: {
     projects: localStorage.getItem(`${SECTION_PREFIX}projects`) === "1",
     artifacts: localStorage.getItem(`${SECTION_PREFIX}artifacts`) === "1",
@@ -47,4 +60,15 @@ export const toggleSidebarCollapsed = () => {
 export const toggleSidebarSection = (key: SidebarSection) => {
   setAssistantSidebar("sections", key, !assistantSidebar.sections[key])
   localStorage.setItem(`${SECTION_PREFIX}${key}`, assistantSidebar.sections[key] ? "1" : "0")
+}
+
+export const isSessionPinned = (sessionID: string) => assistantSidebar.pinned.includes(sessionID)
+
+export const toggleSessionPinned = (sessionID: string) => {
+  const pinned = assistantSidebar.pinned.includes(sessionID)
+    ? assistantSidebar.pinned.filter((id) => id !== sessionID)
+    : [sessionID, ...assistantSidebar.pinned]
+
+  setAssistantSidebar("pinned", pinned)
+  localStorage.setItem(PINNED_KEY, JSON.stringify(pinned))
 }

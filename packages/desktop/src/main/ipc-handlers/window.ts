@@ -36,6 +36,22 @@ export const windowHandlers = WindowRpcs.toLayer(
         }),
       WindowGetPinchZoomEnabled: () => Effect.sync(getPinchZoomEnabled),
       WindowSetPinchZoomEnabled: ({ enabled }) => Effect.sync(() => setPinchZoomEnabled(enabled)),
+      WindowMinimize: (_args, context) =>
+        Effect.sync(() => BrowserWindow.fromWebContents(sender(handoff, context))?.minimize()),
+      WindowGetMaximized: (_args, context) =>
+        Effect.sync(() => BrowserWindow.fromWebContents(sender(handoff, context))?.isMaximized() ?? false),
+      WindowToggleMaximize: (_args, context) =>
+        Effect.sync(() => {
+          const win = BrowserWindow.fromWebContents(sender(handoff, context))
+
+          if (!win) return false
+          if (win.isMaximized()) win.unmaximize()
+          else win.maximize()
+
+          return win.isMaximized()
+        }),
+      WindowClose: (_args, context) =>
+        Effect.sync(() => BrowserWindow.fromWebContents(sender(handoff, context))?.close()),
       WindowSetTitlebar: ({ theme }, context) =>
         Effect.sync(() => {
           const win = BrowserWindow.fromWebContents(sender(handoff, context))

@@ -17,13 +17,6 @@ const rootDir = path.resolve(packageDir, "../..")
 
 const signScript = path.join(rootDir, "script", "sign-windows.ps1")
 
-// The Electron 42 packaging update briefly installed Linux launchers/icons under
-// "opencode-desktop". Keep that hidden desktop entry around so existing GNOME/KDE
-// pins still resolve after the canonical app id changes back to ai.opencode.desktop.
-const legacyDesktopEntry = path.join(packageDir, "resources", "linux", "opencode-desktop.desktop")
-
-const legacyDesktopEntryFpm = `${legacyDesktopEntry}=/usr/share/applications/opencode-desktop.desktop`
-
 // rpmbuild adds /usr/lib/.build-id links for every ELF file. The bundled Electron
 // binaries are byte-identical across apps on the same Electron version, so those
 // links collide with other Electron RPMs (Slack, Unity Hub, ...) and rpm/zypper
@@ -70,15 +63,23 @@ function resolveChannel() {
   return "dev"
 }
 
+// Cairn publishes its own releases: the updater reads the GitHub release feed of the fork, never
+// the upstream one, so an installed Cairn is offered Cairn builds only.
+const PUBLISH = {
+  provider: "github" as const,
+  owner: "DamsDGN",
+  repo: "Cairn",
+}
+
 const APP_IDS = {
-  dev: "ai.opencode.desktop.dev",
-  beta: "ai.opencode.desktop.beta",
-  prod: "ai.opencode.desktop",
+  dev: "tech.sover.cairn.dev",
+  beta: "tech.sover.cairn.beta",
+  prod: "tech.sover.cairn",
 } as const
 
 // libappimage (used by AppImageLauncher) resolves the .desktop entry inside an
 // AppImage by globbing `*.desktop` at the squashfs root. If the main
-// executable itself ends in `.desktop` (prod appId `ai.opencode.desktop`), the
+// executable itself ends in `.desktop` (prod appId `tech.sover.cairn`), the
 // ELF binary matches the glob and is parsed as a desktop entry, so
 // integration fails with `Malformed desktop entry: Unexpected char '\x7f' at 0`
 // (0x7F is the first byte of the ELF magic).
@@ -93,14 +94,14 @@ const getBase = (appId: string): Configuration => {
   const target = getCurrentCli()
 
   return {
-    artifactName: "opencode-desktop-${os}-${arch}.${ext}",
+    artifactName: "cairn-desktop-${os}-${arch}.${ext}",
     directories: {
       output: "dist",
       buildResources: "resources",
     },
     // Linux launchers are .desktop files, so this is the desktop file name,
-    // not just the app id. For prod, app id "ai.opencode.desktop" becomes
-    // "ai.opencode.desktop.desktop".
+    // not just the app id. For prod, app id "tech.sover.cairn" becomes
+    // "tech.sover.cairn.desktop".
     // https://developer.gnome.org/documentation/guidelines/maintainer/integrating.html
     // https://www.electron.build/docs/linux/
     extraMetadata: {
@@ -220,7 +221,7 @@ const getBase = (appId: string): Configuration => {
       category: "Development",
       executableName: linuxExecutableName(appId),
       // Derive the installed `.desktop` filename from `desktopName`
-      // (`ai.opencode.desktop.desktop` for prod) instead of `executableName`,
+      // (`tech.sover.cairn.desktop` for prod) instead of `executableName`,
       // so window association is unaffected by the executable rename above.
       syncDesktopName: true,
       desktop: {
@@ -245,9 +246,9 @@ export function getConfig() {
       return {
         ...base,
         appId,
-        productName: "OpenCode Dev",
+        productName: "Cairn Dev",
         deb: { fpm: [metainfoFpm(appId)] },
-        rpm: { packageName: "opencode-dev", fpm: [rpmNoBuildIdLinksFpm, metainfoFpm(appId)] },
+        rpm: { packageName: "cairn-dev", fpm: [rpmNoBuildIdLinksFpm, metainfoFpm(appId)] },
       }
     }
 
@@ -255,15 +256,11 @@ export function getConfig() {
       return {
         ...base,
         appId,
-        productName: "OpenCode Beta",
-        protocols: { name: "OpenCode Beta", schemes: ["opencode"] },
-        publish: {
-          provider: "generic",
-          url: "https://opencode.ai/update/api/beta/desktop/opencode/",
-          channel: "latest",
-        },
+        productName: "Cairn Beta",
+        protocols: { name: "Cairn Beta", schemes: ["opencode"] },
+        publish: PUBLISH,
         deb: { fpm: [metainfoFpm(appId)] },
-        rpm: { packageName: "opencode-beta", fpm: [rpmNoBuildIdLinksFpm, metainfoFpm(appId)] },
+        rpm: { packageName: "cairn-beta", fpm: [rpmNoBuildIdLinksFpm, metainfoFpm(appId)] },
       }
     }
 
@@ -271,15 +268,11 @@ export function getConfig() {
       return {
         ...base,
         appId,
-        productName: "OpenCode",
-        protocols: { name: "OpenCode", schemes: ["opencode"] },
-        publish: {
-          provider: "generic",
-          url: "https://opencode.ai/update/api/latest/desktop/opencode/",
-          channel: "latest",
-        },
-        deb: { fpm: [metainfoFpm(appId), legacyDesktopEntryFpm] },
-        rpm: { packageName: "opencode", fpm: [rpmNoBuildIdLinksFpm, metainfoFpm(appId), legacyDesktopEntryFpm] },
+        productName: "Cairn",
+        protocols: { name: "Cairn", schemes: ["opencode"] },
+        publish: PUBLISH,
+        deb: { fpm: [metainfoFpm(appId)] },
+        rpm: { packageName: "cairn", fpm: [rpmNoBuildIdLinksFpm, metainfoFpm(appId)] },
       }
     }
   }

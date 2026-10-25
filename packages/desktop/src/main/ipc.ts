@@ -8,12 +8,14 @@ import { DragCancelEvent, IpcTransportPort } from "../shared/ipc-transport"
 import { Extensions } from "./extension"
 import { DesktopFiles, openExternalURL } from "./files"
 import { appHandlers } from "./ipc-handlers/app"
+import { assistantHandlers } from "./ipc-handlers/assistant"
 import { eventHandlers } from "./ipc-handlers/events"
 import { extensionHandlers } from "./ipc-handlers/extensions"
 import { fileHandlers } from "./ipc-handlers/files"
 import { goHandlers } from "./ipc-handlers/go"
 import { menuHandlers } from "./ipc-handlers/menu"
 import { storageHandlers } from "./ipc-handlers/storage"
+import { voiceHandlers } from "./ipc-handlers/voice"
 import { windowHandlers } from "./ipc-handlers/window"
 import { IpcPortHandoff, IpcServerProtocolLive } from "./ipc-transport"
 import { ApplicationLifecycle } from "./lifecycle"
@@ -33,6 +35,8 @@ const handlers = Layer.mergeAll(
   eventHandlers,
   extensionHandlers,
   goHandlers,
+  assistantHandlers,
+  voiceHandlers,
 )
 
 export const layer = RpcServer.layer(DesktopRpcs, { disableFatalDefects: true }).pipe(

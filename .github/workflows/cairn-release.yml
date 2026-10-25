@@ -1,0 +1,88 @@
+name: cairn-release
+
+on:
+  push:
+    tags: ["cairn-v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # A release tag that disagrees with the packaged version makes the updater compare apples to
+      # oranges, so the tag and packages/desktop/package.json have to match.
+      - name: Check the tag matches the package version
+        if: startsWith(github.ref, 'refs/tags/cairn-v')
+        run: |
+          tag="${GITHUB_REF_NAME#cairn-v}"
+          version="$(node -p "require('./packages/desktop/package.json').version")"
+          if [ "$tag" != "$version" ]; then
+            echo "tag $tag does not match package version $version" >&2
+            exit 1
+          fi
+
+  desktop:
+    needs: guard
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            args: --linux --config electron-builder.config.ts
+            target: x86_64-unknown-linux-gnu
+          - os: windows-latest
+            args: --win --config electron-builder.config.ts
+            target: x86_64-pc-windows-msvc
+          - os: macos-latest
+            args: --mac --config electron-builder.assistant.ts
+            target: aarch64-apple-darwin
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: bun ./scripts/prebuild.ts
+        working-directory: packages/desktop
+        env:
+          OPENCODE_CLI_TARGET: ${{ matrix.target }}
+      - run: bun run build
+        working-directory: packages/desktop
+      # The release job uploads the artifacts, so electron-builder must not publish on its own.
+      - run: bunx electron-builder ${{ matrix.args }} --publish never
+        working-directory: packages/desktop
+        env:
+          OPENCODE_CLI_TARGET: ${{ matrix.target }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ matrix.os }}
+          path: |
+            packages/desktop/dist/*.AppImage
+            packages/desktop/dist/*.deb
+            packages/desktop/dist/*.exe
+            packages/desktop/dist/*.zip
+            packages/desktop/dist/*.blockmap
+            packages/desktop/dist/latest*.yml
+
+  release:
+    needs: desktop
+    if: startsWith(github.ref, 'refs/tags/cairn-v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+          path: dist
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/*.AppImage
+            dist/*.deb
+            dist/*.exe
+            dist/*.zip
+            dist/*.blockmap
+            dist/latest*.yml
+          generate_release_notes: true

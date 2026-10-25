@@ -1,6 +1,8 @@
+import type { VoiceModelID, VoiceModelState } from "../shared/ipc-rpc/voice"
 import type { DesktopMenuAction } from "@opencode/app/desktop-menu"
 import type { GoUsage } from "@opencode/app/desktop"
 import type { DesktopNativeBundle } from "@opencode/app/i18n/desktop-native"
+import type { AssistantConfigResult, AssistantProviderInput, McpServerConfig } from "../shared/ipc-rpc/assistant"
 import type { WindowBootstrap } from "../shared/window-bootstrap"
 import type {
   ClipboardImage,
@@ -31,6 +33,11 @@ export type ElectronAPI = {
   draftSet(key: string, value: string, strict: boolean): Promise<string[]>
   draftDelete(key: string): Promise<void>
   draftBlobPut(data: ArrayBuffer): Promise<string>
+  voiceModelList(): Promise<{ models: Array<{ id: VoiceModelID; installed: boolean }> }>
+  voiceModelDownload(id: VoiceModelID): Promise<VoiceModelState>
+  voiceModelState(id: VoiceModelID): Promise<VoiceModelState>
+  voiceModelRemove(id: VoiceModelID): Promise<boolean>
+  voiceTranscribe(input: { audio: ArrayBuffer; language?: string; id?: VoiceModelID }): Promise<string>
   draftBlobGet(id: string): Promise<ArrayBuffer | null>
   getWindowID(): string
   getWindowBootstrap(): WindowBootstrap
@@ -49,6 +56,12 @@ export type ElectronAPI = {
   openPath(path: string, app?: string): Promise<string | undefined>
   revealPath(path: string): Promise<boolean>
   goUsage(): Promise<GoUsage | null>
+  assistantMcpAdd(server: string, config: McpServerConfig): Promise<AssistantConfigResult>
+  assistantMcpRemove(server: string): Promise<AssistantConfigResult>
+  assistantMcpList(): Promise<Array<string>>
+  assistantProviderSave(input: AssistantProviderInput): Promise<AssistantConfigResult>
+  assistantDefaultModel(): Promise<string | undefined>
+  assistantDefaultModelSet(model: string | null): Promise<AssistantConfigResult>
   readClipboardImage(): Promise<ClipboardImage | null>
   writeClipboardText(text: string): Promise<void>
   goUsage(): Promise<GoUsage | null>
@@ -57,6 +70,11 @@ export type ElectronAPI = {
   onWindowFullscreenChanged(cb: (fullscreen: boolean) => void): () => void
   setWindowFocus(): Promise<void>
   showWindow(): Promise<void>
+  minimizeWindow(): Promise<void>
+  getWindowMaximized(): Promise<boolean>
+  toggleWindowMaximize(): Promise<boolean>
+  closeWindow(): Promise<void>
+  onWindowMaximizedChanged(cb: (maximized: boolean) => void): () => void
   relaunch(): void
   getZoomFactor(): Promise<number>
   setZoomFactor(factor: number): Promise<void>

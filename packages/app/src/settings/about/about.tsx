@@ -4,9 +4,6 @@ import { useLanguage } from "@/runtime/i18n/language"
 import { usePlatform } from "@/runtime/platform/platform"
 import { ExternalLink } from "@/runtime/platform/external-link"
 import { showToast } from "@/shell/notifications/toast"
-import legal from "./legal.svg"
-import anomalyBrush from "./anomaly-brush.svg"
-import { AnimatedWordmark } from "./animated-wordmark"
 import { FALLBACK_OTHER_CONTRIBUTORS, loadOtherContributorCount } from "./contributors"
 
 const writers = [
@@ -80,7 +77,12 @@ export function SettingsAbout(props: { active: boolean }) {
         <p>{language.t("settings.about.license")}</p>
       </div>
 
-      <AnimatedWordmark active={props.active} />
+      <div data-slot="about-brand">
+        <img src="/assets/logo-cairn.svg" alt="" aria-hidden="true" />
+        <span>Cairn</span>
+      </div>
+
+      <p>{language.t("settings.about.cairn.description")}</p>
 
       <div class="settings-about-credits">
         <p>{language.rich("settings.about.writtenByNames", { names: language.list(writerCredits()) })}</p>
@@ -97,15 +99,15 @@ export function SettingsAbout(props: { active: boolean }) {
       </div>
 
       <p class="settings-about-faint">
-        <ExternalLink href="https://opencode.ai">
-          <bdi dir="ltr">{language.t("settings.about.website")}</bdi>
+        <ExternalLink href="https://sover.tech">
+          <bdi dir="ltr">{language.t("settings.about.cairn.website")}</bdi>
         </ExternalLink>
       </p>
 
       <div class="settings-about-details">
-        <p>{language.t("settings.about.description")}</p>
+        <p>{language.t("settings.about.cairn.basedOn")}</p>
         <p>{language.t("settings.about.trademark")}</p>
-        <p>{language.t("settings.about.typeset")}</p>
+        <p>{language.t("settings.about.cairn.typeset")}</p>
         <p>
           <button type="button" class="settings-about-link" onClick={() => void showNotices()}>
             {language.t("settings.about.notices.title")}
@@ -113,11 +115,8 @@ export function SettingsAbout(props: { active: boolean }) {
         </p>
       </div>
 
-      <p>{language.t("settings.about.tagline")}</p>
-      <img class="settings-about-legal" src={legal} alt="" />
       <div class="settings-about-copyright">
-        <p>{language.t("settings.about.copyright")}</p>
-        <img class="settings-about-anomaly-brush" src={anomalyBrush} alt="" />
+        <p>{language.t("settings.about.cairn.copyright")}</p>
       </div>
     </div>
   )

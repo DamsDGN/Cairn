@@ -1,0 +1,32 @@
+name: cairn-ci
+
+on:
+  pull_request:
+  push:
+    branches: ["main", "sover/**"]
+
+concurrency:
+  group: cairn-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - name: Lint
+        run: bun run lint
+      - name: Typecheck the app
+        run: bun check --no-script -b
+        working-directory: packages/app
+      - name: Typecheck the desktop
+        run: bun check --no-script -b
+        working-directory: packages/desktop
+      - name: Test the app
+        run: bun run test:unit
+        working-directory: packages/app
+      - name: Test the desktop
+        run: bun test
+        working-directory: packages/desktop

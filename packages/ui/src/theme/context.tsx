@@ -5,6 +5,7 @@ import { createStore } from "solid-js/store"
 import { makeEventListener } from "@solid-primitives/event-listener"
 import { createSimpleContext } from "../context/helper"
 import oc2ThemeJson from "./themes/oc-2.json"
+import cairnThemeJson from "./themes/cairn.json"
 import { resolveThemeVariant, themeToCss } from "./resolve"
 import { resolveThemeVariantV2, themeV2ToCss } from "./v2/resolve"
 import type { DesktopTheme } from "./types"
@@ -51,6 +52,7 @@ function knownThemes() {
 
 const names: Record<string, string> = {
   "oc-2": "OpenCode",
+  cairn: "Cairn",
   amoled: "AMOLED",
   aura: "Aura",
   ayu: "Ayu",
@@ -89,6 +91,7 @@ const names: Record<string, string> = {
 }
 
 const oc2Theme = oc2ThemeJson as DesktopTheme
+const cairnTheme = cairnThemeJson as DesktopTheme
 
 function resolveStoredTheme(id: string | null | undefined, registered?: Record<string, DesktopTheme>) {
   if (id === "oc-2" || (id && (knownThemes().has(id) || registered?.[id]))) return id
@@ -144,12 +147,31 @@ function getSystemMode(): "light" | "dark" {
   return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
 }
 
+function resolveV2Color(tokens: Record<string, string>, name: string) {
+  const value = tokens[name]
+
+  if (!value) return
+
+  const ref = value.match(/^var\(--([a-z0-9-]+)\)$/i)
+
+  return ref ? tokens[ref[1]] : value
+}
+
+function themeBackground(tokens: Record<string, string>, isDark: boolean) {
+  const value = resolveV2Color(tokens, "v2-background-bg-deep")
+
+  if (value?.startsWith("#")) return value
+
+  return isDark ? "#191816" : "#f7f4ec"
+}
+
 function applyThemeCss(theme: DesktopTheme, themeId: string, mode: "light" | "dark") {
   const isDark = mode === "dark"
   const variant = isDark ? theme.dark : theme.light
   const tokens = resolveThemeVariant(variant, isDark)
   const css = themeToCss(tokens)
-  const v2 = themeV2ToCss(resolveThemeVariantV2(variant, isDark))
+  const v2Tokens = resolveThemeVariantV2(variant, isDark)
+  const v2 = themeV2ToCss(v2Tokens)
 
   if (themeId !== "oc-2") {
     write(isDark ? STORAGE_KEYS.THEME_CSS_DARK : STORAGE_KEYS.THEME_CSS_LIGHT, `${css}\n  ${v2}`)
@@ -166,12 +188,12 @@ function applyThemeCss(theme: DesktopTheme, themeId: string, mode: "light" | "da
   ensureThemeStyleElement().textContent = fullCss
   document.documentElement.dataset.theme = themeId
   document.documentElement.dataset.colorScheme = mode
-  document.documentElement.style.backgroundColor = isDark ? "#080808" : "#fafafa"
+  document.documentElement.style.backgroundColor = themeBackground(v2Tokens, isDark)
 
   // Update theme-color meta tag to match light/dark mode
   const meta = document.querySelector('meta[name="theme-color"]')
 
-  if (meta) meta.setAttribute("content", isDark ? "#080808" : "#fafafa")
+  if (meta) meta.setAttribute("content", themeBackground(v2Tokens, isDark))
 }
 
 function cacheThemeVariants(theme: DesktopTheme, themeId: string) {
@@ -207,6 +229,7 @@ export const { use: useTheme, provider: ThemeProvider } = createSimpleContext({
     const [store, setStore] = createStore({
       themes: {
         "oc-2": oc2Theme,
+        cairn: cairnTheme,
       } as Record<string, DesktopTheme>,
       themeId,
       colorScheme,

@@ -135,6 +135,7 @@ export function SessionContextUsage(props: {
             <Button
               type="button"
               variant="ghost-muted"
+              data-slot="session-context-usage"
               class="group shrink-0"
               style={{ padding: "0 6px", color: "var(--v2-text-text-faint)" }}
               onClick={openContext}

@@ -31,6 +31,7 @@ const componentTestModules = readdirSync(packages)
   )
 
 export default defineMain({
+  core: { disableTelemetry: true },
   framework: {
     name: "storybook-solidjs-vite",
     options: { docgen: false },

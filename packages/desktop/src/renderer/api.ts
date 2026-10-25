@@ -48,6 +48,16 @@ export const api: ElectronAPI = {
   draftSet: (key, value, strict) => invoke("DraftsSet", { key, value, strict }).then(mutable),
   draftDelete: (key) => invoke("DraftsDelete", { key }),
   draftBlobPut: (data) => invoke("DraftsPutBlob", { data: new Uint8Array(data) }),
+  voiceModelList: () => invoke("VoiceLocalModels").then(mutable),
+  voiceModelDownload: (id) => invoke("VoiceLocalDownload", { id }).then(mutable),
+  voiceModelState: (id) => invoke("VoiceLocalState", { id }).then(mutable),
+  voiceModelRemove: (id) => invoke("VoiceLocalRemove", { id }),
+  voiceTranscribe: (input) =>
+    invoke("VoiceLocalTranscribe", {
+      audio: new Uint8Array(input.audio),
+      language: input.language,
+      id: input.id,
+    }).then((result) => result.text),
   draftBlobGet: (id) => invoke("DraftsGetBlob", { id }).then((data) => (data ? toArrayBuffer(data) : null)),
 
   getWindowID: () => window.electron.windowID,
@@ -68,6 +78,12 @@ export const api: ElectronAPI = {
   openPath: (path, app) => invoke("FilesOpenPath", { path, application: app }).then((value) => value ?? undefined),
   revealPath: (path) => invoke("FilesRevealPath", { path }),
   goUsage: () => invoke("GoUsage").then(mutable),
+  assistantMcpAdd: (server, config) => invoke("AssistantMcpAdd", { server, config }).then(mutable),
+  assistantMcpRemove: (server) => invoke("AssistantMcpRemove", { server }).then(mutable),
+  assistantMcpList: () => invoke("AssistantMcpList").then((result) => result.servers).then(mutable),
+  assistantProviderSave: (input) => invoke("AssistantProviderSave", input).then(mutable),
+  assistantDefaultModel: () => invoke("AssistantDefaultModel").then((result) => result.model),
+  assistantDefaultModelSet: (model) => invoke("AssistantDefaultModelSet", { model }).then(mutable),
   readClipboardImage: () =>
     invoke("FilesReadClipboardImage").then((image) =>
       image ? { ...image, buffer: toArrayBuffer(image.buffer) } : null,
@@ -78,6 +94,11 @@ export const api: ElectronAPI = {
   onWindowFullscreenChanged: (cb) => listen("WindowFullscreenChanged", (event) => cb(event.fullscreen)),
   setWindowFocus: () => invoke("WindowSetFocus"),
   showWindow: () => invoke("WindowShow"),
+  minimizeWindow: () => invoke("WindowMinimize"),
+  getWindowMaximized: () => invoke("WindowGetMaximized"),
+  toggleWindowMaximize: () => invoke("WindowToggleMaximize"),
+  closeWindow: () => invoke("WindowClose"),
+  onWindowMaximizedChanged: (cb) => listen("WindowMaximizedChanged", (event) => cb(event.maximized)),
   relaunch: () => send("AppRelaunch"),
   getZoomFactor: () => invoke("WindowGetZoomFactor"),
   setZoomFactor: (factor) => invoke("WindowSetZoomFactor", { factor }),

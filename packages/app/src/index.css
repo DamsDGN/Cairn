@@ -2,6 +2,7 @@
 @import "@opencode/session-ui/styles";
 @import "@opencode/ui/styles/tokens";
 @import "tw-animate-css";
+@import "./brand.css";
 
 @font-face {
   font-family: "JetBrainsMono Nerd Font Mono";

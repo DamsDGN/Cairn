@@ -17,6 +17,7 @@ import { normalizeAgentList } from "@/runtime/server/global-sync/utils"
 import { useServerSDK } from "@/runtime/server/client"
 import { ScopedKey, type ServerScope } from "@/runtime/server/scope"
 import { useConfiguredModel } from "./configured"
+import { usePlatform } from "@/runtime/platform/platform"
 
 const ModelKeySchema = Schema.Struct({
   providerID: Schema.String,
@@ -89,14 +90,43 @@ export const { use: useLocal, provider: LocalProvider } = createSimpleContext({
     const models = useModels()
     const settings = useSettings()
     const configuredModel = useConfiguredModel()
+    const platform = usePlatform()
 
     const id = createMemo(() => params.id || undefined)
 
-    const list = createMemo(() =>
-      normalizeAgentList(data.location.agent.list({ directory: sdk().directory }) ?? []).filter(
+    // The assistant folder seeds its own agent in opencode.json. Its picker lists those agents only, so
+    // the build, plan and general agents never appear next to it; without a configured name the list
+    // stays whole rather than emptying the composer.
+    const assistantAgents = createMemo(() => {
+      if (!platform.assistantDirectory) return undefined
+
+      const documents = data.location.config.list({ directory: sdk().directory })
+
+      if (!documents) return undefined
+
+      const names = new Set<string>()
+
+      for (const entry of documents) {
+        if (entry.type !== "document") continue
+        for (const name of Object.keys(entry.info.agents ?? {})) names.add(name)
+        if (entry.info.default_agent) names.add(entry.info.default_agent)
+      }
+
+      return names.size > 0 ? names : undefined
+    })
+
+    const list = createMemo(() => {
+      const items = normalizeAgentList(data.location.agent.list({ directory: sdk().directory }) ?? []).filter(
         (item) => item.mode !== "subagent" && !item.hidden,
-      ),
-    )
+      )
+      const allowed = assistantAgents()
+
+      if (!allowed) return items
+
+      const configured = items.filter((item) => allowed.has(item.name))
+
+      return configured.length > 0 ? configured : items
+    })
 
     const agentsVisible = createMemo(() => settings.visibility.customAgents() || hasCustomAgent(list()))
     const connected = createMemo(() => new Set(providers.connected().map((item) => item.id)))

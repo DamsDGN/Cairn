@@ -20,6 +20,7 @@ import {
   updateTitlebar,
   windowAppearance,
   wireFullscreen,
+  wireMaximized,
   wireZoom,
 } from "./appearance"
 import { registerRendererProtocol, setProtocolReporter } from "./protocol"
@@ -170,6 +171,7 @@ export const makeMainWindows = Effect.fn("Window.make")(function* () {
     wireWindowRecovery(win, id, () => relaunchHandler())
     register(win, id)
     wireFullscreen(win)
+    wireMaximized(win)
 
     if (!early) loadWindow(win, "index.html")
     wireZoom(win)

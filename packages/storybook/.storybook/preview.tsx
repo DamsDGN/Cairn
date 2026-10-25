@@ -68,7 +68,7 @@ const frame = createJSXDecorator((Story, context) => {
   return (
     <MetaProvider>
       <Font />
-      <ThemeProvider>
+      <ThemeProvider defaultTheme="cairn">
         <LanguageProvider locale={typeof context.globals?.locale === "string" ? context.globals.locale : "en"}>
           <UiI18nBridge>
             <Scheme value={scheme} />

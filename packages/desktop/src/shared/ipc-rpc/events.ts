@@ -22,6 +22,10 @@ export class WindowZoomChanged extends Schema.TaggedClass<WindowZoomChanged>()("
   factor: Schema.Number,
 }) {}
 
+export class WindowMaximizedChanged extends Schema.TaggedClass<WindowMaximizedChanged>()("WindowMaximizedChanged", {
+  maximized: Schema.Boolean,
+}) {}
+
 // Another window wrote to a storage namespace; recipients refresh their in-memory copy.
 export class StorageChanged extends Schema.TaggedClass<StorageChanged>()("StorageChanged", {
   name: Schema.String,
@@ -62,6 +66,7 @@ export const DesktopEvent = Schema.Union([
   WindowFullscreenChanged,
   WindowPinchZoomChanged,
   WindowZoomChanged,
+  WindowMaximizedChanged,
   StorageChanged,
   ExtensionState,
   ExtensionEvent,

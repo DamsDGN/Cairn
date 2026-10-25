@@ -1,0 +1,40 @@
+.settings-default-model-search {
+  width: 100%;
+  height: 32px;
+  padding-inline: 10px;
+  border: 0.5px solid var(--v2-border-border-base);
+  border-radius: 6px;
+  background: var(--v2-background-bg-base);
+  color: var(--v2-text-text-base);
+  font-size: 13px;
+  outline: none;
+}
+
+.settings-default-model-search:focus {
+  border-color: var(--v2-border-border-focus, var(--v2-border-border-base));
+}
+
+.settings-default-model-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  height: 32px;
+  padding-inline: 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--v2-text-text-base);
+  font-size: 13px;
+  text-align: start;
+  cursor: pointer;
+}
+
+.settings-default-model-row:hover {
+  background: var(--v2-overlay-simple-overlay-hover);
+}
+
+.settings-default-model-row[data-active] {
+  background: var(--v2-overlay-simple-overlay-selected, var(--v2-overlay-simple-overlay-hover));
+}

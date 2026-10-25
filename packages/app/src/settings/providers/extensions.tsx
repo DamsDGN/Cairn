@@ -1,4 +1,7 @@
-import { Component, For, createEffect, createMemo, createResource } from "solid-js"
+import { Component, For, Show, createEffect, createMemo, createResource } from "solid-js"
+import { Button } from "@opencode/ui/button"
+import { useDialog } from "@opencode/ui/context/dialog"
+import { IconButton } from "@opencode/ui/icon-button"
 import { Icon } from "@opencode/ui/icon"
 import { Switch } from "@opencode/ui/switch"
 import { Tabs } from "@opencode/ui/tabs"
@@ -8,6 +11,9 @@ import { useServerSDK } from "@/runtime/server/client"
 import { useMcpToggle } from "@/providers/connect/mcp"
 import { pluginLabels } from "@/providers/catalog/plugin"
 import { ExternalLink } from "@/runtime/platform/external-link"
+import { usePlatform } from "@/runtime/platform/platform"
+import { DialogMcpAdd } from "@/settings/providers/mcp-add-dialog"
+import { DialogMcpRemove } from "@/settings/providers/mcp-remove-dialog"
 import { SettingsList } from "@/settings/list"
 import type { SettingsView } from "@/settings/surface"
 import "@/settings/settings.css"
@@ -28,19 +34,38 @@ export const SettingsExtensions: Component<{
   const language = useLanguage()
   const serverSdk = useServerSDK()
   const data = useData()
+  const platform = usePlatform()
+  const dialog = useDialog()
+
+  const location = () => {
+    const value = platform.assistantDirectory
+
+    return value ? { directory: value } : undefined
+  }
+
+  const directory = () => platform.assistantDirectory
 
   // Reading `.latest` rethrows a failed fetch, so these lists fall back to empty instead of crashing the page.
   const [mcpList, { refetch: refetchMcp }] = createResource(
     () => serverSdk.connection.status() === "connected",
     () =>
       serverSdk.api.mcp
-        .list()
+        .list({ location: location() })
         .then((result) => result.data)
         .catch(() => []),
     { initialValue: [] },
   )
 
-  const toggleMcp = useMcpToggle(() => undefined, refetchMcp)
+  const toggleMcp = useMcpToggle(directory, refetchMcp)
+
+  // Only the servers the Conversations folder declares can be removed from here; the user-level
+  // configuration owns the rest.
+  const [owned, { refetch: refetchOwned }] = createResource(
+    () => (serverSdk.connection.status() === "connected" && platform.assistantMcp ? directory() : undefined),
+    () => platform.assistantMcp?.list().catch(() => []) ?? Promise.resolve([]),
+    { initialValue: [] },
+  )
+  const ownedServers = createMemo(() => new Set(owned.latest ?? []))
 
   const mcps = createMemo<McpRowItem[]>(() => {
     return (mcpList.latest ?? []).map((server) => ({
@@ -104,9 +129,28 @@ export const SettingsExtensions: Component<{
                 <span class="settings-extension-heading text-13-medium">
                   {language.t("settings.extensions.availableAll")}
                 </span>
-                <span class="text-13-regular text-v2-text-text-muted">
-                  {language.t("settings.extensions.manageConfig")}
-                </span>
+                {platform.assistantMcp && directory() ? (
+                  <Button
+                    variant="ghost-muted"
+                    onClick={() =>
+                      void dialog.show(() => (
+                        <DialogMcpAdd
+                          existing={mcps().map((item) => item.name)}
+                          onAdded={() => {
+                            void refetchMcp()
+                            void refetchOwned()
+                          }}
+                        />
+                      ))
+                    }
+                  >
+                    {language.t("settings.extensions.mcp.add")}
+                  </Button>
+                ) : (
+                  <span class="text-13-regular text-v2-text-text-muted">
+                    {language.t("settings.extensions.manageConfig")}
+                  </span>
+                )}
               </div>
               <SettingsList variant="catalog">
                 <For each={mcps()}>
@@ -116,9 +160,30 @@ export const SettingsExtensions: Component<{
                         <Icon name="mcp" class="text-v2-icon-icon-muted shrink-0" />
                         <span class="settings-extension-name truncate">{item.name}</span>
                       </div>
-                      <Switch checked={item.enabled} onChange={(checked) => handleMcpToggle(item, checked)} hideLabel>
-                        {item.name}
-                      </Switch>
+                      <div class="flex items-center gap-1">
+                        <Switch checked={item.enabled} onChange={(checked) => handleMcpToggle(item, checked)} hideLabel>
+                          {item.name}
+                        </Switch>
+                        <Show when={ownedServers().has(item.name)}>
+                          <IconButton
+                            type="button"
+                            icon={<Icon name="trash" />}
+                            variant="ghost"
+                            aria-label={language.t("settings.extensions.mcp.remove", { name: item.name })}
+                            onClick={() =>
+                              void dialog.show(() => (
+                                <DialogMcpRemove
+                                  name={item.name}
+                                  onRemoved={() => {
+                                    void refetchMcp()
+                                    void refetchOwned()
+                                  }}
+                                />
+                              ))
+                            }
+                          />
+                        </Show>
+                      </div>
                     </div>
                   )}
                 </For>

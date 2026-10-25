@@ -1,17 +1,11 @@
 import type { GoUsage, GoUsageWindow } from "@opencode/app/desktop"
 import { net } from "electron"
+import { authPath } from "./auth-file"
 import { readFileSync } from "node:fs"
-import { homedir } from "node:os"
-import path from "node:path"
 
 // Public usage endpoint of the OpenCode Go subscription; no first-class API exists upstream.
 const USAGE_URL = "https://opencode.ai/zen/go/v1/usage"
 const USAGE_TTL = 60_000
-
-const authPath = () => {
-  const dataHome = process.env.XDG_DATA_HOME || path.join(homedir(), ".local", "share")
-  return path.join(dataHome, "opencode", "auth.json")
-}
 
 const KEY_ENV_VARS = ["OPENCODE_GO_API_KEY", "OPENCODE_API_KEY", "OPENCODE_ZEN_API_KEY"]
 

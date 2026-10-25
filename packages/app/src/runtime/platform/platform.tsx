@@ -98,6 +98,18 @@ type PlatformBase = {
   /** Whether the native desktop window is fullscreen */
   windowFullscreen?: Accessor<boolean>
 
+  /** Whether the native desktop window is maximized (desktop only) */
+  windowMaximized?: Accessor<boolean>
+
+  /** Minimize the native desktop window */
+  windowMinimize?(): void | Promise<void>
+
+  /** Toggle maximize on the native desktop window */
+  windowToggleMaximize?(): void | Promise<void>
+
+  /** Close the native desktop window */
+  windowClose?(): void | Promise<void>
+
   /** Get whether native pinch/Ctrl-scroll zoom gestures are enabled (desktop only) */
   getPinchZoomEnabled?(): Promise<boolean> | boolean
 
@@ -133,6 +145,59 @@ type PlatformBase = {
 
   /** Usage of the OpenCode Go subscription, null when it cannot be fetched (desktop fork). */
   goUsage?(): Promise<GoUsage | null>
+
+  /** Persist MCP servers in the assistant folder configuration (desktop fork). */
+  assistantMcp?: {
+    add(server: string, config: AssistantMcpConfig): Promise<AssistantMcpResult>
+    remove(server: string): Promise<AssistantMcpResult>
+    list(): Promise<Array<string>>
+  }
+
+  /** Providers and the default model of the assistant folder (desktop fork). */
+  assistantConfig?: {
+    saveProvider(input: AssistantProviderInput): Promise<AssistantMcpResult>
+    defaultModel(): Promise<string | undefined>
+    setDefaultModel(model: string | null): Promise<AssistantMcpResult>
+  }
+
+  /** On-device speech models, downloaded on request (desktop fork). */
+  voiceLocal?: {
+    models(): Promise<VoiceLocalModel[]>
+    download(id: VoiceLocalModelID): Promise<VoiceLocalState>
+    state(id: VoiceLocalModelID): Promise<VoiceLocalState>
+    remove(id: VoiceLocalModelID): Promise<boolean>
+    transcribe(input: { audio: ArrayBuffer; language?: string; id?: VoiceLocalModelID }): Promise<string>
+  }
+}
+
+export type VoiceLocalModelID = "base-q5_1" | "small-q5_1" | "small"
+
+export type VoiceLocalModel = { id: VoiceLocalModelID; installed: boolean }
+
+export type VoiceLocalState = {
+  id: VoiceLocalModelID
+  status: "idle" | "downloading" | "installed" | "failed"
+  received: number
+  total: number
+}
+
+export type AssistantMcpConfig =
+  | { type: "remote"; url: string; headers?: Record<string, string> }
+  | { type: "local"; command: string[]; environment?: Record<string, string> }
+
+export type AssistantProviderInput = {
+  id: string
+  name: string
+  baseURL: string
+  apiKey?: string
+  headers?: Record<string, string>
+  models: Array<{ id: string; name: string }>
+}
+
+export type AssistantMcpResult = {
+  ok: boolean
+  path?: string
+  error?: "not-ready" | "invalid-config" | "not-found" | "unknown"
 }
 
 export type Platform = PlatformBase &

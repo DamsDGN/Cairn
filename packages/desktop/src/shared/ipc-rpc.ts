@@ -1,14 +1,20 @@
 import { RpcClient, RpcClientError } from "effect/rpc"
 import { AppRpcs } from "./ipc-rpc/app"
+import { AssistantRpcs } from "./ipc-rpc/assistant"
 import { EventRpcs } from "./ipc-rpc/events"
 import { ExtensionRpcs } from "./ipc-rpc/extensions"
 import { FileRpcs } from "./ipc-rpc/files"
 import { GoRpcs } from "./ipc-rpc/go"
 import { MenuRpcs } from "./ipc-rpc/menu"
 import { StorageRpcs } from "./ipc-rpc/storage"
+import { VoiceRpcs } from "./ipc-rpc/voice"
 import { WindowRpcs } from "./ipc-rpc/window"
 
 export { AppRpcs } from "./ipc-rpc/app"
+
+export { AssistantRpcs } from "./ipc-rpc/assistant"
+
+export { VoiceRpcs } from "./ipc-rpc/voice"
 
 export { EventRpcs } from "./ipc-rpc/events"
 
@@ -24,6 +30,16 @@ export { WindowRpcs } from "./ipc-rpc/window"
 
 export { GoRpcs } from "./ipc-rpc/go"
 
-export const DesktopRpcs = AppRpcs.merge(StorageRpcs, FileRpcs, WindowRpcs, MenuRpcs, EventRpcs, ExtensionRpcs, GoRpcs)
+export const DesktopRpcs = AppRpcs.merge(
+  StorageRpcs,
+  FileRpcs,
+  WindowRpcs,
+  MenuRpcs,
+  EventRpcs,
+  ExtensionRpcs,
+  GoRpcs,
+  AssistantRpcs,
+  VoiceRpcs,
+)
 
 export type DesktopRpcClient = RpcClient.FromGroup<typeof DesktopRpcs, RpcClientError.RpcClientError>
