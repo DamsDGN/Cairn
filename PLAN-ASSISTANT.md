@@ -182,6 +182,24 @@ https://opencode.ai/zen/go/v1/usage` (Bearer, ref paquet `pi-opencode-go-usage`)
     historique et `assistantDirectory` restaurés.
   - Vérifié : typecheck app 1 591 et desktop 2 621 fichiers 0 erreur, tests app 764 pass, desktop
     131 pass / 1 skip, config builder 7 pass, lint 0 erreur.
+- **M14 Voix locale (à faire, décidé le 25/10)** : le mode vocal doit tourner sur le poste de
+  l'utilisateur, pas sur l'infrastructure de Damien. Le setup atlas (speaches en CPU avec
+  faster-whisper-large-v3-turbo et Kokoro-82M) sert de référence de qualité, pas de dépendance : un
+  autre utilisateur de Cairn n'a ni atlas ni Tailscale.
+  - Ce qu'il faut : un ASR et un TTS embarqués, CPU, hors ligne après le premier téléchargement des
+    modèles (opt-in explicite avec la taille affichée, stockage dans le dossier de données).
+  - Runtime candidat retenu : `sherpa-onnx-node` (2.0.0), qui couvre ASR, TTS et VAD avec des
+    prebuilds npm par plateforme (`sherpa-onnx-linux-x64`, `-darwin-arm64`, `-win-x64`, etc.), donc
+    pas de compilation chez l'utilisateur. Alternative : `@fugood/whisper.node` (whisper.cpp, même
+    schéma de prebuilds par plateforme) pour l'ASR seul, avec le TTS système en repli.
+  - Découpage : socle main (catalogue de modèles, téléchargement avec progression, stockage),
+    transcription d'un buffer audio, synthèse, puis UI (dictée par bouton micro, lecture d'un
+    message) et réglages Voix.
+  - Contrainte packaging : la dépendance native doit être déclarée par plateforme dans
+    `packages/desktop`, et les cibles Windows/macOS la reçoivent par les optionalDependencies, comme
+    node-pty aujourd'hui. À signaler au collègue qui build ces cibles.
+  - M9 phase 2 (voix hébergée temps réel) reste optionnelle : elle exige des clés OpenAI/xAI/Google
+    ou la Console, ce qu'un utilisateur grand public n'a pas.
 
 ## Packaging Linux (validé le 23/10)
 
@@ -240,10 +258,12 @@ https://opencode.ai/zen/go/v1/usage` (Bearer, ref paquet `pi-opencode-go-usage`)
 
 ## Ordre de travail (25/10)
 
-1. Reliquat M4 : titre auto sur le répertoire assistant, home chat-first.
-2. M5 shell produit : tray, démarrage auto, notifications, quick capture.
-3. Serveur d'auto-update Cairn, quand l'hébergement sera tranché.
-4. Hors périmètre : build macOS/Windows et signatures (collègue), phase 2 voix (clés), M7 (optionnel).
+1. M14 voix locale : socle main, STT puis TTS, UI dictée et lecture.
+2. Reliquat M4 : titre auto sur le répertoire assistant, home chat-first.
+3. M5 shell produit : tray, démarrage auto, notifications, quick capture.
+4. Serveur d'auto-update Cairn, quand l'hébergement sera tranché.
+5. Hors périmètre : build macOS/Windows et signatures (collègue), M9 phase 2 voix hébergée (clés),
+   M7 (optionnel).
 
 ## Risques
 
