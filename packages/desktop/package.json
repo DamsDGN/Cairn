@@ -4,10 +4,11 @@
   "version": "0.2.0",
   "type": "module",
   "license": "MIT",
-  "homepage": "https://opencode.ai",
+  "description": "Cairn, a desktop chat assistant built on OpenCode",
+  "homepage": "https://github.com/DamsDGN/Cairn",
   "author": {
-    "name": "OpenCode",
-    "email": "hello@opencode.ai"
+    "name": "Damien Dagorn",
+    "email": "damien.dagorn29@gmail.com"
   },
   "scripts": {
     "typecheck": "bun check --no-script -b",
