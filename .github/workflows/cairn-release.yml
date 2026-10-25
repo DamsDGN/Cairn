@@ -21,9 +21,13 @@ jobs:
       version: ${{ steps.version.outputs.version }}
       tag: ${{ steps.version.outputs.tag }}
     steps:
+      # The version commit and its tag are pushed to main, which the branch rule protects. The default
+      # GITHUB_TOKEN cannot bypass it, so a maintainer token granted the administrator bypass does the
+      # push. It only needs `public_repo`.
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ secrets.RELEASE_TOKEN }}
       - name: Validate the requested version
         id: version
         env:
