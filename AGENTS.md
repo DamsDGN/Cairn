@@ -1,7 +1,27 @@
+# Cairn fork
+
+This repository is Cairn, a fork of OpenCode Desktop. Read `README.md` for the product and
+`PLAN-ASSISTANT.md` for the milestones.
+
+- The default branch is `main`. Work happens on `sover/*` branches, merged through a pull request
+  that must pass `cairn-ci`. Never commit to `main` directly.
+- Write pull requests, commits, issues, code comments and documentation in English.
+- Naming: the product is **Cairn**. Keep "OpenCode" only where it is a credit, a link to
+  `anomalyco/opencode`, a license notice, an upstream package name (`@opencode/*`), a file name
+  (`opencode.json`), an environment variable (`OPENCODE_*`) or a data path (`~/.config/opencode`).
+- Keep changes additive where possible: the fork is rebased on `anomalyco/opencode` regularly, and
+  every touched shared file is a future conflict.
+- The upstream workflows were removed. Only `cairn-ci.yml` and `cairn-release.yml` run here; resolve
+  them by deleting again when a rebase brings them back.
+- The assistant mode is driven by `platform.assistantDirectory`. Do not change the project-based
+  flow when that field is absent.
+
+The rules below come from upstream and still apply to the shared engine.
+
 - After changing the public Protocol or Server `HttpApi`, run `bun run generate` from `packages/client`. Do not edit generated client files directly.
 - Keep runtime dependencies directed from Schema to Core and Protocol, then from Core and Protocol to Server. Client runtime code may depend on Schema and Protocol but never Core or Server; `sdk` composes Client, Core, and Server.
 - This repository does not use Changesets. Do not add `.changeset` files; follow the existing release workflow instead.
-- The default branch is `dev`. Base branches and worktrees on `origin/dev`, target PRs at `dev`, and diff against `origin/dev` unless told otherwise.
+- Upstream work uses `dev`. In this fork, base branches on `main`, target pull requests at `main`, and diff against `main` unless told otherwise.
 
 ## Live TUI Testing
 
