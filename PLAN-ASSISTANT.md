@@ -134,6 +134,22 @@ https://opencode.ai/zen/go/v1/usage` (Bearer, ref paquet `pi-opencode-go-usage`)
     git n'a pas sa place dans une conversation généraliste.
   - Vérifié : typecheck 0 erreur, `bun run test:unit` 764 pass / 0 fail, lint 0 erreur, captures
     Electron via CDP clair/sombre et parcours renommer/épingler/supprimer.
+- **M12 Typographie et fenêtre sans cadre (25/10, fait)** :
+  - Conversation en serif 16 px/1.65 sous `data-assistant="true"` (`brand.css`), Source Serif 4
+    embarquée localement (OFL), titres serif, code mono, bulle utilisateur crème ; meta de réponse,
+    tokens et coût masqués.
+  - Recherche de la sidebar : `TextInput` du UI kit est figé à `width: 280px; flex: none` et
+    débordait l'aside (drop à 290 px pour 264 px). Corrigé par `w-full` sur l'instance, sans toucher
+    le composant partagé (surface coding intacte).
+  - Linux : fenêtre `frame: false` (dev et fenêtre précoce), la titlebar in-app porte les contrôles
+    réduire/maximiser/restaurer/fermer (28 px, tokens Cairn, hover neutre, fermer en rouge danger).
+    RPC `WindowMinimize` / `WindowGetMaximized` / `WindowToggleMaximize` / `WindowClose`, événement
+    `WindowMaximizedChanged` ; la barre reste zone de drag et les boutons en `no-drag`.
+  - Écart assumé : en disposition d'onglets verticaux, la titlebar reste visible sur Linux (comme sur
+    Windows) pour garder les contrôles accessibles.
+  - Vérifié : typecheck app 1 592 fichiers et desktop 2 622 fichiers 0 erreur, tests app 764 pass,
+    desktop 130 pass / 1 skip, lint 0 erreur, maximiser/restaurer live (1280x800 vers 1920x1200,
+    libellé et icône restaurer qui suivent), `outerWidth == innerWidth` (plus de cadre natif).
 
 ## Packaging Linux (validé le 23/10)
 
