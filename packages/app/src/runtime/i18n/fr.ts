@@ -737,6 +737,8 @@ export const dict = {
     "Placer la barre de titre et les onglets de session en bas de l'écran sur mobile",
   "settings.general.row.showCustomAgents.title": "Agents personnalisés",
   "settings.general.row.showCustomAgents.description": "Afficher le sélecteur d'agent dans la zone de saisie",
+  "settings.general.row.launchAtLogin.title": "Lancer au démarrage",
+  "settings.general.row.launchAtLogin.description": "Ouvrir Cairn à l'ouverture de ta session.",
   "settings.general.row.pinchZoom.title": "Pincer pour zoomer",
   "settings.general.row.pinchZoom.description":
     "Autoriser les gestes de pincement du pavé tactile et Ctrl-défilement pour zoomer",

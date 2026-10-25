@@ -11,6 +11,7 @@ import { createMenu, sendMenuCommand } from "../native/menu"
 import { setNativeTranslations } from "../native/translations"
 import { IpcPortHandoff } from "../ipc-transport"
 import { ApplicationLifecycle } from "../lifecycle"
+import { loginItemEnabled, writeLaunchAtLogin } from "../lifecycle/launch-at-login"
 import { finishFirstLaunchOnboarding, isFirstLaunchOnboardingPending } from "../lifecycle/onboarding"
 import { BackgroundService } from "../service/background-service"
 import { DesktopCli } from "../service/desktop-cli"
@@ -42,6 +43,8 @@ export const appHandlers = AppRpcs.toLayer(
       AppSetBackgroundColor: ({ color }) => Effect.sync(() => setBackgroundColor(color)),
       AppExportDebugLogs: () => logging.exportDebug,
       AppSetForceFocus: ({ enabled }, context) => promise(() => setForceFocus(sender(handoff, context), enabled)),
+      AppLaunchAtLogin: () => Effect.sync(() => loginItemEnabled()),
+      AppSetLaunchAtLogin: ({ enabled }) => Effect.sync(() => writeLaunchAtLogin(enabled)),
       AppRecordFatalRendererError: ({ error }) =>
         scoped("renderer", Effect.logError("fatal renderer error", { ...error })),
       AppSetNativeTranslations: ({ value }, context) =>

@@ -60,6 +60,13 @@ export const AppSetNativeTranslations = Rpc.make("AppSetNativeTranslations", {
 
 export const AppRelaunch = Rpc.make("AppRelaunch")
 
+export const AppLaunchAtLogin = Rpc.make("AppLaunchAtLogin", { success: Schema.Boolean })
+
+export const AppSetLaunchAtLogin = Rpc.make("AppSetLaunchAtLogin", {
+  payload: { enabled: Schema.Boolean },
+  success: Schema.Boolean,
+})
+
 export const AppRpcs = RpcGroup.make(
   AppAwaitInitialization,
   AppReconnectService,
@@ -74,4 +81,6 @@ export const AppRpcs = RpcGroup.make(
   AppRecordFatalRendererError,
   AppSetNativeTranslations,
   AppRelaunch,
+  AppLaunchAtLogin,
+  AppSetLaunchAtLogin,
 )
