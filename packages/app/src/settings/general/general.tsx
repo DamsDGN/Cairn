@@ -20,6 +20,32 @@ import "@/settings/settings.css"
 
 const tabLayoutOptions: ("horizontal" | "vertical")[] = ["horizontal", "vertical"]
 
+const LaunchAtLoginSetting: Component = () => {
+  const language = useLanguage()
+  const platform = usePlatform()
+  const [enabled, { mutate }] = createResource(() => platform.launchAtLogin?.get() ?? Promise.resolve(false), {
+    initialValue: false,
+  })
+
+  const toggle = (checked: boolean) => {
+    mutate(checked)
+    void platform.launchAtLogin?.set(checked).catch(() => mutate(!checked))
+  }
+
+  return (
+    <Show when={platform.launchAtLogin}>
+      <SettingsRow
+        title={language.t("settings.general.row.launchAtLogin.title")}
+        description={language.t("settings.general.row.launchAtLogin.description")}
+      >
+        <div data-action="settings-launch-at-login">
+          <Switch checked={enabled()} onChange={toggle} />
+        </div>
+      </SettingsRow>
+    </Show>
+  )
+}
+
 const AutoApprovePermissionsSetting: Component = () => {
   const language = useLanguage()
   const settings = useSettings()
@@ -264,6 +290,7 @@ export const SettingsGeneral: Component = () => {
         <FollowUpBehaviorSetting />
 
         <Show when={desktop()}>
+          <LaunchAtLoginSetting />
           <SettingsRow
             title={language.t("settings.general.row.pinchZoom.title")}
             description={language.t("settings.general.row.pinchZoom.description")}

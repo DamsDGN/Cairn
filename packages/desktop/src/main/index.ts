@@ -25,6 +25,11 @@ if (acquireApplicationLock()) {
     marks.window = Date.now()
     startSidecarProbe()
 
+    // The login item lives in the OS (or an autostart entry on Linux), so it is re-applied at every
+    // start: a profile restored from a backup, or a system that dropped the entry, converges.
+    const launchAtLogin = await import("./lifecycle/launch-at-login")
+    launchAtLogin.applyLaunchAtLogin(launchAtLogin.readLaunchAtLogin())
+
     // The window's renderer is already loading. Its HTML and preloaded chunks are served from this
     // thread, so the bundle waits for that burst to be answered (or a cap) before it evaluates.
     if (!process.env.ELECTRON_RENDERER_URL) await rendererAssetsServed({ quietMs: 40, capMs: 400 })

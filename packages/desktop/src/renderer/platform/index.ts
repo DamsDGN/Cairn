@@ -36,6 +36,10 @@ export function createDesktopPlatform(api: ElectronAPI, windowState: DesktopWind
       defaultModel: () => api.assistantDefaultModel(),
       setDefaultModel: (model) => api.assistantDefaultModelSet(model),
     },
+    launchAtLogin: {
+      get: () => api.launchAtLoginGet(),
+      set: (enabled) => api.launchAtLoginSet(enabled),
+    },
     voiceLocal: {
       models: () => api.voiceModelList().then((result) => result.models),
       download: (id) => api.voiceModelDownload(id),

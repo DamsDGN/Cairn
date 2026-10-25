@@ -76,6 +76,8 @@ export type ElectronAPI = {
   closeWindow(): Promise<void>
   onWindowMaximizedChanged(cb: (maximized: boolean) => void): () => void
   relaunch(): void
+  launchAtLoginGet(): Promise<boolean>
+  launchAtLoginSet(enabled: boolean): Promise<boolean>
   getZoomFactor(): Promise<number>
   setZoomFactor(factor: number): Promise<void>
   getPinchZoomEnabled(): Promise<boolean>
