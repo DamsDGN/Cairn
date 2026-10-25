@@ -104,8 +104,12 @@ const getBase = (appId: string): Configuration => {
     // "tech.sover.cairn.desktop".
     // https://developer.gnome.org/documentation/guidelines/maintainer/integrating.html
     // https://www.electron.build/docs/linux/
+    // electron-builder derives the updater cache directory from this name. Keeping the workspace
+    // name (@opencode/desktop) would share ~/.cache/@opencodedesktop-updater with an installed
+    // OpenCode Desktop, and two apps updating through one cache step on each other.
     extraMetadata: {
       desktopName: `${appId}.desktop`,
+      name: "cairn",
     },
     files: [
       "out/**/*",
@@ -185,7 +189,7 @@ const getBase = (appId: string): Configuration => {
       )
     },
     mac: {
-      category: "public.app-category.developer-tools",
+      category: "public.app-category.productivity",
       icon: `resources/icons/icon.icns`,
       extendInfo: {
         NSAutoFillRequiresTextContentTypeForOneTimeCodeOnMac: true,
@@ -222,7 +226,7 @@ const getBase = (appId: string): Configuration => {
     },
     linux: {
       icon: `resources/icons`,
-      category: "Development",
+      category: "Utility",
       executableName: linuxExecutableName(appId),
       // Derive the installed `.desktop` filename from `desktopName`
       // (`tech.sover.cairn.desktop` for prod) instead of `executableName`,
