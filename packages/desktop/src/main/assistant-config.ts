@@ -3,7 +3,7 @@ import path from "node:path"
 
 import type { AssistantConfigResult, McpServerConfig } from "../shared/ipc-rpc/assistant"
 import { readAssistantDirectory } from "./lifecycle/assistant"
-import { applyMcpServer } from "./mcp-config"
+import { applyMcpServer, mcpServerNames } from "./mcp-config"
 
 // MCP servers added from the app belong to the assistant folder: the seeded opencode.json is the
 // document the server already reads for every standalone chat, so the entry survives a restart.
@@ -22,6 +22,20 @@ export function writeAssistantMcpServer(name: string, config: McpServerConfig | 
     return { ok: true, path: file }
   } catch (error) {
     return { ok: false, path: file, error: error instanceof TypeError ? "invalid-config" : "unknown" }
+  }
+}
+
+// Only the servers this file declares, so the interface never offers to delete one that lives in the
+// user-level configuration.
+export function readAssistantMcpServers(): string[] {
+  const directory = readAssistantDirectory()
+
+  if (!directory) return []
+
+  try {
+    return mcpServerNames(read(path.join(directory, "opencode.json")))
+  } catch {
+    return []
   }
 }
 

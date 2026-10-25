@@ -36,4 +36,8 @@ export const AssistantMcpRemove = Rpc.make("AssistantMcpRemove", {
   success: AssistantConfigResultSchema,
 })
 
-export const AssistantRpcs = RpcGroup.make(AssistantMcpAdd, AssistantMcpRemove)
+export const AssistantMcpList = Rpc.make("AssistantMcpList", {
+  success: Schema.Struct({ servers: Schema.Array(Schema.String) }),
+})
+
+export const AssistantRpcs = RpcGroup.make(AssistantMcpAdd, AssistantMcpRemove, AssistantMcpList)

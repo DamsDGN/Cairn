@@ -58,6 +58,7 @@ export type ElectronAPI = {
   goUsage(): Promise<GoUsage | null>
   assistantMcpAdd(server: string, config: McpServerConfig): Promise<AssistantConfigResult>
   assistantMcpRemove(server: string): Promise<AssistantConfigResult>
+  assistantMcpList(): Promise<Array<string>>
   readClipboardImage(): Promise<ClipboardImage | null>
   writeClipboardText(text: string): Promise<void>
   goUsage(): Promise<GoUsage | null>

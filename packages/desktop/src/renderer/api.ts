@@ -80,6 +80,7 @@ export const api: ElectronAPI = {
   goUsage: () => invoke("GoUsage").then(mutable),
   assistantMcpAdd: (server, config) => invoke("AssistantMcpAdd", { server, config }).then(mutable),
   assistantMcpRemove: (server) => invoke("AssistantMcpRemove", { server }).then(mutable),
+  assistantMcpList: () => invoke("AssistantMcpList").then((result) => result.servers).then(mutable),
   readClipboardImage: () =>
     invoke("FilesReadClipboardImage").then((image) =>
       image ? { ...image, buffer: toArrayBuffer(image.buffer) } : null,

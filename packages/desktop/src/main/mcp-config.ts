@@ -23,6 +23,15 @@ export function applyMcpServer(document: Document, name: string, config: McpServ
   return true
 }
 
+// Names declared in this document, so the interface only offers removal for servers it owns. A
+// server from the user-level config belongs to that file, not to the assistant folder.
+export function mcpServerNames(document: Document): string[] {
+  const mcp = record(document.mcp)
+  const servers = mcp ? record(mcp.servers) : undefined
+
+  return servers ? Object.keys(servers) : []
+}
+
 function record(value: unknown): Document | undefined {
   if (typeof value !== "object" || value === null || Array.isArray(value)) return undefined
 

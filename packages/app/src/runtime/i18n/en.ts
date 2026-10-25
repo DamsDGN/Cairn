@@ -349,6 +349,10 @@ export const dict = {
   "dialog.mcp.add.error.invalidConfig":
     "The folder configuration is not valid JSON, fix it first.",
   "dialog.mcp.add.error.generic": "The server could not be saved.",
+  "dialog.mcp.remove.title": "Remove this server?",
+  "dialog.mcp.remove.description":
+    "{{name}} is deleted from the Conversations folder configuration. The running conversation keeps its history.",
+  "dialog.mcp.remove.error": "The server could not be removed.",
 
   "mcp.status.connected": "connected",
   "mcp.status.failed": "failed",
@@ -801,6 +805,7 @@ export const dict = {
   "settings.extensions.availableAll": "Available to all projects",
   "settings.extensions.manageConfig": "Manage in opencode.json",
   "settings.extensions.mcp.add": "Add a server",
+  "settings.extensions.mcp.remove": "Remove {{name}}",
   "settings.extensions.addSkills": "How to add skills",
   "project.settings.title": "Edit project",
   "project.settings.autoAccept.description": "Approve this project's permission requests without asking",

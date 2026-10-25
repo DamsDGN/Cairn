@@ -150,6 +150,7 @@ type PlatformBase = {
   assistantMcp?: {
     add(server: string, config: AssistantMcpConfig): Promise<AssistantMcpResult>
     remove(server: string): Promise<AssistantMcpResult>
+    list(): Promise<Array<string>>
   }
 
   /** On-device speech models, downloaded on request (desktop fork). */

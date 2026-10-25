@@ -29,6 +29,7 @@ export function createDesktopPlatform(api: ElectronAPI, windowState: DesktopWind
     assistantMcp: {
       add: (server, config) => api.assistantMcpAdd(server, config),
       remove: (server) => api.assistantMcpRemove(server),
+      list: () => api.assistantMcpList(),
     },
     voiceLocal: {
       models: () => api.voiceModelList().then((result) => result.models),

@@ -523,6 +523,10 @@ export const dict = {
   "dialog.mcp.add.error.invalidConfig":
     "La configuration du dossier n'est pas un JSON valide, corrigez-la d'abord.",
   "dialog.mcp.add.error.generic": "Le serveur n'a pas pu être enregistré.",
+  "dialog.mcp.remove.title": "Retirer ce serveur ?",
+  "dialog.mcp.remove.description":
+    "{{name}} est supprimé de la configuration du dossier Conversations. La conversation en cours garde son historique.",
+  "dialog.mcp.remove.error": "Le serveur n'a pas pu être retiré.",
   "mcp.status.connected": "connecté",
   "mcp.status.failed": "en échec",
   "mcp.status.needs_auth": "authentification requise",
@@ -925,6 +929,7 @@ export const dict = {
   "settings.extensions.availableAll": "Disponible pour tous les projets",
   "settings.extensions.manageConfig": "Gérer dans opencode.json",
   "settings.extensions.mcp.add": "Ajouter un serveur",
+  "settings.extensions.mcp.remove": "Retirer {{name}}",
   "settings.extensions.addSkills": "Comment ajouter des compétences",
   "project.settings.extensions.description": "Afficher les extensions disponibles pour ce projet",
   "project.settings.extensions.tab.lsps": "LSP",
