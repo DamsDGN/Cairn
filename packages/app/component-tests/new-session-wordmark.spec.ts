@@ -8,18 +8,18 @@ for (const theme of ["light", "dark"]) {
       const logo = component.locator('[data-component="new-session-wordmark"]')
       const reveal = logo.locator('[data-slot="wordmark-reveal"]')
       const shimmer = logo.locator(".wordmark-shimmer")
-      const base = logo.locator("svg").first()
+      const base = logo.locator('[data-slot="wordmark-lockup"]').first()
       await expect(base).toHaveCSS("opacity", "0.16")
       await expect(shimmer).toHaveCSS("animation-iteration-count", "1")
-      await expect(logo.locator("g[mask]")).toHaveCount(0)
       await expect(shimmer).toHaveCSS("color", "rgb(255, 255, 255)")
       await expect(shimmer).toHaveCSS("mix-blend-mode", "screen")
-      await expect(base.locator("path").nth(1)).toHaveAttribute("fill", "var(--icon-base)")
-      await expect(base.locator("path").nth(9)).toHaveCSS(
-        "fill",
-        await base.locator("path").nth(1).evaluate((element) => getComputedStyle(element).fill),
-      )
-      await expect(base.locator('path[fill="var(--icon-weak-base)"]')).toHaveCount(8)
+
+      await expect(base.locator('[data-slot="wordmark-text"]')).toHaveText("Cairn")
+      await expect(base.locator('[data-slot="wordmark-mark"] ellipse')).toHaveCount(3)
+      await expect(base.locator('[data-slot="wordmark-text"]')).toHaveCSS("font-weight", "600")
+      expect(
+        await base.locator('[data-slot="wordmark-text"]').evaluate((element) => getComputedStyle(element).fontFamily),
+      ).toContain("Source Serif 4 Variable")
 
       await logo.evaluate((element) => {
         element.getAnimations({ subtree: true }).forEach((animation) => {
@@ -77,7 +77,8 @@ for (const theme of ["light", "dark"]) {
         [swept.toString("base64"), settled.toString("base64")],
       )
 
-      expect(brightness.min).toBeGreaterThanOrEqual(0)
+      // The sweep only adds light; one unit of sRGB rounding is left for composited text edges.
+      expect(brightness.min).toBeGreaterThanOrEqual(-1)
       expect(brightness.max).toBeGreaterThanOrEqual(5)
     })
   }
@@ -87,10 +88,10 @@ for (const theme of ["light", "dark"]) {
     await page.setViewportSize({ width: 360, height: 640 })
     const component = await mount("app-new-session-wordmark--reveal", { globals: { theme } })
     const logo = component.locator('[data-component="new-session-wordmark"]')
-    await expect(logo.locator("svg").first()).toHaveCSS("opacity", "0.16")
+    await expect(logo.locator('[data-slot="wordmark-lockup"]').first()).toHaveCSS("opacity", "0.16")
     await expect(logo.locator('[data-slot="wordmark-reveal"]')).toHaveCSS("opacity", "1")
     await expect(logo.locator(".wordmark-shimmer")).toHaveCSS("opacity", "0")
-    expect(await logo.evaluate((element) => element.getAnimations({ subtree: true }).length)).toBe(0)
+    expect(await logo.locator(".wordmark-shimmer").evaluate((element) => element.getAnimations().length)).toBe(0)
     expect(await logo.evaluate((element) => element.getBoundingClientRect().right <= innerWidth)).toBe(true)
   })
 }

@@ -15,9 +15,11 @@ import { useDialog } from "@opencode/ui/context/dialog"
 import {
   For,
   Show,
+  createEffect,
   createMemo,
   createResource,
   createSignal,
+  on,
   startTransition,
   type JSX,
 } from "solid-js"
@@ -40,9 +42,11 @@ import {
   SIDEBAR_MAX_WIDTH,
   SIDEBAR_MIN_WIDTH,
   assistantSidebar,
+  isSessionOpened,
   isSessionPinned,
   persistSidebarCollapsed,
   persistSidebarWidth,
+  rememberSessionOpened,
   toggleSessionPinned,
   toggleSidebarSection,
 } from "@/assistant/sidebar-state"
@@ -88,36 +92,53 @@ export function AssistantSidebar(props: { directory: string }) {
   const [search, setSearch] = createSignal("")
   const runSearch = debounce(setSearch, 150)
 
+  // The rail lists the assistant folder and the conversations Cairn itself has opened. Recording every
+  // session tab, restored and recently closed ones included, keeps that history across restarts and
+  // outside the folder.
+  createEffect(
+    on(
+      () => [
+        ...tabs.store.flatMap((tab) => (tab.type === "session" ? [tab.sessionId] : [])),
+        ...tabs.closed.map((entry) => entry.tab.sessionId),
+      ],
+      (ids) => ids.forEach(rememberSessionOpened),
+      { defer: false },
+    ),
+  )
+
   const [sessions, { refetch: refetchSessions }] = createResource(
     () => (ready() ? { ready: ready()!, search: search() } : undefined),
-    (input) =>
-      input.ready.sdk.api.session
-        .list({
-          directory,
-          limit: SESSION_LIMIT,
-          order: "desc",
-          parentID: null,
-          ...(input.search ? { search: input.search } : {}),
-        })
-        .then((response) => response.data)
-        .catch(() => [] as SessionInfo[]),
+    (input) => {
+      const query = {
+        limit: SESSION_LIMIT,
+        order: "desc" as const,
+        parentID: null,
+        ...(input.search ? { search: input.search } : {}),
+      }
+
+      return Promise.all([
+        input.ready.sdk.api.session.list({ ...query, directory }),
+        input.ready.sdk.api.session.list(query),
+      ])
+        .then(([folder, recent]) => [...folder.data, ...recent.data])
+        .catch(() => [] as SessionInfo[])
+    },
   )
 
   const chats = createMemo(() => {
-    // Merge the fetched page with the event store, newest first; the store wins on conflict
-    // exactly like the Home index does. The query also filters by title on the server when
-    // a search term is active.
+    // Merge the fetched pages with the event store, newest first; the store wins on conflict exactly
+    // like the Home index does. Keep the assistant folder and the conversations opened in Cairn, so a
+    // session created by another client only appears once it has been opened here. The query also
+    // filters by title on the server when a search term is active.
     const query = search().trim().toLowerCase()
     const byID = new Map<string, SessionInfo>()
     for (const session of sessions.latest ?? []) byID.set(session.id, session)
-    for (const session of ready()?.data.session.list() ?? []) {
-      if (session.parentID || typeof session.time.archived === "number") continue
-      if (pathKey(session.location.directory) !== pathKey(directory)) continue
-      if (query && !sessionLabel(session).toLowerCase().includes(query)) continue
-      byID.set(session.id, session)
-    }
+    for (const session of ready()?.data.session.list() ?? []) byID.set(session.id, session)
 
     return [...byID.values()]
+      .filter((session) => !session.parentID && typeof session.time.archived !== "number")
+      .filter((session) => pathKey(session.location.directory) === pathKey(directory) || isSessionOpened(session.id))
+      .filter((session) => !query || sessionLabel(session).toLowerCase().includes(query))
       .toSorted((a, b) => (b.time.updated ?? b.time.created) - (a.time.updated ?? a.time.created))
       .slice(0, SESSION_LIMIT)
   })
@@ -214,8 +235,8 @@ export function AssistantSidebar(props: { directory: string }) {
       const tab = tabs.addSessionTab({ server: ServerConnection.key(conn), sessionId: session.id })
       tabs.select(tab)
       local.data.session.remember(session)
-      local.projects.open(directory)
-      local.projects.touch(directory)
+      local.projects.open(session.location.directory)
+      local.projects.touch(session.location.directory)
     })
   }
 

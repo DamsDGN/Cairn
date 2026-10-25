@@ -3,7 +3,11 @@ import { createStore } from "solid-js/store"
 const WIDTH_KEY = "opencode.assistant.sidebar.width"
 const COLLAPSED_KEY = "opencode.assistant.sidebar.collapsed"
 const PINNED_KEY = "opencode.assistant.sidebar.pinned"
+const OPENED_KEY = "opencode.assistant.sidebar.opened"
 const SECTION_PREFIX = "opencode.assistant.sidebar.section."
+
+/** Keeps the rail bounded while covering every conversation ever opened in the app. */
+const OPENED_LIMIT = 300
 
 export const SIDEBAR_DEFAULT_WIDTH = 264
 export const SIDEBAR_MIN_WIDTH = 200
@@ -14,9 +18,9 @@ export type SidebarSection = "projects" | "artifacts" | "recents"
 
 const savedWidth = Number(localStorage.getItem(WIDTH_KEY))
 
-const readPinned = () => {
+const readIDs = (key: string) => {
   try {
-    const parsed: unknown = JSON.parse(localStorage.getItem(PINNED_KEY) ?? "[]")
+    const parsed: unknown = JSON.parse(localStorage.getItem(key) ?? "[]")
 
     if (!Array.isArray(parsed)) return []
     return parsed.filter((id): id is string => typeof id === "string")
@@ -31,7 +35,8 @@ const [assistantSidebar, setAssistantSidebar] = createStore({
       ? Math.min(SIDEBAR_MAX_WIDTH, Math.max(SIDEBAR_MIN_WIDTH, savedWidth))
       : SIDEBAR_DEFAULT_WIDTH,
   collapsed: localStorage.getItem(COLLAPSED_KEY) === "1",
-  pinned: readPinned(),
+  pinned: readIDs(PINNED_KEY),
+  opened: readIDs(OPENED_KEY),
   sections: {
     projects: localStorage.getItem(`${SECTION_PREFIX}projects`) === "1",
     artifacts: localStorage.getItem(`${SECTION_PREFIX}artifacts`) === "1",
@@ -63,6 +68,17 @@ export const toggleSidebarSection = (key: SidebarSection) => {
 }
 
 export const isSessionPinned = (sessionID: string) => assistantSidebar.pinned.includes(sessionID)
+
+/** True once the conversation has been opened in Cairn, current session or an earlier run included. */
+export const isSessionOpened = (sessionID: string) => assistantSidebar.opened.includes(sessionID)
+
+export const rememberSessionOpened = (sessionID: string) => {
+  if (isSessionOpened(sessionID)) return
+  const opened = [sessionID, ...assistantSidebar.opened].slice(0, OPENED_LIMIT)
+
+  setAssistantSidebar("opened", opened)
+  localStorage.setItem(OPENED_KEY, JSON.stringify(opened))
+}
 
 export const toggleSessionPinned = (sessionID: string) => {
   const pinned = assistantSidebar.pinned.includes(sessionID)

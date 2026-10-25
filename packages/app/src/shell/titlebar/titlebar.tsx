@@ -329,6 +329,9 @@ export function Titlebar(props: { verticalTabs?: { mount?: HTMLElement } }) {
 
             const openNewTab = () => {
               const route = layout.route()
+              // Fork: the assistant rail only lists the Conversations folder, so every new chat starts
+              // there whatever conversation or project it is opened from.
+              const assistant = platform.assistantDirectory
 
               switch (route.type) {
                 case "session": {
@@ -336,7 +339,11 @@ export function Titlebar(props: { verticalTabs?: { mount?: HTMLElement } }) {
 
                   if (pending) {
                     const model = tabs.stateValue<ComposerState>(pending.draft, "prompt")?.model.current()
-                    void tabs.newDraft({ server: route.server, directory: pending.draft.directory }, "", model)
+                    void tabs.newDraft(
+                      { server: route.server, directory: assistant ?? pending.draft.directory },
+                      "",
+                      model,
+                    )
 
                     return
                   }
@@ -353,7 +360,7 @@ export function Titlebar(props: { verticalTabs?: { mount?: HTMLElement } }) {
 
                   const model = tabs.stateValue<ComposerState>(sessionTab, "prompt")?.model.current()
                   void tabs.newDraft(
-                    { server: sessionTab.server, directory: activeSession.location.directory },
+                    { server: sessionTab.server, directory: assistant ?? activeSession.location.directory },
                     "",
                     model,
                   )
@@ -367,7 +374,11 @@ export function Titlebar(props: { verticalTabs?: { mount?: HTMLElement } }) {
                   if (activeTab?.type !== "draft") return
 
                   const model = tabs.stateValue<ComposerState>(activeTab, "prompt")?.model.current()
-                  void tabs.newDraft({ server: activeTab.server, directory: activeTab.directory }, "", model)
+                  void tabs.newDraft(
+                    { server: activeTab.server, directory: assistant ?? activeTab.directory },
+                    "",
+                    model,
+                  )
 
                   return
                 }
@@ -381,6 +392,12 @@ export function Titlebar(props: { verticalTabs?: { mount?: HTMLElement } }) {
                     global.servers.list().find((item) => ServerConnection.key(item) === selection.server) ??
                     global.servers.list()[0]
 
+                  if (conn && assistant) {
+                    void tabs.newDraft({ server: ServerConnection.key(conn), directory: assistant }, "")
+
+                    return
+                  }
+
                   const projects = conn ? global.ensureServerCtx(conn).projects : undefined
 
                   const project =
@@ -390,14 +407,6 @@ export function Titlebar(props: { verticalTabs?: { mount?: HTMLElement } }) {
 
                   if (conn && project) {
                     void tabs.newDraft({ server: ServerConnection.key(conn), directory: project.worktree }, "")
-
-                    return
-                  }
-
-                  const assistant = platform.assistantDirectory
-
-                  if (conn && assistant) {
-                    void tabs.newDraft({ server: ServerConnection.key(conn), directory: assistant }, "")
 
                     return
                   }
