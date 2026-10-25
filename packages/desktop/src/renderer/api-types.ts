@@ -37,6 +37,7 @@ export type ElectronAPI = {
   voiceModelDownload(id: VoiceModelID): Promise<VoiceModelState>
   voiceModelState(id: VoiceModelID): Promise<VoiceModelState>
   voiceModelRemove(id: VoiceModelID): Promise<boolean>
+  voiceAcceleration(): Promise<{ level: "avx2" | "compatible" }>
   voiceTranscribe(input: { audio: ArrayBuffer; language?: string; id?: VoiceModelID }): Promise<string>
   draftBlobGet(id: string): Promise<ArrayBuffer | null>
   getWindowID(): string

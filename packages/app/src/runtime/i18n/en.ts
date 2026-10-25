@@ -594,6 +594,13 @@ export const dict = {
   "settings.voice.title": "Voice",
   "settings.voice.description":
     "Dictation runs on this computer, on the CPU. The speech model is downloaded once, and the audio never leaves the machine.",
+  "settings.voice.acceleration.title": "Speed",
+  "settings.voice.acceleration.row": "CPU kernel",
+  "settings.voice.acceleration.avx2": "AVX2",
+  "settings.voice.acceleration.avx2.description": "This machine runs the optimized kernel.",
+  "settings.voice.acceleration.compatible": "Compatible",
+  "settings.voice.acceleration.compatible.description":
+    "This processor lacks AVX2, so transcription runs on the portable kernel and is much slower.",
   "settings.voice.models": "Speech models",
   "settings.voice.unavailable": "Local speech is only available in the desktop application.",
   "settings.voice.model.base-q5_1": "Base",

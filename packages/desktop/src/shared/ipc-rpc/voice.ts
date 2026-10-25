@@ -4,6 +4,7 @@ import { Transferable } from "effect/workers"
 
 const ModelID = Schema.Literals(["base-q5_1", "small-q5_1", "small"])
 const ModelStatus = Schema.Literals(["idle", "downloading", "installed", "failed"])
+const Acceleration = Schema.Literals(["avx2", "compatible"])
 
 const ModelState = Schema.Struct({
   id: ModelID,
@@ -42,6 +43,10 @@ export const VoiceLocalState = Rpc.make("VoiceLocalState", {
   success: ModelState,
 })
 
+export const VoiceLocalAcceleration = Rpc.make("VoiceLocalAcceleration", {
+  success: Schema.Struct({ level: Acceleration }),
+})
+
 export const VoiceLocalTranscribe = Rpc.make("VoiceLocalTranscribe", {
   payload: {
     audio: Transferable.Uint8Array,
@@ -56,5 +61,6 @@ export const VoiceRpcs = RpcGroup.make(
   VoiceLocalDownload,
   VoiceLocalState,
   VoiceLocalRemove,
+  VoiceLocalAcceleration,
   VoiceLocalTranscribe,
 )

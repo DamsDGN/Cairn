@@ -54,6 +54,14 @@ reference for contributors; the user-facing description lives in `README.md`.
   and the first attempt offers the model download. Settings > Voice manages the models. Read-aloud
   is still missing. Release builds keep only the CPU addon of the packaged platform: the CUDA and
   Vulkan variants would add 240 MB to every installer.
+  The prebuilt Linux x64 addon runs the generic C kernels, ten times slower than it should be. The
+  package sets `CMAKE_SYSTEM_PROCESSOR` to the Node architecture name (`x64`), which ggml does not
+  match, so it selects its scalar implementation and, with it, no OpenMP parallel regions. Release
+  builds now carry a second Linux x64 addon built from the same pinned source with AVX2, FMA, F16C
+  and BMI2, selected at runtime from `/proc/cpuinfo`; every other processor keeps the portable
+  addon, which cannot raise SIGILL. Measured on the reference machine, a 6.3 s French clip with
+  `base-q5_1`: 24.3 s with the portable addon at any thread count, 1.1 s with the AVX2 addon on
+  8 threads, against 0.96 s for the official `whisper-cli` built from whisper.cpp 1.9.3.
 
 ## Decisions
 

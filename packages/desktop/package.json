@@ -17,6 +17,7 @@
     "dev": "bun ./scripts/dev.ts",
     "migration": "bun ./scripts/migration.ts",
     "prebuild": "bun ./scripts/prebuild.ts",
+    "whisper:avx2": "bun ./scripts/build-whisper-avx2.ts",
     "build": "electron-vite build",
     "preview": "electron-vite preview",
     "package": "electron-builder --config electron-builder.config.ts",

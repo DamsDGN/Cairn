@@ -681,6 +681,13 @@ export const dict = {
   "settings.voice.title": "Voix",
   "settings.voice.description":
     "La dictée tourne sur cet ordinateur, sur le CPU. Le modèle vocal se télécharge une fois, l'audio ne quitte jamais la machine.",
+  "settings.voice.acceleration.title": "Vitesse",
+  "settings.voice.acceleration.row": "Noyau CPU",
+  "settings.voice.acceleration.avx2": "AVX2",
+  "settings.voice.acceleration.avx2.description": "Cette machine utilise le noyau optimisé.",
+  "settings.voice.acceleration.compatible": "Compatible",
+  "settings.voice.acceleration.compatible.description":
+    "Ce processeur n'a pas AVX2, la transcription utilise donc le noyau portable et elle est bien plus lente.",
   "settings.voice.models": "Modèles vocaux",
   "settings.voice.unavailable": "La voix locale n'est disponible que dans l'application de bureau.",
   "settings.voice.model.base-q5_1": "Base",
