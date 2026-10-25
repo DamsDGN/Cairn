@@ -73,18 +73,25 @@ async function whisper(): Promise<Whisper> {
 
 async function loadWhisper(): Promise<Whisper> {
   const addon = avx2Addon()
+  const portable = () => import("@fugood/whisper.node" as string).then((module) => module as unknown as Whisper)
 
-  if (!addon) return import("@fugood/whisper.node" as string).then((module) => module as unknown as Whisper)
+  if (!addon) return portable()
 
-  // SAFETY: the optimized addon is built from the same source as the npm binding, so it exports the
-  // same context classes; an incompatible file fails when the context is constructed.
-  const native = nativeRequire(addon) as NativeModule
+  try {
+    // SAFETY: the optimized addon is built from the same source as the npm binding, so it exports
+    // the same context classes; an incompatible file fails when the context is constructed.
+    const native = nativeRequire(addon) as NativeModule
 
-  return {
-    initWhisper: async (options) => new native.WhisperContext(options),
-    initWhisperVad: native.WhisperVadContext
-      ? async (options) => new native.WhisperVadContext!(options)
-      : undefined,
+    return {
+      initWhisper: async (options) => new native.WhisperContext(options),
+      initWhisperVad: native.WhisperVadContext
+        ? async (options) => new native.WhisperVadContext!(options)
+        : undefined,
+    }
+  } catch {
+    // A binary built against a newer glibc than the machine has cannot be loaded, and dictation must
+    // keep working, only slower.
+    return portable()
   }
 }
 
