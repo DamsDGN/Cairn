@@ -17,3 +17,5 @@ export const LAUNCH_AT_LOGIN_KEY = "launchAtLogin"
 export const VOICE_LANGUAGE_KEY = "voiceLanguage"
 
 export const VOICE_PROMPT_KEY = "voicePrompt"
+
+export const VOICE_MODEL_KEY = "voiceModel"

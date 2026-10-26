@@ -14,8 +14,10 @@ import { useVoiceModels } from "./models"
 import { floatToPcm16, sliceSamples } from "./pcm"
 import { startRecorder, type Recorder, type RecorderFrame } from "./recorder"
 import { createSpeechSegmenter, type SpeechSegment } from "./segmenter"
-import { splitSentences, speakable } from "./speech"
+import { splitSpeech, speakable, type SpeechPiece } from "./speech"
+import "./call-dialog.css"
 import { createSpeaker, type Speaker } from "./tts"
+import { defaultVoice } from "./voices"
 
 type CallState = "starting" | "listening" | "thinking" | "speaking" | "error"
 
@@ -56,6 +58,7 @@ export function VoiceCallDialog(props: { session: SessionModel; composer: Compos
   let idleTimer: ReturnType<typeof setTimeout> | undefined
 
   let model: VoiceLocalModelID | undefined
+  let synthesis: VoiceLocalModelID | undefined
   let spoken = "en"
   let vocabulary: string | undefined
   let closed = false
@@ -112,13 +115,11 @@ export function VoiceCallDialog(props: { session: SessionModel; composer: Compos
     if (finished || closed || interrupted) return
     finished = true
 
-    const last = speakable(pending)
+    const split = splitSpeech(pending, true)
 
-    pending = ""
+    pending = split.rest
 
-    if (last) queue.push(last)
-
-    void pump()
+    enqueue(split.segments)
   }
 
   const pump = async (): Promise<void> => {
@@ -144,14 +145,20 @@ export function VoiceCallDialog(props: { session: SessionModel; composer: Compos
     settle()
   }
 
-  const enqueue = (sentences: string[]) => {
+  // Code blocks are announced, not read: the model spends them on syntax the voice cannot
+  // pronounce, and reading them aloud is unusable.
+  const spokenText = (segment: SpeechPiece) => {
+    if (segment.type === "text") return speakable(segment.text)
+
+    if (segment.language) return language.t("assistant.voice.codeBlock", { language: segment.language })
+
+    return language.t("assistant.voice.codeBlockPlain")
+  }
+
+  const enqueue = (segments: SpeechPiece[]) => {
     if (closed || interrupted) return
 
-    const text = sentences.flatMap((sentence) => {
-      const spoken = speakable(sentence)
-
-      return spoken ? [spoken] : []
-    })
+    const text = segments.map(spokenText).filter(Boolean)
 
     if (!text.length) return
 
@@ -275,10 +282,10 @@ export function VoiceCallDialog(props: { session: SessionModel; composer: Compos
         unseen = text.length
         pending += delta
 
-        const split = splitSentences(pending)
+        const split = splitSpeech(pending)
 
         pending = split.rest
-        enqueue(split.sentences)
+        enqueue(split.segments)
 
         if (!working) scheduleIdle(800)
       },
@@ -365,14 +372,21 @@ export function VoiceCallDialog(props: { session: SessionModel; composer: Compos
       return
     }
 
-    if (!voice.synthesis()) {
+    // The voice the user picked in Settings > Voice, or the default one for the interface language.
+    // Only an installed voice is used: answering French with an English voice would be worse than
+    // asking for the download.
+    const preferred = preferences.voice ?? defaultVoice(language.locale())
+
+    synthesis = voice.voice(preferred) ? preferred : undefined
+
+    if (!synthesis) {
       setFailure(language.t("assistant.voice.noSpeech"))
 
       return
     }
 
     model = voice.best()
-    speaker = createSpeaker((text) => platform.voiceLocal!.speak({ text }))
+    speaker = createSpeaker((text) => platform.voiceLocal!.speak({ text, id: synthesis }))
 
     try {
       recorder = await startRecorder({ onFrame })
@@ -393,49 +407,64 @@ export function VoiceCallDialog(props: { session: SessionModel; composer: Compos
   })
 
   return (
-    <Dialog>
+    <Dialog containerClass="voice-call">
       <DialogHeader>
         <DialogTitle>{language.t("assistant.voice.call")}</DialogTitle>
       </DialogHeader>
-      <DialogBody class="flex min-h-[320px] flex-col gap-4">
+      <DialogBody class="voice-call-body">
         <Show
           when={failure() === undefined}
           fallback={
-            <div class="flex flex-1 flex-col items-center justify-center gap-3 text-center">
+            <div class="voice-call-error">
               <Icon name="circle-exclamation" class="text-v2-icon-icon-muted" />
-              <span class="max-w-[280px] text-[13px] text-v2-text-text-muted">{failure()}</span>
+              <span class="voice-call-error-text">{failure()}</span>
               <Button variant="ghost-muted" onClick={() => settings.open("voice")}>
                 {language.t("assistant.voice.speechSettings")}
               </Button>
             </div>
           }
         >
-          <div class="flex items-center gap-2" data-voice-call-state={state()}>
-            <span class={`size-2 rounded-full ${STATE_DOT[state()]}`} />
-            <span class="text-[13px] text-v2-text-text-muted">{language.t(STATE_LABEL[state()])}</span>
+          <div class="voice-call-stage" data-voice-call-state={state()}>
+            <span class="voice-call-orb" data-state={state()} aria-hidden="true">
+              <span class="voice-call-orb-glow" />
+              <span class="voice-call-orb-core" />
+              <span class="voice-call-bars">
+                <i />
+                <i />
+                <i />
+                <i />
+                <i />
+              </span>
+            </span>
+            <div class="voice-call-state">
+              <span class={`voice-call-dot ${STATE_DOT[state()]}`} />
+              <span>{language.t(STATE_LABEL[state()])}</span>
+            </div>
           </div>
 
-          <div class="min-h-0 flex-1 overflow-y-auto">
+          <div class="voice-call-transcript">
             <Show when={heard()}>
-              <div class="mb-3">
-                <span class="text-[11px] text-v2-text-text-faint">{language.t("assistant.voice.you")}</span>
-                <p class="text-[14px] text-v2-text-text-base">{heard()}</p>
+              <div class="voice-call-turn" data-role="user">
+                <span class="voice-call-role">{language.t("assistant.voice.you")}</span>
+                <p>{heard()}</p>
               </div>
             </Show>
             <Show when={reply()}>
-              <div class="mb-3">
-                <span class="text-[11px] text-v2-text-text-faint">{language.t("assistant.voice.assistant")}</span>
-                <p class="whitespace-pre-wrap text-[14px] text-v2-text-text-base">{reply()}</p>
+              <div class="voice-call-turn" data-role="assistant">
+                <span class="voice-call-role">{language.t("assistant.voice.assistant")}</span>
+                <p>{reply()}</p>
               </div>
             </Show>
             <Show when={!heard() && !reply()}>
-              <p class="text-[13px] text-v2-text-text-faint">{language.t("assistant.voice.callHint")}</p>
+              <p class="voice-call-hint">{language.t("assistant.voice.callHint")}</p>
             </Show>
           </div>
 
-          <Button class="w-full" variant="contrast" onClick={close} data-action="voice-call-end">
-            {language.t("assistant.voice.end")}
-          </Button>
+          <div class="voice-call-actions">
+            <Button variant="danger" class="w-full" onClick={close} data-action="voice-call-end">
+              {language.t("assistant.voice.end")}
+            </Button>
+          </div>
         </Show>
       </DialogBody>
     </Dialog>

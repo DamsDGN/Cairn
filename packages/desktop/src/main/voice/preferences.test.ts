@@ -22,3 +22,12 @@ test("cuts the vocabulary at the limit the recognizer accepts", () => {
 test("an empty vocabulary is absent, not an empty string", () => {
   expect(sanitizePreferences({ prompt: "   " }).prompt).toBeUndefined()
 })
+
+test.each([
+  { name: "keeps a synthesis voice", voice: "vits-piper-fr_FR-upmc-medium", expected: "vits-piper-fr_FR-upmc-medium" },
+  { name: "drops an unknown voice", voice: "vits-piper-fr_FR-nope", expected: undefined },
+  { name: "drops a speech model, which cannot speak", voice: "base-q5_1", expected: undefined },
+  { name: "drops a detector, which cannot speak", voice: "silero-v6.2.0", expected: undefined },
+])("$name", ({ voice, expected }) => {
+  expect(sanitizePreferences({ voice }).voice).toBe(expected)
+})

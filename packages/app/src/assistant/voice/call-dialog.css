@@ -1,0 +1,274 @@
+[data-component="dialog-v2"] [data-slot="dialog-container"].voice-call {
+  width: 420px;
+  height: min(600px, 82vh);
+  border-radius: 22px;
+  border: 1px solid var(--v2-border-border-base);
+  background: var(--v2-background-bg-layer-01);
+}
+
+[data-component="dialog-v2"] [data-slot="dialog-container"].voice-call [data-slot="dialog-header"] {
+  padding: 18px 20px 8px;
+}
+
+[data-slot="dialog-body"].voice-call-body {
+  gap: 18px;
+  padding: 0 20px 20px;
+}
+
+.voice-call-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 18px 0 6px;
+}
+
+.voice-call-orb {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 108px;
+  height: 108px;
+  border-radius: 999px;
+  isolation: isolate;
+}
+
+.voice-call-orb-glow {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    circle at 50% 45%,
+    color-mix(in srgb, var(--v2-background-bg-accent) 32%, transparent),
+    transparent 68%
+  );
+  opacity: 0.7;
+}
+
+.voice-call-orb-core {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  border-radius: inherit;
+  border: 1px solid var(--v2-border-border-base);
+  background:
+    radial-gradient(circle at 35% 30%, var(--v2-background-bg-layer-03), transparent 70%),
+    linear-gradient(180deg, var(--v2-background-bg-layer-02), var(--v2-background-bg-layer-01));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  transition:
+    transform 220ms ease,
+    border-color 220ms ease;
+}
+
+.voice-call-bars {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 30px;
+  opacity: 0;
+  transition: opacity 160ms ease;
+}
+
+.voice-call-bars i {
+  display: block;
+  width: 3px;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--v2-icon-icon-accent);
+  transform: scaleY(0.25);
+}
+
+.voice-call-orb[data-state="listening"] .voice-call-orb-core {
+  border-color: color-mix(in srgb, var(--v2-icon-icon-accent) 45%, var(--v2-border-border-base));
+  animation: voice-call-breathe 2.6s ease-in-out infinite;
+}
+
+.voice-call-orb[data-state="listening"] .voice-call-orb-glow {
+  animation: voice-call-halo 2.6s ease-in-out infinite;
+}
+
+.voice-call-orb[data-state="speaking"] .voice-call-bars {
+  opacity: 1;
+}
+
+.voice-call-orb[data-state="speaking"] .voice-call-bars i {
+  animation: voice-call-bar 900ms ease-in-out infinite;
+}
+
+.voice-call-orb[data-state="speaking"] .voice-call-bars i:nth-child(2) {
+  animation-delay: 120ms;
+}
+
+.voice-call-orb[data-state="speaking"] .voice-call-bars i:nth-child(3) {
+  animation-delay: 240ms;
+}
+
+.voice-call-orb[data-state="speaking"] .voice-call-bars i:nth-child(4) {
+  animation-delay: 360ms;
+}
+
+.voice-call-orb[data-state="speaking"] .voice-call-bars i:nth-child(5) {
+  animation-delay: 480ms;
+}
+
+.voice-call-orb[data-state="thinking"] .voice-call-orb-glow {
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    color-mix(in srgb, var(--v2-icon-icon-accent) 45%, transparent) 90deg,
+    transparent 180deg
+  );
+  animation: voice-call-spin 1.6s linear infinite;
+}
+
+.voice-call-orb[data-state="starting"] .voice-call-orb-core,
+.voice-call-orb[data-state="error"] .voice-call-orb-core {
+  opacity: 0.7;
+}
+
+.voice-call-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 16px;
+  color: var(--v2-text-text-muted);
+}
+
+.voice-call-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+}
+
+.voice-call-transcript {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.voice-call-transcript::-webkit-scrollbar {
+  display: none;
+}
+
+.voice-call-turn {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid transparent;
+}
+
+.voice-call-turn[data-role="user"] {
+  background: var(--v2-background-bg-layer-02);
+}
+
+.voice-call-turn[data-role="assistant"] {
+  border-color: var(--v2-border-border-base);
+}
+
+.voice-call-role {
+  font-size: 11px;
+  line-height: 16px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--v2-text-text-faint);
+}
+
+.voice-call-turn p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--v2-text-text-base);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.voice-call-hint {
+  margin: auto;
+  max-width: 280px;
+  text-align: center;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--v2-text-text-faint);
+}
+
+.voice-call-actions {
+  display: flex;
+  flex-shrink: 0;
+}
+
+.voice-call-error {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px 0;
+  text-align: center;
+}
+
+.voice-call-error-text {
+  max-width: 280px;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--v2-text-text-muted);
+}
+
+@keyframes voice-call-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.06);
+  }
+}
+
+@keyframes voice-call-halo {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.9;
+    transform: scale(1.08);
+  }
+}
+
+@keyframes voice-call-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes voice-call-bar {
+  0%,
+  100% {
+    transform: scaleY(0.3);
+  }
+
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .voice-call-orb[data-state="listening"] .voice-call-orb-core,
+  .voice-call-orb[data-state="listening"] .voice-call-orb-glow,
+  .voice-call-orb[data-state="thinking"] .voice-call-orb-glow,
+  .voice-call-orb[data-state="speaking"] .voice-call-bars i {
+    animation: none;
+  }
+}

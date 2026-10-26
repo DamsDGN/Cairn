@@ -6,19 +6,29 @@ import { useLanguage } from "@/runtime/i18n/language"
 import type { VoiceLocalModel, VoiceLocalModelID } from "@/runtime/platform/platform"
 import type { VoiceModels } from "./models"
 
-const LABEL: Record<
+export const VOICE_LABEL: Record<
   VoiceLocalModelID,
   | "settings.voice.model.base-q5_1"
   | "settings.voice.model.small-q5_1"
   | "settings.voice.model.small"
   | "settings.voice.model.silero-v6.2.0"
   | "settings.voice.model.vits-piper-fr_FR-siwis-medium"
+  | "settings.voice.model.vits-piper-fr_FR-upmc-medium"
+  | "settings.voice.model.vits-coqui-fr-css10"
+  | "settings.voice.model.vits-piper-en_US-lessac-medium"
+  | "settings.voice.model.vits-piper-en_US-ryan-high"
+  | "settings.voice.model.vits-piper-en_GB-alba-medium"
 > = {
   "base-q5_1": "settings.voice.model.base-q5_1",
   "small-q5_1": "settings.voice.model.small-q5_1",
   small: "settings.voice.model.small",
   "silero-v6.2.0": "settings.voice.model.silero-v6.2.0",
   "vits-piper-fr_FR-siwis-medium": "settings.voice.model.vits-piper-fr_FR-siwis-medium",
+  "vits-piper-fr_FR-upmc-medium": "settings.voice.model.vits-piper-fr_FR-upmc-medium",
+  "vits-coqui-fr-css10": "settings.voice.model.vits-coqui-fr-css10",
+  "vits-piper-en_US-lessac-medium": "settings.voice.model.vits-piper-en_US-lessac-medium",
+  "vits-piper-en_US-ryan-high": "settings.voice.model.vits-piper-en_US-ryan-high",
+  "vits-piper-en_GB-alba-medium": "settings.voice.model.vits-piper-en_GB-alba-medium",
 }
 
 const RECOMMENDED: VoiceLocalModelID = "base-q5_1"
@@ -28,11 +38,7 @@ export function formatSize(bytes: number) {
 }
 
 /** One voice model in the settings and the dictation dialog: state, progress, download, delete. */
-export function VoiceModelRow(props: {
-  model: VoiceLocalModel
-  voice: VoiceModels
-  onInstalled?: () => void
-}) {
+export function VoiceModelRow(props: { model: VoiceLocalModel; voice: VoiceModels; onInstalled?: () => void }) {
   const language = useLanguage()
   const state = () => props.voice.state(props.model.id)
   const busy = () => state().status === "downloading"
@@ -55,7 +61,7 @@ export function VoiceModelRow(props: {
     >
       <div class="flex min-w-0 flex-1 flex-col gap-0.5">
         <div class="flex items-center gap-2">
-          <span class="truncate text-[13px] text-v2-text-text-base">{language.t(LABEL[props.model.id])}</span>
+          <span class="truncate text-[13px] text-v2-text-text-base">{language.t(VOICE_LABEL[props.model.id])}</span>
           <Show when={props.model.id === RECOMMENDED}>
             <span class="rounded-full bg-v2-background-bg-layer-2 px-2 py-0.5 text-[10px] text-v2-text-text-faint">
               {language.t("settings.voice.model.recommended")}

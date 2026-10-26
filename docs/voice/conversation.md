@@ -27,6 +27,18 @@ Audio. No audio leaves the machine. The engine allocates its samples outside the
 default, which the main process rejects, so synthesis asks sherpa-onnx for a copy: the flag costs a
 few hundred microseconds per sentence and keeps playback working inside Electron.
 
+## Voices
+
+Cairn ships no voice in the installer. Settings > Voice offers a language, French or English, and
+the voices published for it, each downloaded once and kept in `<userData>/voice/models`: siwis,
+UPMC and Coqui for French, Lessac, Ryan and Alba for English. The chosen voice is stored in the
+voice preferences, and a call only speaks with that one, so switching language never answers in the
+other one. Each installed voice carries a Listen action that reads one sentence with it, which is
+how a voice gets chosen.
+
+The voices are Piper and Coqui VITS models; every one runs at a real-time factor below 0.1 on the
+reference machine, so a sentence is ready before the previous one finishes playing.
+
 ## Half duplex
 
 The call listens, thinks, speaks, then listens again. While Cairn speaks, the first four frames
@@ -56,7 +68,8 @@ fresh profile explains the download instead of failing silently.
 - One turn at a time; there is no streaming partial transcription.
 - The answer is spoken sentence by sentence as it arrives; a sentence is at most one synthesis
   request.
-- Markdown is stripped before synthesis so the voice never reads asterisks or link syntax.
+- Markdown is stripped before synthesis so the voice never reads asterisks or link syntax, and code
+  blocks are announced ("Bloc de code TypeScript.") instead of being read line by line.
 - The call ends on close, on the microphone error, and on the permission request.
 - Barge-in stops playback but does not cancel the model run that produced it. The stale answer is no
   longer spoken and its text stays in the conversation; the interrupting sentence is submitted once

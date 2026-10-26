@@ -2,6 +2,7 @@ import { createResource, onCleanup } from "solid-js"
 import { createStore } from "solid-js/store"
 import {
   usePlatform,
+  type VoiceLocalLanguage,
   type VoiceLocalModel,
   type VoiceLocalModelID,
   type VoiceLocalState,
@@ -93,7 +94,16 @@ export function useVoiceModels() {
 
   const synthesis = () => installed().find((model) => model.kind === "synthesis")
 
-  return { models, states, state, progress, download, remove, installed, speech, best, synthesis, refetch }
+  // Voices are offered per spoken language, and a voice names the language it speaks.
+  const voices = (language?: VoiceLocalLanguage) =>
+    (models() ?? []).filter(
+      (model) => model.kind === "synthesis" && (language === undefined || model.language === language),
+    )
+
+  const voice = (id?: VoiceLocalModelID) =>
+    installed().find((model) => model.kind === "synthesis" && model.id === id)
+
+  return { models, states, state, progress, download, remove, installed, speech, best, synthesis, voices, voice, refetch }
 }
 
 export type VoiceModels = ReturnType<typeof useVoiceModels>

@@ -21,6 +21,7 @@ export const voiceHandlers = VoiceRpcs.toLayer(
             kind: model.kind,
             installed: isInstalled(modelPath(dataDirectory, model), model),
             size: model.size,
+            language: model.language,
           })),
         })),
       VoiceLocalDownload: ({ id }) =>
@@ -31,9 +32,9 @@ export const voiceHandlers = VoiceRpcs.toLayer(
       VoiceLocalPreferencesSet: (input) => Effect.sync(() => writeVoicePreferences(input)),
       VoiceLocalAcceleration: () => Effect.sync(() => ({ level: accelerationLevel() })),
       VoiceLocalSpeak: ({ text, id }) =>
-        Effect.promise(() => synthesize({ dataDirectory, id: id ?? SYNTHESIS_VOICE_MODEL, text })).pipe(
-          Effect.map((result) => ({ audio: result.audio, sampleRate: result.sampleRate })),
-        ),
+        Effect.promise(() =>
+          synthesize({ dataDirectory, id: id ?? readVoicePreferences().voice ?? SYNTHESIS_VOICE_MODEL, text }),
+        ).pipe(Effect.map((result) => ({ audio: result.audio, sampleRate: result.sampleRate }))),
       VoiceLocalTranscribe: ({ audio, language, prompt, id }) =>
         Effect.promise(() =>
           transcribe({
