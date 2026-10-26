@@ -68,7 +68,8 @@ fresh profile explains the download instead of failing silently.
 - One turn at a time; there is no streaming partial transcription.
 - The answer is spoken sentence by sentence as it arrives; a sentence is at most one synthesis
   request.
-- Markdown is stripped before synthesis so the voice never reads asterisks or link syntax.
+- Markdown is stripped before synthesis so the voice never reads asterisks or link syntax, and code
+  blocks are announced ("Bloc de code TypeScript.") instead of being read line by line.
 - The call ends on close, on the microphone error, and on the permission request.
 - Barge-in stops playback but does not cancel the model run that produced it. The stale answer is no
   longer spoken and its text stays in the conversation; the interrupting sentence is submitted once

@@ -587,6 +587,8 @@ export const dict = {
   "assistant.voice.speaking": "Speaking...",
   "assistant.voice.error": "Error",
   "assistant.voice.callHint": "Just talk. Cairn answers out loud, and speaking again stops the answer.",
+  "assistant.voice.codeBlock": "{{language}} code block.",
+  "assistant.voice.codeBlockPlain": "Code block.",
   "assistant.voice.end": "End the call",
   "assistant.voice.permission": "An approval is waiting in the conversation.",
   "assistant.voice.speechSettings": "Open voice settings",

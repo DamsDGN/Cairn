@@ -14,7 +14,7 @@ import { useVoiceModels } from "./models"
 import { floatToPcm16, sliceSamples } from "./pcm"
 import { startRecorder, type Recorder, type RecorderFrame } from "./recorder"
 import { createSpeechSegmenter, type SpeechSegment } from "./segmenter"
-import { splitSentences, speakable } from "./speech"
+import { splitSpeech, speakable, type SpeechPiece } from "./speech"
 import "./call-dialog.css"
 import { createSpeaker, type Speaker } from "./tts"
 import { defaultVoice } from "./voices"
@@ -115,13 +115,11 @@ export function VoiceCallDialog(props: { session: SessionModel; composer: Compos
     if (finished || closed || interrupted) return
     finished = true
 
-    const last = speakable(pending)
+    const split = splitSpeech(pending, true)
 
-    pending = ""
+    pending = split.rest
 
-    if (last) queue.push(last)
-
-    void pump()
+    enqueue(split.segments)
   }
 
   const pump = async (): Promise<void> => {
@@ -147,14 +145,20 @@ export function VoiceCallDialog(props: { session: SessionModel; composer: Compos
     settle()
   }
 
-  const enqueue = (sentences: string[]) => {
+  // Code blocks are announced, not read: the model spends them on syntax the voice cannot
+  // pronounce, and reading them aloud is unusable.
+  const spokenText = (segment: SpeechPiece) => {
+    if (segment.type === "text") return speakable(segment.text)
+
+    if (segment.language) return language.t("assistant.voice.codeBlock", { language: segment.language })
+
+    return language.t("assistant.voice.codeBlockPlain")
+  }
+
+  const enqueue = (segments: SpeechPiece[]) => {
     if (closed || interrupted) return
 
-    const text = sentences.flatMap((sentence) => {
-      const spoken = speakable(sentence)
-
-      return spoken ? [spoken] : []
-    })
+    const text = segments.map(spokenText).filter(Boolean)
 
     if (!text.length) return
 
@@ -278,10 +282,10 @@ export function VoiceCallDialog(props: { session: SessionModel; composer: Compos
         unseen = text.length
         pending += delta
 
-        const split = splitSentences(pending)
+        const split = splitSpeech(pending)
 
         pending = split.rest
-        enqueue(split.sentences)
+        enqueue(split.segments)
 
         if (!working) scheduleIdle(800)
       },
