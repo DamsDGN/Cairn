@@ -52,7 +52,6 @@ function seedAssistantProjectConfig(directory: string) {
             mode: "primary",
             system: DISCUSSION_SYSTEM,
             permissions: [
-              { action: "*", resource: "*", effect: "deny" },
               { action: "question", resource: "*", effect: "allow" },
               { action: "read", resource: `${directory}/**`, effect: "allow" },
               { action: "edit", resource: `${directory}/**`, effect: "allow" },
