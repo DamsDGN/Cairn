@@ -1,13 +1,14 @@
 # Dictation by sentence
 
-Design note for M14, phase D. Nothing here is implemented yet.
+Design note for M14, phase D. Implemented.
 
 ## Goal
 
 Dictation should feel like writing while speaking: each finished sentence appears while the next one
 is being spoken. Target: no more than two seconds between the end of a sentence and its text, for
-sentences up to five seconds, on the reference machine with the AVX2 addon. Today the whole
-recording is transcribed after the stop button, so a thirty-second thought costs a single wait.
+sentences up to five seconds, on the reference machine with the AVX2 addon. Before this change the
+whole recording was transcribed after the stop button, so a thirty-second thought cost a single
+wait.
 
 ## Why not streaming from whisper
 
@@ -18,65 +19,67 @@ transcribing with this engine.
 
 ## Recording
 
-`recorder.ts` currently uses a `ScriptProcessorNode`, which runs on the main thread and copies every
-block into an array. Replace it with an `AudioWorkletProcessor`:
+`recorder.ts` keeps the `ScriptProcessorNode` the recorder already used: it runs on the main thread
+and copies every block into an array. Each 4096-sample block is cut into 20 ms frames and reported
+with the root mean square level of the frame. Moving the frame loop into an `AudioWorkletProcessor`
+would take it off the main thread, but the worklet cannot be tested in the current harness and the
+measured CPU cost of the page-side loop is negligible, so it stays a later optimization.
 
-- 128-frame blocks at 16 kHz, accumulated into 20 ms frames.
-- Per frame, the worklet computes the RMS level and posts `{ samples, rms }` to the page.
-- The page keeps a ring buffer of the last 300 ms and never blocks on the audio graph.
-
-The worklet only reports levels; all decisions stay in the page, where they are testable.
+The full recording remains in memory while recording, capped by the existing two-minute limit. The
+segmenter reports offsets into that recording and `sliceSamples` copies a sentence out of it just
+before transcription.
 
 ## Finding sentence boundaries
 
-Energy thresholds with hysteresis, calibrated on the first 300 ms of the recording (assumed silence
-before the user starts talking):
+`segmenter.ts` is a pure state machine over frame levels, calibrated on the first 300 ms of the
+recording (assumed silence before the user starts talking):
 
-- Noise floor `n` is the median frame RMS of that window.
+- Noise floor `n` is the median frame RMS of that window, capped at `0.02` so a recording that
+  starts mid-sentence does not raise the threshold.
 - Speech starts when a frame exceeds `max(0.02, n * 4)` for 150 ms.
 - A sentence ends after 700 ms below `max(0.012, n * 2)`.
+- A segment needs at least 300 ms of speech.
 - The first 250 ms before speech start and the last 300 ms after the end are kept, so quiet
   consonants are not clipped.
+- A sentence longer than thirty seconds is cut at the cap; the remainder continues as a new
+  sentence.
 
-The segmenter is a pure function over the sequence of frame levels, so its contracts are unit tests
-with synthetic series: a single sentence, several sentences, a cough shorter than the minimum speech
-duration, background noise above the low threshold, and a sentence that reaches the thirty-second
-cap.
+The contracts are unit tests with synthetic series: a single sentence, several sentences, a cough
+shorter than the minimum speech duration, background noise above the low threshold, and a sentence
+that reaches the thirty-second cap.
 
 ## Confirming with the detector
 
 A cough or a door can pass the energy test. Before transcribing a sentence, the main process runs the
-Silero detector over that sentence only (it is already installed for the whole-recording path). If it
-finds no speech, the sentence is dropped silently. This costs a few milliseconds per sentence and
-keeps the recognizer away from noise, where it invents text.
+Silero detector over that sentence only. If it finds no speech, the sentence is dropped silently.
+This costs a few milliseconds per sentence and keeps the recognizer away from noise, where it invents
+text.
 
 ## Transcribing
 
-- One queue in the main process, one whisper task at a time on the shared context. A second call on
-  the same context would corrupt its state.
-- Every sentence carries a sequence number and its start offset.
+- One queue in the renderer, one whisper task at a time on the shared context. A second call on the
+  same context would corrupt its state, so the main process also serializes its own tasks.
 - Results are delivered in order: a later sentence that finishes first waits for its predecessor, so
   the text is never reordered.
-- Cancelling (Escape, stop button, window closing) sets a generation counter, calls `stop()` on the
-  running task, empties the queue, and drops every result whose generation is stale.
-- A sentence longer than thirty seconds is cut at the cap; the remainder continues as a new sentence.
-- Recording stops on its own after two minutes, as today.
+- Cancelling (Escape, stop button, window closing) sets a generation counter, empties the queue and
+  drops every result whose generation is stale.
+- Recording stops on its own after two minutes, as before.
 
 ## Inserting
 
-Each finished sentence is inserted where the caret is at that moment, with a space when the text
-before it does not end with one. This is what the user expects after they moved the caret; the
-alternative, remembering the original position, would insert text behind their back.
+Each finished sentence is appended to the composer with a space when the text before it does not end
+with one, and focus returns to the editor. Appending rather than remembering a caret position keeps
+the text where the user is looking; whisper cannot revise an earlier guess, so insertion is
+append-only within a dictation.
 
 The composer shows the sentences as they arrive, so the perceived latency is one sentence, not one
 recording.
 
 ## States
 
-`idle → recording → transcribing(n) → idle`, plus `error` for a microphone failure and `cancelled`
-for Escape. The button shows the number of sentences waiting so a slow machine looks busy rather than
-stuck. Losing one sentence (transcription error, detector rejection) shows a discreet toast and the
-session continues.
+`idle → recording → transcribing(n) → idle`, plus `error` for a microphone or transcription failure.
+The button shows a transcribing label while sentences are queued, so a slow machine looks busy rather
+than stuck.
 
 ## What is not in scope
 

@@ -47,13 +47,21 @@ reference for contributors; the user-facing description lives in `README.md`.
   Serif 4, and a Linux frameless window whose title bar is drawn in-app with its own controls.
 - **M13 Cairn identity (done)**: interface rebrand, About page, icons rendered from the mark at
   their exact sizes, packaging identity, favicons and web manifest.
-- **M14 Local voice (in progress)**: speech recognition and synthesis on the user's machine, CPU
-  only, models downloaded on request. `@fugood/whisper.node` provides prebuilt whisper.cpp binaries
-  for every desktop platform, so nothing compiles on the user's machine. Dictation works end to
-  end: the composer records 16 kHz PCM, transcribes it in the main process and inserts the text,
-  and the first attempt offers the model download. Settings > Voice manages the models. Read-aloud
-  is still missing. Release builds keep only the CPU addon of the packaged platform: the CUDA and
-  Vulkan variants would add 240 MB to every installer.
+- **M14 Local voice (done)**: speech recognition and synthesis on the user's machine, CPU only,
+  models downloaded on request. `@fugood/whisper.node` provides prebuilt whisper.cpp binaries for
+  every desktop platform, so nothing compiles on the user's machine. Dictation now transcribes
+  sentence by sentence: an energy segmenter finds each sentence end, the renderer queues it, and the
+  text appears in the composer while the next sentence is still being spoken
+  (see `docs/voice/dictation-streaming.md`). The first attempt offers the model download, and
+  Settings > Voice manages the models.
+  A voice conversation reuses the same recognizer and answers out loud with an embedded Piper
+  French voice (`sherpa-onnx-node`, `vits-piper-fr_FR-siwis-medium`, downloaded on request). It is
+  half duplex: listen, submit, speak the streaming answer sentence by sentence, listen again;
+  speaking over the answer stops the playback (see `docs/voice/conversation.md`). No remote speech
+  service is involved.
+  Release builds keep only the CPU addon of the packaged platform: the CUDA and Vulkan variants
+  would add 240 MB to every installer. The sherpa package keeps only the target platform's native
+  addon and its shared libraries are unpacked next to the asar.
   The prebuilt Linux x64 addon runs the generic C kernels, ten times slower than it should be. The
   package sets `CMAKE_SYSTEM_PROCESSOR` to the Node architecture name (`x64`), which ggml does not
   match, so it selects its scalar implementation and, with it, no OpenMP parallel regions. Release
@@ -68,7 +76,8 @@ reference for contributors; the user-facing description lives in `README.md`.
   slower and hallucinated subtitles on this machine. The Silero detector from the same project trims
   the recording and skips transcription when nobody spoke, and a short list drops transcripts that
   are only closing credits. A 5.4 s clip transcribes in 1.2 s, and the vocabulary turns "Kearn chez sauver
-  à brest, tréfique" into "Kairn chez Sover à Brest, Traefik".
+  à brest, tréfique" into "Kairn chez Sover à Brest, Traefik". French synthesizes at a real-time
+  factor of 0.06 on the reference machine.
 
 ## Decisions
 

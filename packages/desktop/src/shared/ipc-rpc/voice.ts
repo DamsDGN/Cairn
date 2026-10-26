@@ -2,7 +2,7 @@ import { Schema } from "effect"
 import { Rpc, RpcGroup } from "effect/rpc"
 import { Transferable } from "effect/workers"
 
-const ModelID = Schema.Literals(["base-q5_1", "small-q5_1", "small", "silero-v6.2.0"])
+const ModelID = Schema.Literals(["base-q5_1", "small-q5_1", "small", "silero-v6.2.0", "vits-piper-fr_FR-siwis-medium"])
 const ModelStatus = Schema.Literals(["idle", "downloading", "installed", "failed"])
 const Acceleration = Schema.Literals(["avx2", "compatible"])
 
@@ -24,7 +24,7 @@ const Preferences = Schema.Struct({
 
 const ModelInfo = Schema.Struct({
   id: ModelID,
-  kind: Schema.Literals(["speech", "detector"]),
+  kind: Schema.Literals(["speech", "detector", "synthesis"]),
   installed: Schema.Boolean,
   size: Schema.Number,
 })
@@ -76,6 +76,14 @@ export const VoiceLocalTranscribe = Rpc.make("VoiceLocalTranscribe", {
   success: Schema.Struct({ text: Schema.String }),
 })
 
+export const VoiceLocalSpeak = Rpc.make("VoiceLocalSpeak", {
+  payload: {
+    text: Schema.String,
+    id: Schema.optional(ModelID),
+  },
+  success: Schema.Struct({ audio: Transferable.Uint8Array, sampleRate: Schema.Number }),
+})
+
 export const VoiceRpcs = RpcGroup.make(
   VoiceLocalModels,
   VoiceLocalDownload,
@@ -85,4 +93,5 @@ export const VoiceRpcs = RpcGroup.make(
   VoiceLocalPreferencesSet,
   VoiceLocalAcceleration,
   VoiceLocalTranscribe,
+  VoiceLocalSpeak,
 )

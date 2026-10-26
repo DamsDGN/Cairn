@@ -37,8 +37,9 @@ attendre.
   compris.
 - **Fournisseurs** : connecter n'importe quel endpoint compatible OpenAI depuis l'interface, et
   choisir le modèle sur lequel s'ouvrent les nouvelles conversations.
-- **Voix locale** (en cours) : Whisper tourne sur la machine, les modèles se téléchargent à la
-  demande. L'interface d'enregistrement n'est pas encore livrée.
+- **Voix locale** : Whisper tourne sur la machine, les modèles se téléchargent à la demande. La
+  dictée écrit chaque phrase dans le composeur pendant que vous parlez, et la conversation vocale
+  répond à voix haute avec une voix française embarquée.
 - **Mises à jour** : les installations suivent les releases GitHub de ce dépôt.
 
 ## Installation

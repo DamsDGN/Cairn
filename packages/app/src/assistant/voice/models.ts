@@ -20,6 +20,7 @@ export function useVoiceModels() {
   }, { initialValue: [] })
 
   const [states, setStates] = createStore<Record<string, VoiceLocalState | undefined>>({})
+
   const timers = new Map<VoiceLocalModelID, ReturnType<typeof setInterval>>()
 
   const clear = (id: VoiceLocalModelID) => {
@@ -90,7 +91,9 @@ export function useVoiceModels() {
 
   const best = () => PREFERENCE.find((id) => installed().some((model) => model.id === id))
 
-  return { models, states, state, progress, download, remove, installed, speech, best, refetch }
+  const synthesis = () => installed().find((model) => model.kind === "synthesis")
+
+  return { models, states, state, progress, download, remove, installed, speech, best, synthesis, refetch }
 }
 
 export type VoiceModels = ReturnType<typeof useVoiceModels>

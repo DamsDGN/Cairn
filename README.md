@@ -33,8 +33,9 @@ the system asks for confirmation on first launch. Expect rough edges.
 - **Connectors**: MCP servers can be added and removed from the settings, with keys and OAuth.
 - **Providers**: connect any OpenAI-compatible endpoint from the interface, and pick the model new
   conversations start on.
-- **Local speech** (in progress): Whisper runs on the machine, models are downloaded on demand.
-  The recording interface is not shipped yet.
+- **Local speech**: Whisper runs on the machine, models are downloaded on demand. Dictation writes
+  each sentence into the composer while you speak, and the voice conversation answers out loud with
+  an embedded French voice.
 - **Updates**: installed builds check the GitHub releases of this repository.
 
 ## Install

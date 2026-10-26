@@ -1,7 +1,7 @@
 import { existsSync, statSync } from "node:fs"
 import path from "node:path"
 
-export type VoiceModelID = "base-q5_1" | "small-q5_1" | "small" | "silero-v6.2.0"
+export type VoiceModelID = "base-q5_1" | "small-q5_1" | "small" | "silero-v6.2.0" | "vits-piper-fr_FR-siwis-medium"
 
 export type VoiceModel = {
   id: VoiceModelID
@@ -11,13 +11,19 @@ export type VoiceModel = {
   /** SHA-256 of the published file, checked before the download is renamed into place. */
   sha256: string
   url: string
-  /** Speech models produce text; the detector only reports where speech is. */
-  kind: "speech" | "detector"
+  /** Speech models produce text, detectors find where speech is, synthesis speaks it back. */
+  kind: "speech" | "detector" | "synthesis"
+  /** A synthesis voice arrives as one archive that is extracted into its own folder. */
+  archive?: {
+    directory: string
+    onnx: string
+    entries: readonly string[]
+  }
 }
 
-// Whisper checkpoints published by the whisper.cpp project, and the Silero voice detector from the
-// same project. Base is the default: on the reference machine it transcribes French as well as the
-// quantized small model for a third of the download, and small was both slower and less accurate.
+// Whisper checkpoints published by the whisper.cpp project, the Silero voice detector from the same
+// project, and the Piper voices from the sherpa-onnx release, which bundles the tokens the engine
+// needs next to the ONNX file.
 export const VOICE_MODELS: readonly VoiceModel[] = [
   {
     id: "base-q5_1",
@@ -51,11 +57,26 @@ export const VOICE_MODELS: readonly VoiceModel[] = [
     url: "https://huggingface.co/ggml-org/whisper-vad/resolve/main/ggml-silero-v6.2.0.bin",
     kind: "detector",
   },
+  {
+    id: "vits-piper-fr_FR-siwis-medium",
+    file: "vits-piper-fr_FR-siwis-medium.tar.bz2",
+    size: 67_207_459,
+    sha256: "375909aa30842b3a4efa10b1beb1d761af792960ae6873b4d53889f96c66195b",
+    url: "https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/vits-piper-fr_FR-siwis-medium.tar.bz2",
+    kind: "synthesis",
+    archive: {
+      directory: "vits-piper-fr_FR-siwis-medium",
+      onnx: "fr_FR-siwis-medium.onnx",
+      entries: ["fr_FR-siwis-medium.onnx", "tokens.txt"],
+    },
+  },
 ]
 
 export const DEFAULT_VOICE_MODEL: VoiceModelID = "base-q5_1"
 
 export const DETECTOR_VOICE_MODEL: VoiceModelID = "silero-v6.2.0"
+
+export const SYNTHESIS_VOICE_MODEL: VoiceModelID = "vits-piper-fr_FR-siwis-medium"
 
 // The small models stay in the catalog but are not offered: they were slower than base and
 // hallucinated subtitles on the reference machine, and the optimized build has not been measured
@@ -74,11 +95,18 @@ export function speechModels(): readonly VoiceModel[] {
   return visibleVoiceModels().filter((model) => model.kind === "speech")
 }
 
+
 export function modelsDirectory(dataDirectory: string): string {
   return path.join(dataDirectory, "voice", "models")
 }
 
+/** Where the model lives once installed: a file, or a folder for an extracted voice. */
 export function modelPath(dataDirectory: string, model: VoiceModel): string {
+  return path.join(modelsDirectory(dataDirectory), model.archive?.directory ?? model.file)
+}
+
+/** Where the downloaded archive is written before extraction. */
+export function archivePath(dataDirectory: string, model: VoiceModel): string {
   return path.join(modelsDirectory(dataDirectory), model.file)
 }
 
@@ -89,6 +117,10 @@ export function partialPath(target: string): string {
 }
 
 export function isInstalled(target: string, model: VoiceModel): boolean {
+  if (model.archive) {
+    return model.archive.entries.every((entry) => existsSync(path.join(target, entry)))
+  }
+
   if (!existsSync(target)) return false
 
   return statSync(target).size === model.size

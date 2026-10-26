@@ -34,7 +34,7 @@ export type ElectronAPI = {
   draftDelete(key: string): Promise<void>
   draftBlobPut(data: ArrayBuffer): Promise<string>
   voiceModelList(): Promise<{
-    models: Array<{ id: VoiceModelID; kind: "speech" | "detector"; installed: boolean; size: number }>
+    models: Array<{ id: VoiceModelID; kind: "speech" | "detector" | "synthesis"; installed: boolean; size: number }>
   }>
   voiceModelDownload(id: VoiceModelID): Promise<VoiceModelState>
   voiceModelState(id: VoiceModelID): Promise<VoiceModelState>
@@ -48,6 +48,7 @@ export type ElectronAPI = {
     prompt?: string
     id?: VoiceModelID
   }): Promise<string>
+  voiceSpeak(input: { text: string; id?: VoiceModelID }): Promise<{ audio: ArrayBuffer; sampleRate: number }>
   draftBlobGet(id: string): Promise<ArrayBuffer | null>
   getWindowID(): string
   getWindowBootstrap(): WindowBootstrap

@@ -62,6 +62,11 @@ export const api: ElectronAPI = {
       prompt: input.prompt,
       id: input.id,
     }).then((result) => result.text),
+  voiceSpeak: (input) =>
+    invoke("VoiceLocalSpeak", { text: input.text, id: input.id }).then((result) => ({
+      audio: toArrayBuffer(result.audio),
+      sampleRate: result.sampleRate,
+    })),
   draftBlobGet: (id) => invoke("DraftsGetBlob", { id }).then((data) => (data ? toArrayBuffer(data) : null)),
 
   getWindowID: () => window.electron.windowID,

@@ -9,7 +9,9 @@ import { showToast } from "@/shell/notifications/toast"
 import { dictationLanguage } from "./languages"
 import { DialogVoiceModels } from "./model-dialog"
 import { useVoiceModels } from "./models"
-import { RECORDING_LIMIT_MS, startRecorder, type Recorder } from "./recorder"
+import { floatToPcm16, sliceSamples } from "./pcm"
+import { RECORDING_LIMIT_MS, startRecorder, type Recorder, type RecorderFrame } from "./recorder"
+import { createSpeechSegmenter, type SpeechSegment } from "./segmenter"
 
 type Phase = "idle" | "recording" | "transcribing"
 
@@ -19,7 +21,7 @@ function clock(ms: number) {
   return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`
 }
 
-/** Local dictation: record, transcribe on this machine, insert the text in the composer. */
+/** Local dictation: record, transcribe sentence by sentence on this machine, insert the text. */
 export function AssistantDictationButton(props: { composer: ComposerModel }) {
   const platform = usePlatform()
   const dialog = useDialog()
@@ -28,12 +30,19 @@ export function AssistantDictationButton(props: { composer: ComposerModel }) {
 
   const [phase, setPhase] = createSignal<Phase>("idle")
   const [elapsed, setElapsed] = createSignal(0)
+  const [waiting, setWaiting] = createSignal(0)
 
   let recorder: Recorder | undefined
   let selected: VoiceLocalModelID | undefined
   let spoken = "en"
   let vocabulary: string | undefined
   let timer: ReturnType<typeof setInterval> | undefined
+  let frames: Float32Array[] = []
+  let segmenter = createSpeechSegmenter()
+  // Every result carries the generation it was recorded in: cancelling bumps it, and a transcription
+  // that was already running then drops its text instead of landing in a new dictation.
+  let generation = 0
+  let queue: Promise<void> = Promise.resolve()
 
   const stopTimer = () => {
     if (timer) clearInterval(timer)
@@ -48,40 +57,72 @@ export function AssistantDictationButton(props: { composer: ComposerModel }) {
     props.composer.restoreFocus()
   }
 
+  const transcribe = (segment: SpeechSegment, run: number) => {
+    setWaiting((count) => count + 1)
+
+    // One task at a time on the shared recognizer, and results land in the order the sentences were
+    // spoken even when a later one finishes first.
+    queue = queue.then(async () => {
+      if (run !== generation) return
+
+      try {
+        const audio = floatToPcm16([sliceSamples(frames, segment.start, segment.end)])
+
+        const text = await platform.voiceLocal!.transcribe({
+          audio,
+          id: selected,
+          language: spoken,
+          prompt: vocabulary,
+        })
+
+        if (run === generation && text) insert(text)
+      } catch {
+        if (run === generation)
+          showToast({ variant: "error", title: language.t("assistant.dictation.error.transcribe") })
+      } finally {
+        setWaiting((count) => Math.max(0, count - 1))
+      }
+    })
+  }
+
+  const onFrame = (frame: RecorderFrame) => {
+    frames.push(frame.samples)
+
+    for (const segment of segmenter.push(frame.level, frame.samples.length)) transcribe(segment, generation)
+  }
+
   const finish = async () => {
     const current = recorder
 
     if (!current) return
     recorder = undefined
     stopTimer()
+
+    const last = segmenter.flush()
+
+    if (last) transcribe(last, generation)
+
+    await current.stop().catch(() => undefined)
     setPhase("transcribing")
 
-    try {
-      const audio = await current.stop()
-      const text = await platform.voiceLocal!.transcribe({
-        audio,
-        id: selected,
-        language: spoken,
-        prompt: vocabulary,
-      })
+    await queue
 
-      if (text) insert(text)
-    } catch {
-      showToast({ variant: "error", title: language.t("assistant.dictation.error.transcribe") })
-    } finally {
-      setPhase("idle")
-      setElapsed(0)
-    }
+    setPhase("idle")
+    setElapsed(0)
   }
 
   const cancel = async () => {
     const current = recorder
 
+    generation += 1
     recorder = undefined
     selected = undefined
     stopTimer()
     setPhase("idle")
     setElapsed(0)
+    setWaiting(0)
+    frames = []
+    segmenter = createSpeechSegmenter()
     await current?.cancel()
   }
 
@@ -111,7 +152,10 @@ export function AssistantDictationButton(props: { composer: ComposerModel }) {
 
     try {
       selected = voice.best()
-      recorder = await startRecorder()
+      frames = []
+      segmenter = createSpeechSegmenter()
+      generation += 1
+      recorder = await startRecorder({ onFrame })
     } catch {
       showToast({ variant: "error", title: language.t("assistant.dictation.error.microphone") })
 
@@ -172,7 +216,7 @@ export function AssistantDictationButton(props: { composer: ComposerModel }) {
       <span class="hidden sm:block">
         {phase() === "recording"
           ? language.t("assistant.dictation.recording", { time: clock(elapsed()) })
-          : phase() === "transcribing"
+          : phase() === "transcribing" || waiting() > 0
             ? language.t("assistant.dictation.transcribing")
             : language.t("assistant.dictation.action")}
       </span>
