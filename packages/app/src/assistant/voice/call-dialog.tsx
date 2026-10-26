@@ -1,4 +1,4 @@
-import { Show, createEffect, createSignal, on, onCleanup, onMount } from "solid-js"
+import { Show, createEffect, createMemo, createSignal, on, onCleanup, onMount } from "solid-js"
 import { Button } from "@opencode/ui/button"
 import { Dialog, DialogBody, DialogHeader, DialogTitle } from "@opencode/ui/dialog"
 import { Icon } from "@opencode/ui/icon"
@@ -245,17 +245,26 @@ export function VoiceCallDialog(props: { session: SessionModel; composer: Compos
     }
   }
 
+  // Store proxies keep their identity when a message is appended or its text grows, and `on` only
+  // calls back when the dependency changes by value. Deriving the transcript text here is what
+  // makes streaming answers observable at all. The messages are read before the turn guard: a memo
+  // that returns early never subscribes to the store, and would never see the answer.
+  const transcript = createMemo(() => {
+    const messages = props.session.history.messages()
+    const from = Math.max(0, turnFrom)
+
+    return messages
+      .slice(from)
+      .flatMap((message) => (message.type === "assistant" ? message.content : []))
+      .flatMap((content) => (content.type === "text" ? [content.text] : []))
+      .join("\n\n")
+  })
+
   createEffect(
     on(
-      () => props.session.history.messages(),
-      (messages) => {
+      transcript,
+      (text) => {
         if (turnFrom < 0 || closed) return
-
-        const text = messages
-          .slice(turnFrom)
-          .flatMap((message) => (message.type === "assistant" ? message.content : []))
-          .flatMap((content) => (content.type === "text" ? [content.text] : []))
-          .join("\n\n")
 
         if (!text) return
 
@@ -305,6 +314,14 @@ export function VoiceCallDialog(props: { session: SessionModel; composer: Compos
 
           if (deferred) void onSegment(deferred)
           deferred = undefined
+
+          return
+        }
+
+        // The run can end before its text has landed in the store. Ending the turn on the spot would
+        // drop that answer, so wait for the transcript before settling.
+        if (unseen === 0) {
+          scheduleIdle(2500)
 
           return
         }
