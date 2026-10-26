@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test"
-import { floatToPcm16 } from "./pcm"
+import { floatToPcm16, sliceSamples } from "./pcm"
 
 const cases: Array<{ name: string; input: Float32Array[]; output: number[] }> = [
   { name: "silence", input: [new Float32Array([0, 0])], output: [0, 0] },
@@ -16,4 +16,17 @@ test.each(cases)("$name", ({ input, output }) => {
 
   expect(buffer.byteLength).toBe(output.length * 2)
   expect(Array.from({ length: output.length }, (_, index) => view.getInt16(index * 2, true))).toEqual(output)
+})
+
+const chunks = [new Float32Array([1, 2, 3]), new Float32Array([4, 5]), new Float32Array([6])]
+
+const slices: Array<{ name: string; start: number; end: number; output: number[] }> = [
+  { name: "inside one chunk", start: 1, end: 2, output: [2] },
+  { name: "across chunks", start: 2, end: 5, output: [3, 4, 5] },
+  { name: "from the start", start: 0, end: 6, output: [1, 2, 3, 4, 5, 6] },
+  { name: "clamped to the available samples", start: 4, end: 9, output: [5, 6] },
+]
+
+test.each(slices)("sliceSamples: $name", ({ start, end, output }) => {
+  expect(Array.from(sliceSamples(chunks, start, end))).toEqual(output)
 })

@@ -12,11 +12,13 @@ const LABEL: Record<
   | "settings.voice.model.small-q5_1"
   | "settings.voice.model.small"
   | "settings.voice.model.silero-v6.2.0"
+  | "settings.voice.model.vits-piper-fr_FR-siwis-medium"
 > = {
   "base-q5_1": "settings.voice.model.base-q5_1",
   "small-q5_1": "settings.voice.model.small-q5_1",
   small: "settings.voice.model.small",
   "silero-v6.2.0": "settings.voice.model.silero-v6.2.0",
+  "vits-piper-fr_FR-siwis-medium": "settings.voice.model.vits-piper-fr_FR-siwis-medium",
 }
 
 const RECOMMENDED: VoiceLocalModelID = "base-q5_1"
@@ -25,7 +27,7 @@ export function formatSize(bytes: number) {
   return `${Math.round(bytes / 1_000_000)} MB`
 }
 
-/** One speech model in the settings and in the dictation dialog: state, progress, download, delete. */
+/** One voice model in the settings and the dictation dialog: state, progress, download, delete. */
 export function VoiceModelRow(props: {
   model: VoiceLocalModel
   voice: VoiceModels

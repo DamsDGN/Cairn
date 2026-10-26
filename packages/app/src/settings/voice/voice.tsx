@@ -125,6 +125,7 @@ export const SettingsVoice: Component = () => {
 
           <div class="settings-section">
             <h3 class="settings-section-title">{language.t("settings.voice.models")}</h3>
+            <p class="text-11-regular text-v2-text-text-muted">{language.t("settings.voice.models.description")}</p>
             <SettingsList>
               <For each={voice.models()}>{(model) => <VoiceModelRow model={model} voice={voice} />}</For>
             </SettingsList>

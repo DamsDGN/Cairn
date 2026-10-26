@@ -360,7 +360,7 @@ export function ActiveSessionComposerRegion(props: {
                   borderUnderlay
                   readOnly={props.model.queue.undoing()}
                   suggestionBoundary={props.suggestionBoundary}
-                  voiceControl={<AssistantVoiceControls composer={props.model.composer} />}
+                  voiceControl={<AssistantVoiceControls composer={props.model.composer} session={props.session} />}
                 />
               </div>
             </div>

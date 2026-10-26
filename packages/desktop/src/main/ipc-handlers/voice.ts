@@ -3,8 +3,9 @@ import { Effect } from "effect"
 
 import { VoiceRpcs } from "../../shared/ipc-rpc"
 import { createVoiceDownloader } from "../voice/download"
-import { DEFAULT_VOICE_MODEL, isInstalled, modelPath, visibleVoiceModels } from "../voice/models"
+import { DEFAULT_VOICE_MODEL, SYNTHESIS_VOICE_MODEL, isInstalled, modelPath, visibleVoiceModels } from "../voice/models"
 import { readVoicePreferences, writeVoicePreferences } from "../voice/preferences-store"
+import { synthesize } from "../voice/speak"
 import { accelerationLevel, transcribe } from "../voice/transcribe"
 
 export const voiceHandlers = VoiceRpcs.toLayer(
@@ -29,6 +30,10 @@ export const voiceHandlers = VoiceRpcs.toLayer(
       VoiceLocalPreferences: () => Effect.sync(() => readVoicePreferences()),
       VoiceLocalPreferencesSet: (input) => Effect.sync(() => writeVoicePreferences(input)),
       VoiceLocalAcceleration: () => Effect.sync(() => ({ level: accelerationLevel() })),
+      VoiceLocalSpeak: ({ text, id }) =>
+        Effect.promise(() => synthesize({ dataDirectory, id: id ?? SYNTHESIS_VOICE_MODEL, text })).pipe(
+          Effect.map((result) => ({ audio: result.audio, sampleRate: result.sampleRate })),
+        ),
       VoiceLocalTranscribe: ({ audio, language, prompt, id }) =>
         Effect.promise(() =>
           transcribe({

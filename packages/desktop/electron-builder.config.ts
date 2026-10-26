@@ -132,6 +132,9 @@ const getBase = (appId: string): Configuration => {
       "!resources/whisper-avx2{,/**/*}",
       "!**/node_modules/@fugood/node-whisper-*{,/**/*}",
       `**/node_modules/@fugood/node-whisper-${target.os}-${target.cpu}{,/**/*}`,
+      // sherpa-onnx ships one native addon per platform for speech synthesis. Keep the target's.
+      "!**/node_modules/sherpa-onnx-{linux,darwin,win}-*{,/**/*}",
+      `**/node_modules/sherpa-onnx-${target.os === "win32" ? "win" : target.os}-${target.cpu}{,/**/*}`,
       // Log export imports Zip.js as ESM. Keep index.js and lib, including its inline worker.
       "!**/node_modules/@zip.js/zip.js/dist{,/**/*}",
       "!**/node_modules/@zip.js/zip.js/{index.cjs,index.min.js,index-fflate.js,deno.json,eslint.config.mjs}",
@@ -147,6 +150,9 @@ const getBase = (appId: string): Configuration => {
       "!**/node_modules/js-yaml/dist/{js-yaml.js,js-yaml.min.js,*.map}",
       "!**/node_modules/js-yaml/bin{,/**/*}",
     ],
+    // The sherpa addon loads its own shared libraries from the same folder, so the platform package
+    // stays outside the asar where the OS loader can read them.
+    asarUnpack: ["**/node_modules/sherpa-onnx-{linux,darwin,win}-*{,/**/*}"],
     extraResources: [
       {
         from: "resources/",

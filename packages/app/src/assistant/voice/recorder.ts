@@ -3,16 +3,33 @@
 // for us.
 import { floatToPcm16 } from "./pcm"
 
+export const FRAME_SAMPLES = 320
+
 const SAMPLE_RATE = 16_000
 
 export const RECORDING_LIMIT_MS = 120_000
+
+export type RecorderFrame = { samples: Float32Array; level: number }
 
 export type Recorder = {
   stop(): Promise<ArrayBuffer>
   cancel(): Promise<void>
 }
 
-export async function startRecorder(): Promise<Recorder> {
+export type RecorderOptions = {
+  /** Called for every 20 ms frame, with its root mean square level in [0, 1]. */
+  onFrame?: (frame: RecorderFrame) => void
+}
+
+function level(samples: Float32Array) {
+  let total = 0
+
+  for (const sample of samples) total += sample * sample
+
+  return Math.sqrt(total / samples.length)
+}
+
+export async function startRecorder(options: RecorderOptions = {}): Promise<Recorder> {
   const stream = await navigator.mediaDevices.getUserMedia({
     audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true },
   })
@@ -29,7 +46,15 @@ export async function startRecorder(): Promise<Recorder> {
 
   const chunks: Float32Array[] = []
   processor.onaudioprocess = (event) => {
-    chunks.push(new Float32Array(event.inputBuffer.getChannelData(0)))
+    const block = new Float32Array(event.inputBuffer.getChannelData(0))
+
+    chunks.push(block)
+
+    for (let offset = 0; offset < block.length; offset += FRAME_SAMPLES) {
+      const frame = block.subarray(offset, Math.min(offset + FRAME_SAMPLES, block.length))
+
+      options.onFrame?.({ samples: new Float32Array(frame), level: level(frame) })
+    }
   }
 
   source.connect(processor)

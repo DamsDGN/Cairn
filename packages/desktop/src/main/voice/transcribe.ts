@@ -65,6 +65,18 @@ let loaded: Promise<Whisper> | undefined
 const contexts = new Map<string, Promise<WhisperContext>>()
 const detectors = new Map<string, Promise<DetectorContext>>()
 
+// One task at a time on a whisper context: a second call would corrupt its decoder state. Dictation
+// sends sentences as they end, so the callers queue instead of failing.
+let transcription: Promise<unknown> = Promise.resolve()
+
+function serialized<T>(run: () => Promise<T>): Promise<T> {
+  const next = transcription.then(run, run)
+
+  transcription = next.catch(() => undefined)
+
+  return next
+}
+
 async function whisper(): Promise<Whisper> {
   loaded ??= loadWhisper()
 
@@ -114,17 +126,19 @@ export async function transcribe(input: {
 
   const context = await loadContext(modelPath(input.dataDirectory, model))
 
-  const task = context.transcribeData(audio, {
-    language: input.language,
-    translate: false,
-    prompt: input.prompt,
-    maxThreads: voiceThreads(availableParallelism()),
-    nProcessors: 1,
+  return serialized(async () => {
+    const task = context.transcribeData(audio, {
+      language: input.language,
+      translate: false,
+      prompt: input.prompt,
+      maxThreads: voiceThreads(availableParallelism()),
+      nProcessors: 1,
+    })
+
+    const result = await task.promise
+
+    return cleanTranscription(result.result)
   })
-
-  const result = await task.promise
-
-  return cleanTranscription(result.result)
 }
 
 // Loads the default model in the background once the window is up, so the first dictation does not

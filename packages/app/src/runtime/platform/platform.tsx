@@ -182,10 +182,12 @@ type PlatformBase = {
       prompt?: string
       id?: VoiceLocalModelID
     }): Promise<string>
+    /** Synthesizes speech on this machine and returns signed 16-bit mono PCM. */
+    speak(input: { text: string; id?: VoiceLocalModelID }): Promise<{ audio: ArrayBuffer; sampleRate: number }>
   }
 }
 
-export type VoiceLocalModelID = "base-q5_1" | "small-q5_1" | "small" | "silero-v6.2.0"
+export type VoiceLocalModelID = "base-q5_1" | "small-q5_1" | "small" | "silero-v6.2.0" | "vits-piper-fr_FR-siwis-medium"
 
 export type VoiceLocalAcceleration = "avx2" | "compatible"
 
@@ -193,7 +195,7 @@ export type VoiceLocalPreferences = { language?: string; prompt?: string }
 
 export type VoiceLocalModel = {
   id: VoiceLocalModelID
-  kind: "speech" | "detector"
+  kind: "speech" | "detector" | "synthesis"
   installed: boolean
   size: number
 }
