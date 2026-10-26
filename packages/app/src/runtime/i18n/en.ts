@@ -630,8 +630,8 @@ export const dict = {
   "settings.voice.voiceLanguage.fr": "French",
   "settings.voice.voiceLanguage.en": "English",
   "settings.voice.model.preview": "Listen",
-  "settings.voice.model.use": "Use",
-  "settings.voice.model.active": "Active voice",
+  "settings.voice.voiceSelect.title": "Voice",
+  "settings.voice.voiceSelect.description": "The voice Cairn answers with. Press Listen to hear the one you picked.",
   "settings.voice.models": "Speech models",
   "settings.voice.models.description":
     "Dictation uses the recognition models, the voice conversation the synthesis voice.",

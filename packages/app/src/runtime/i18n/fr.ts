@@ -718,8 +718,8 @@ export const dict = {
   "settings.voice.voiceLanguage.fr": "Français",
   "settings.voice.voiceLanguage.en": "Anglais",
   "settings.voice.model.preview": "Écouter",
-  "settings.voice.model.use": "Utiliser",
-  "settings.voice.model.active": "Voix active",
+  "settings.voice.voiceSelect.title": "Voix",
+  "settings.voice.voiceSelect.description": "La voix avec laquelle Cairn répond. Écouter lit la voix sélectionnée.",
   "settings.voice.models": "Modèles vocaux",
   "settings.voice.models.description":
     "La dictée utilise les modèles de reconnaissance, la conversation vocale la voix de synthèse.",

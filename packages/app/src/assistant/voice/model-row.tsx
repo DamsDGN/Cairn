@@ -1,13 +1,12 @@
-import { Show, onCleanup } from "solid-js"
+import { Show } from "solid-js"
 import { Button } from "@opencode/ui/button"
 import { Icon } from "@opencode/ui/icon"
 import { Spinner } from "@opencode/ui/spinner"
 import { useLanguage } from "@/runtime/i18n/language"
-import { usePlatform, type VoiceLocalModel, type VoiceLocalModelID } from "@/runtime/platform/platform"
+import type { VoiceLocalModel, VoiceLocalModelID } from "@/runtime/platform/platform"
 import type { VoiceModels } from "./models"
-import { createSpeaker, type Speaker } from "./tts"
 
-const LABEL: Record<
+export const VOICE_LABEL: Record<
   VoiceLocalModelID,
   | "settings.voice.model.base-q5_1"
   | "settings.voice.model.small-q5_1"
@@ -39,31 +38,11 @@ export function formatSize(bytes: number) {
 }
 
 /** One voice model in the settings and the dictation dialog: state, progress, download, delete. */
-export function VoiceModelRow(props: {
-  model: VoiceLocalModel
-  voice: VoiceModels
-  onInstalled?: () => void
-  /** Synthesis rows: the voice in use, and the action that selects this one. */
-  active?: boolean
-  onUse?: () => void
-}) {
+export function VoiceModelRow(props: { model: VoiceLocalModel; voice: VoiceModels; onInstalled?: () => void }) {
   const language = useLanguage()
-  const platform = usePlatform()
   const state = () => props.voice.state(props.model.id)
   const busy = () => state().status === "downloading"
   const percent = () => Math.round(props.voice.progress(props.model.id) * 100)
-
-  let speaker: Speaker | undefined
-
-  onCleanup(() => speaker?.dispose())
-
-  // A voice is chosen by ear: the preview reads one sentence with this exact model.
-  const preview = async () => {
-    speaker ??= createSpeaker((text) => platform.voiceLocal!.speak({ text, id: props.model.id }))
-    await speaker.speak(
-      props.model.language === "en" ? "Hello, I am Cairn. This is my voice." : "Bonjour, je suis Cairn. Voici ma voix.",
-    )
-  }
 
   const install = async () => {
     try {
@@ -82,7 +61,7 @@ export function VoiceModelRow(props: {
     >
       <div class="flex min-w-0 flex-1 flex-col gap-0.5">
         <div class="flex items-center gap-2">
-          <span class="truncate text-[13px] text-v2-text-text-base">{language.t(LABEL[props.model.id])}</span>
+          <span class="truncate text-[13px] text-v2-text-text-base">{language.t(VOICE_LABEL[props.model.id])}</span>
           <Show when={props.model.id === RECOMMENDED}>
             <span class="rounded-full bg-v2-background-bg-layer-2 px-2 py-0.5 text-[10px] text-v2-text-text-faint">
               {language.t("settings.voice.model.recommended")}
@@ -115,34 +94,10 @@ export function VoiceModelRow(props: {
           }
         >
           <div class="flex shrink-0 items-center gap-2">
-            <Show when={props.model.kind === "synthesis"}>
-              <Button variant="ghost-muted" size="small" onClick={() => void preview()}>
-                {language.t("settings.voice.model.preview")}
-              </Button>
-            </Show>
-            <Show
-              when={props.onUse}
-              fallback={
-                <span class="flex items-center gap-1 text-[11px] text-v2-text-text-faint">
-                  <Icon name="check" class="size-3" />
-                  {language.t("settings.voice.model.installed")}
-                </span>
-              }
-            >
-              <Show
-                when={props.active}
-                fallback={
-                  <Button variant="outline" size="small" onClick={() => props.onUse?.()}>
-                    {language.t("settings.voice.model.use")}
-                  </Button>
-                }
-              >
-                <span class="flex items-center gap-1 text-[11px] text-v2-text-text-faint">
-                  <Icon name="check" class="size-3" />
-                  {language.t("settings.voice.model.active")}
-                </span>
-              </Show>
-            </Show>
+            <span class="flex items-center gap-1 text-[11px] text-v2-text-text-faint">
+              <Icon name="check" class="size-3" />
+              {language.t("settings.voice.model.installed")}
+            </span>
             <Button variant="ghost-muted" size="small" onClick={() => void props.voice.remove(props.model.id)}>
               {language.t("settings.voice.model.delete")}
             </Button>
