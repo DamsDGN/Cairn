@@ -187,17 +187,30 @@ type PlatformBase = {
   }
 }
 
-export type VoiceLocalModelID = "base-q5_1" | "small-q5_1" | "small" | "silero-v6.2.0" | "vits-piper-fr_FR-siwis-medium"
+export type VoiceLocalModelID =
+  | "base-q5_1"
+  | "small-q5_1"
+  | "small"
+  | "silero-v6.2.0"
+  | "vits-piper-fr_FR-siwis-medium"
+  | "vits-piper-fr_FR-upmc-medium"
+  | "vits-coqui-fr-css10"
+  | "vits-piper-en_US-lessac-medium"
+  | "vits-piper-en_US-ryan-high"
+  | "vits-piper-en_GB-alba-medium"
+
+export type VoiceLocalLanguage = "fr" | "en"
 
 export type VoiceLocalAcceleration = "avx2" | "compatible"
 
-export type VoiceLocalPreferences = { language?: string; prompt?: string }
+export type VoiceLocalPreferences = { language?: string; prompt?: string; voice?: VoiceLocalModelID }
 
 export type VoiceLocalModel = {
   id: VoiceLocalModelID
   kind: "speech" | "detector" | "synthesis"
   installed: boolean
   size: number
+  language?: VoiceLocalLanguage
 }
 
 export type VoiceLocalState = {

@@ -3,9 +3,10 @@ import { Select } from "@opencode/ui/select"
 import { TextInput } from "@opencode/ui/text-input"
 import { useLanguage } from "@/runtime/i18n/language"
 import { DESKTOP_NATIVE_LABELS, type DesktopNativeLocale } from "@/runtime/i18n/desktop-native"
-import { usePlatform, type VoiceLocalPreferences } from "@/runtime/platform/platform"
+import { usePlatform, type VoiceLocalLanguage, type VoiceLocalPreferences } from "@/runtime/platform/platform"
 import { dictationLanguage, dictationLanguages } from "@/assistant/voice/languages"
 import { useVoiceModels } from "@/assistant/voice/models"
+import { DEFAULT_VOICE } from "@/assistant/voice/voices"
 import { VoiceModelRow } from "@/assistant/voice/model-row"
 import { SettingsList } from "@/settings/list"
 import { SettingsRow } from "@/settings/row"
@@ -23,6 +24,19 @@ export const SettingsVoice: Component = () => {
   onMount(async () => {
     setDraft((await platform.voiceLocal?.preferences()) ?? {})
   })
+
+  const voiceLanguage = createMemo<VoiceLocalLanguage>(() => {
+    const selected = voice.models().find((model) => model.id === draft().voice)?.language
+
+    if (selected) return selected
+
+    return language.locale().startsWith("en") ? "en" : "fr"
+  })
+
+  const voiceLanguages = createMemo(() => [
+    { value: "fr" as const, label: language.t("settings.voice.voiceLanguage.fr") },
+    { value: "en" as const, label: language.t("settings.voice.voiceLanguage.en") },
+  ])
 
   // The kernel choice only exists on Linux x64, where the application ships a second, faster addon
   // next to the portable one.
@@ -43,6 +57,8 @@ export const SettingsVoice: Component = () => {
     setDraft(next)
     void platform.voiceLocal?.setPreferences(next)
   }
+
+  const speechModels = createMemo(() => voice.models().filter((model) => model.kind !== "synthesis"))
 
   return (
     <>
@@ -99,6 +115,38 @@ export const SettingsVoice: Component = () => {
             </SettingsList>
           </div>
 
+          <div class="settings-section">
+            <h3 class="settings-section-title">{language.t("settings.voice.voice.title")}</h3>
+            <p class="text-11-regular text-v2-text-text-muted">{language.t("settings.voice.voice.description")}</p>
+            <SettingsList>
+              <SettingsRow
+                title={language.t("settings.voice.voiceLanguage.title")}
+                description={language.t("settings.voice.voiceLanguage.description")}
+              >
+                <Select
+                  data-action="settings-voice-language"
+                  options={voiceLanguages()}
+                  current={voiceLanguages().find((option) => option.value === voiceLanguage())}
+                  value={(option) => option.value}
+                  label={(option) => option.label}
+                  placement="bottom-end"
+                  gutter={6}
+                  onSelect={(option) => option && save({ voice: DEFAULT_VOICE[option.value] })}
+                />
+              </SettingsRow>
+              <For each={voice.voices(voiceLanguage())}>
+                {(model) => (
+                  <VoiceModelRow
+                    model={model}
+                    voice={voice}
+                    active={model.id === (draft().voice ?? DEFAULT_VOICE[voiceLanguage()])}
+                    onUse={() => save({ voice: model.id })}
+                  />
+                )}
+              </For>
+            </SettingsList>
+          </div>
+
           <Show when={platform.os === "linux"}>
             <div class="settings-section">
               <h3 class="settings-section-title">{language.t("settings.voice.acceleration.title")}</h3>
@@ -127,7 +175,7 @@ export const SettingsVoice: Component = () => {
             <h3 class="settings-section-title">{language.t("settings.voice.models")}</h3>
             <p class="text-11-regular text-v2-text-text-muted">{language.t("settings.voice.models.description")}</p>
             <SettingsList>
-              <For each={voice.models()}>{(model) => <VoiceModelRow model={model} voice={voice} />}</For>
+              <For each={speechModels()}>{(model) => <VoiceModelRow model={model} voice={voice} />}</For>
             </SettingsList>
           </div>
         </Show>

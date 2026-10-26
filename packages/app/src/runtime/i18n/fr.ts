@@ -704,6 +704,22 @@ export const dict = {
   "settings.voice.dictation.vocabulary.placeholder": "Cairn, Sover, Traefik",
   "settings.voice.model.silero-v6.2.0": "Détection de voix",
   "settings.voice.model.vits-piper-fr_FR-siwis-medium": "Voix française (Piper)",
+  "settings.voice.model.vits-piper-fr_FR-upmc-medium": "Voix française (UPMC)",
+  "settings.voice.model.vits-coqui-fr-css10": "Voix française (Coqui)",
+  "settings.voice.model.vits-piper-en_US-lessac-medium": "Voix anglaise (Lessac)",
+  "settings.voice.model.vits-piper-en_US-ryan-high": "Voix anglaise (Ryan)",
+  "settings.voice.model.vits-piper-en_GB-alba-medium": "Voix anglaise britannique (Alba)",
+  "settings.voice.voice.title": "Voix",
+  "settings.voice.voice.description":
+    "La voix avec laquelle Cairn répond. Une voix se télécharge une fois puis reste sur cette machine.",
+  "settings.voice.voiceLanguage.title": "Langue de la voix",
+  "settings.voice.voiceLanguage.description":
+    "La langue que Cairn parle, indépendante de la langue dans laquelle tu dictes.",
+  "settings.voice.voiceLanguage.fr": "Français",
+  "settings.voice.voiceLanguage.en": "Anglais",
+  "settings.voice.model.preview": "Écouter",
+  "settings.voice.model.use": "Utiliser",
+  "settings.voice.model.active": "Voix active",
   "settings.voice.models": "Modèles vocaux",
   "settings.voice.models.description":
     "La dictée utilise les modèles de reconnaissance, la conversation vocale la voix de synthèse.",

@@ -17,7 +17,7 @@ type TtsEngine = {
 
 type TtsConfig = {
   model: {
-    vits: { model: string; tokens: string; dataDir: string }
+    vits: { model: string; tokens: string; dataDir?: string }
     numThreads: number
     provider: string
   }
@@ -54,26 +54,28 @@ function sherpa(): Sherpa {
   return loaded
 }
 
-function loadEngine(directory: string, onnx: string): Promise<TtsEngine> {
+function loadEngine(directory: string, onnx: string, dataDir: string | undefined): Promise<TtsEngine> {
   const cached = engines.get(directory)
 
   if (cached) return cached
 
-  const created = Promise.resolve().then(
-    () =>
-      new (sherpa().OfflineTts)({
-        model: {
-          vits: {
-            model: path.join(directory, onnx),
-            tokens: path.join(directory, "tokens.txt"),
-            dataDir: path.join(directory, "espeak-ng-data"),
-          },
-          numThreads: Math.max(1, Math.min(4, availableParallelism() - 1)),
-          provider: "cpu",
-        },
-        maxNumSentences: 1,
-      }),
-  )
+  const created = Promise.resolve().then(() => {
+    const vits: { model: string; tokens: string; dataDir?: string } = {
+      model: path.join(directory, onnx),
+      tokens: path.join(directory, "tokens.txt"),
+    }
+
+    if (dataDir) vits.dataDir = dataDir
+
+    return new (sherpa().OfflineTts)({
+      model: {
+        vits,
+        numThreads: Math.max(1, Math.min(4, availableParallelism() - 1)),
+        provider: "cpu",
+      },
+      maxNumSentences: 1,
+    })
+  })
 
   engines.set(directory, created)
 
@@ -87,13 +89,24 @@ export async function synthesize(input: { dataDirectory: string; id: VoiceModelI
 
   if (!model?.archive) throw new Error(`Unknown synthesis voice: ${input.id}`)
 
-  const engine = await loadEngine(modelPath(input.dataDirectory, model), model.archive.onnx)
+  const directory = modelPath(input.dataDirectory, model)
+
+  const engine = await loadEngine(
+    directory,
+    model.archive.onnx,
+    model.archive.dataDir ? path.join(directory, "espeak-ng-data") : undefined,
+  )
 
   return serialized(async () => {
     // Electron's V8 memory cage rejects external ArrayBuffers, and sherpa-onnx creates one for the
     // samples by default: without this flag every synthesis throws "External buffers are not
     // allowed" in the main process. The copy costs less than a millisecond per sentence.
-    const audio = engine.generate({ text: input.text.trim(), sid: 0, speed: 1, enableExternalBuffer: false })
+    const audio = engine.generate({
+      text: input.text.trim(),
+      sid: model.speaker ?? 0,
+      speed: 1,
+      enableExternalBuffer: false,
+    })
 
     return { audio: pcm16(audio.samples), sampleRate: audio.sampleRate }
   })

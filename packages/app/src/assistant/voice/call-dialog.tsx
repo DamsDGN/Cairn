@@ -16,6 +16,7 @@ import { startRecorder, type Recorder, type RecorderFrame } from "./recorder"
 import { createSpeechSegmenter, type SpeechSegment } from "./segmenter"
 import { splitSentences, speakable } from "./speech"
 import { createSpeaker, type Speaker } from "./tts"
+import { defaultVoice } from "./voices"
 
 type CallState = "starting" | "listening" | "thinking" | "speaking" | "error"
 
@@ -56,6 +57,7 @@ export function VoiceCallDialog(props: { session: SessionModel; composer: Compos
   let idleTimer: ReturnType<typeof setTimeout> | undefined
 
   let model: VoiceLocalModelID | undefined
+  let synthesis: VoiceLocalModelID | undefined
   let spoken = "en"
   let vocabulary: string | undefined
   let closed = false
@@ -365,14 +367,21 @@ export function VoiceCallDialog(props: { session: SessionModel; composer: Compos
       return
     }
 
-    if (!voice.synthesis()) {
+    // The voice the user picked in Settings > Voice, or the default one for the interface language.
+    // Only an installed voice is used: answering French with an English voice would be worse than
+    // asking for the download.
+    const preferred = preferences.voice ?? defaultVoice(language.locale())
+
+    synthesis = voice.voice(preferred) ? preferred : undefined
+
+    if (!synthesis) {
       setFailure(language.t("assistant.voice.noSpeech"))
 
       return
     }
 
     model = voice.best()
-    speaker = createSpeaker((text) => platform.voiceLocal!.speak({ text }))
+    speaker = createSpeaker((text) => platform.voiceLocal!.speak({ text, id: synthesis }))
 
     try {
       recorder = await startRecorder({ onFrame })

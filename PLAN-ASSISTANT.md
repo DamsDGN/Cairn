@@ -54,8 +54,9 @@ reference for contributors; the user-facing description lives in `README.md`.
   text appears in the composer while the next sentence is still being spoken
   (see `docs/voice/dictation-streaming.md`). The first attempt offers the model download, and
   Settings > Voice manages the models.
-  A voice conversation reuses the same recognizer and answers out loud with an embedded Piper
-  French voice (`sherpa-onnx-node`, `vits-piper-fr_FR-siwis-medium`, downloaded on request). It is
+  A voice conversation reuses the same recognizer and answers out loud with an embedded voice from
+  Settings > Voice: French (siwis, UPMC, Coqui) or English (Lessac, Ryan, Alba), downloaded on
+  request and chosen by ear with a per-voice preview. It is
   half duplex: listen, submit, speak the streaming answer sentence by sentence, listen again;
   speaking over the answer stops the playback (see `docs/voice/conversation.md`). No remote speech
   service is involved.

@@ -1,7 +1,19 @@
 import { existsSync, statSync } from "node:fs"
 import path from "node:path"
 
-export type VoiceModelID = "base-q5_1" | "small-q5_1" | "small" | "silero-v6.2.0" | "vits-piper-fr_FR-siwis-medium"
+export type VoiceModelID =
+  | "base-q5_1"
+  | "small-q5_1"
+  | "small"
+  | "silero-v6.2.0"
+  | "vits-piper-fr_FR-siwis-medium"
+  | "vits-piper-fr_FR-upmc-medium"
+  | "vits-coqui-fr-css10"
+  | "vits-piper-en_US-lessac-medium"
+  | "vits-piper-en_US-ryan-high"
+  | "vits-piper-en_GB-alba-medium"
+
+export type VoiceLanguage = "fr" | "en"
 
 export type VoiceModel = {
   id: VoiceModelID
@@ -13,11 +25,17 @@ export type VoiceModel = {
   url: string
   /** Speech models produce text, detectors find where speech is, synthesis speaks it back. */
   kind: "speech" | "detector" | "synthesis"
+  /** Synthesis voices announce the language they speak, so the settings can group them. */
+  language?: VoiceLanguage
+  /** Speaker id inside a multi-speaker voice. */
+  speaker?: number
   /** A synthesis voice arrives as one archive that is extracted into its own folder. */
   archive?: {
     directory: string
     onnx: string
     entries: readonly string[]
+    /** Piper voices phonemize with the espeak-ng data shipped next to the model. */
+    dataDir?: boolean
   }
 }
 
@@ -64,10 +82,87 @@ export const VOICE_MODELS: readonly VoiceModel[] = [
     sha256: "375909aa30842b3a4efa10b1beb1d761af792960ae6873b4d53889f96c66195b",
     url: "https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/vits-piper-fr_FR-siwis-medium.tar.bz2",
     kind: "synthesis",
+    language: "fr",
     archive: {
       directory: "vits-piper-fr_FR-siwis-medium",
       onnx: "fr_FR-siwis-medium.onnx",
       entries: ["fr_FR-siwis-medium.onnx", "tokens.txt"],
+      dataDir: true,
+    },
+  },
+  {
+    id: "vits-piper-fr_FR-upmc-medium",
+    file: "vits-piper-fr_FR-upmc-medium.tar.bz2",
+    size: 80_422_639,
+    sha256: "e9830a331a16f6cc5ef3116a287065e015d3495c3f56b974889a266da7f89a7f",
+    url: "https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/vits-piper-fr_FR-upmc-medium.tar.bz2",
+    kind: "synthesis",
+    language: "fr",
+    speaker: 0,
+    archive: {
+      directory: "vits-piper-fr_FR-upmc-medium",
+      onnx: "fr_FR-upmc-medium.onnx",
+      entries: ["fr_FR-upmc-medium.onnx", "tokens.txt"],
+      dataDir: true,
+    },
+  },
+  {
+    id: "vits-coqui-fr-css10",
+    file: "vits-coqui-fr-css10.tar.bz2",
+    size: 67_044_087,
+    sha256: "a11143ec2420583466bada28e194494134900761dc4147ac9305857754976699",
+    url: "https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/vits-coqui-fr-css10.tar.bz2",
+    kind: "synthesis",
+    language: "fr",
+    archive: {
+      directory: "vits-coqui-fr-css10",
+      onnx: "model.onnx",
+      entries: ["model.onnx", "tokens.txt"],
+    },
+  },
+  {
+    id: "vits-piper-en_US-lessac-medium",
+    file: "vits-piper-en_US-lessac-medium.tar.bz2",
+    size: 67_230_653,
+    sha256: "9e3febfacf0abf4270172d2958bcec246032b7e88efc2720840cc80c93de334e",
+    url: "https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/vits-piper-en_US-lessac-medium.tar.bz2",
+    kind: "synthesis",
+    language: "en",
+    archive: {
+      directory: "vits-piper-en_US-lessac-medium",
+      onnx: "en_US-lessac-medium.onnx",
+      entries: ["en_US-lessac-medium.onnx", "tokens.txt"],
+      dataDir: true,
+    },
+  },
+  {
+    id: "vits-piper-en_US-ryan-high",
+    file: "vits-piper-en_US-ryan-high.tar.bz2",
+    size: 115_630_708,
+    sha256: "6a71edf4d308b9cb2eaeadc8d1f3c6bf96120ecb7fe52c29a2b6e139c59760ed",
+    url: "https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/vits-piper-en_US-ryan-high.tar.bz2",
+    kind: "synthesis",
+    language: "en",
+    archive: {
+      directory: "vits-piper-en_US-ryan-high",
+      onnx: "en_US-ryan-high.onnx",
+      entries: ["en_US-ryan-high.onnx", "tokens.txt"],
+      dataDir: true,
+    },
+  },
+  {
+    id: "vits-piper-en_GB-alba-medium",
+    file: "vits-piper-en_GB-alba-medium.tar.bz2",
+    size: 67_212_349,
+    sha256: "fcd45962906933eec4431d3688f7d74aaac8713c87c6717f91fd3b23463aa1a1",
+    url: "https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/vits-piper-en_GB-alba-medium.tar.bz2",
+    kind: "synthesis",
+    language: "en",
+    archive: {
+      directory: "vits-piper-en_GB-alba-medium",
+      onnx: "en_GB-alba-medium.onnx",
+      entries: ["en_GB-alba-medium.onnx", "tokens.txt"],
+      dataDir: true,
     },
   },
 ]
@@ -77,6 +172,12 @@ export const DEFAULT_VOICE_MODEL: VoiceModelID = "base-q5_1"
 export const DETECTOR_VOICE_MODEL: VoiceModelID = "silero-v6.2.0"
 
 export const SYNTHESIS_VOICE_MODEL: VoiceModelID = "vits-piper-fr_FR-siwis-medium"
+
+/** Voice picked for a language until the user chooses another one. */
+export const DEFAULT_VOICE_BY_LANGUAGE: Record<VoiceLanguage, VoiceModelID> = {
+  fr: "vits-piper-fr_FR-siwis-medium",
+  en: "vits-piper-en_US-lessac-medium",
+}
 
 // The small models stay in the catalog but are not offered: they were slower than base and
 // hallucinated subtitles on the reference machine, and the optimized build has not been measured
@@ -93,6 +194,14 @@ export function visibleVoiceModels(): readonly VoiceModel[] {
 
 export function speechModels(): readonly VoiceModel[] {
   return visibleVoiceModels().filter((model) => model.kind === "speech")
+}
+
+export function synthesisModels(): readonly VoiceModel[] {
+  return visibleVoiceModels().filter((model) => model.kind === "synthesis")
+}
+
+export function voiceLanguage(id: VoiceModelID): VoiceLanguage | undefined {
+  return voiceModel(id)?.language
 }
 
 
