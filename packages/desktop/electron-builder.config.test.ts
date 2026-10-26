@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test"
-import { statSync } from "node:fs"
+import { existsSync, statSync } from "node:fs"
 import { cp, mkdtemp, rm } from "node:fs/promises"
 import { createRequire } from "node:module"
 import os from "node:os"
@@ -88,9 +88,19 @@ test("shared packaging defaults", async () => {
   expect(config.nsis?.include).toBe(include)
   expect(await Bun.file(include).exists()).toBe(true)
   expect(config.files).toContain("!resources/opencode-cli*")
-  expect(config.extraResources).toEqual([
-    { from: "resources/", to: "", filter: ["opencode-cli", "opencode-cli.exe", "opencode-cli.version"] },
-  ])
+  expect(config.extraResources?.[0]).toEqual({
+    from: "resources/",
+    to: "",
+    filter: ["opencode-cli", "opencode-cli.exe", "opencode-cli.version"],
+  })
+
+  // The AVX2 addon is a build artifact, absent from a fresh checkout: packaging ships it when it
+  // exists and only the CLI otherwise.
+  const addon = config.extraResources?.slice(1) ?? []
+  const built = existsSync(path.join(import.meta.dirname, "resources/whisper-avx2/index.node"))
+
+  expect(addon).toHaveLength(built ? 1 : 0)
+  expect(addon.map((entry) => entry.to)).toEqual(built ? ["whisper-avx2"] : [])
 })
 
 test("trims external dependencies without excluding runtime files", () => {

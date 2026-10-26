@@ -7,7 +7,12 @@ import { modelPath, voiceModel, type VoiceModelID } from "./models"
 type GeneratedAudio = { samples: Float32Array; sampleRate: number }
 
 type TtsEngine = {
-  generate(input: { text: string; sid: number; speed: number }): GeneratedAudio
+  generate(input: {
+    text: string
+    sid: number
+    speed: number
+    enableExternalBuffer: boolean
+  }): GeneratedAudio
 }
 
 type TtsConfig = {
@@ -85,7 +90,10 @@ export async function synthesize(input: { dataDirectory: string; id: VoiceModelI
   const engine = await loadEngine(modelPath(input.dataDirectory, model), model.archive.onnx)
 
   return serialized(async () => {
-    const audio = engine.generate({ text: input.text.trim(), sid: 0, speed: 1 })
+    // Electron's V8 memory cage rejects external ArrayBuffers, and sherpa-onnx creates one for the
+    // samples by default: without this flag every synthesis throws "External buffers are not
+    // allowed" in the main process. The copy costs less than a millisecond per sentence.
+    const audio = engine.generate({ text: input.text.trim(), sid: 0, speed: 1, enableExternalBuffer: false })
 
     return { audio: pcm16(audio.samples), sampleRate: audio.sampleRate }
   })

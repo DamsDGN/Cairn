@@ -23,7 +23,9 @@ Synthesis uses `sherpa-onnx-node` with the Piper French voice
 whisper models and extracted into `<userData>/voice/models`; the engine reads the ONNX model and
 the `espeak-ng-data` folder shipped in the archive. Synthesis runs in the main process, serialized
 like transcription, and hands signed 16-bit mono PCM to the renderer, which plays it through Web
-Audio. No audio leaves the machine.
+Audio. No audio leaves the machine. The engine allocates its samples outside the V8 heap by
+default, which the main process rejects, so synthesis asks sherpa-onnx for a copy: the flag costs a
+few hundred microseconds per sentence and keeps playback working inside Electron.
 
 ## Half duplex
 
