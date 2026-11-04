@@ -1,7 +1,10 @@
 import { app, Menu, Tray } from "electron"
 import path from "node:path"
 
+import { QUICK_CAPTURE_ACCELERATOR } from "../constants"
 import { getLastFocusedWindow } from "../windows"
+import { sendMenuCommand } from "./menu"
+import { showWindow } from "./show-window"
 import { nativeT, onNativeTranslations } from "./translations"
 
 // The tray keeps the application reachable when the window is hidden or off screen. Its menu is
@@ -21,7 +24,7 @@ export function createTray() {
   }
 
   tray.setToolTip(app.getName())
-  tray.on("click", showWindow)
+  tray.on("click", () => showWindow(getLastFocusedWindow()))
   const apply = () => tray?.setContextMenu(Menu.buildFromTemplate(entries()))
   apply()
   onNativeTranslations(apply)
@@ -32,20 +35,28 @@ export function destroyTray() {
   tray = undefined
 }
 
-function showWindow() {
-  const win = getLastFocusedWindow()
-
-  if (!win || win.isDestroyed()) return
-  if (win.isMinimized()) win.restore()
-
-  win.show()
-  win.focus()
-}
-
 function entries() {
   return [
-    { label: nativeT("desktop.menu.showApp"), click: showWindow },
+    { label: nativeT("desktop.menu.showApp"), click: () => showWindow(getLastFocusedWindow()) },
+    { type: "separator" as const },
+    // The renderer owns both actions; the tray only forwards them like the native menu does.
+    { label: nativeT("desktop.menu.newChat"), click: () => run("tab.new") },
+    {
+      label: nativeT("desktop.menu.quickCapture"),
+      // The shortcut itself is registered globally; this only shows it next to the item.
+      accelerator: QUICK_CAPTURE_ACCELERATOR,
+      registerAccelerator: false,
+      click: () => run("assistant.quickCapture"),
+    },
     { type: "separator" as const },
     { label: nativeT("desktop.menu.quit"), click: () => app.quit() },
   ]
+}
+
+function run(id: string) {
+  const win = getLastFocusedWindow()
+
+  if (!win || !showWindow(win)) return
+
+  sendMenuCommand(win, id)
 }

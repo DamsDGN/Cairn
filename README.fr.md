@@ -40,6 +40,8 @@ attendre.
 - **Voix locale** : Whisper tourne sur la machine, les modèles se téléchargent à la demande. La
   dictée écrit chaque phrase dans le composeur pendant que vous parlez, et la conversation vocale
   répond à voix haute avec une voix française embarquée.
+- **Capture rapide** : `Ctrl+Maj+Espace` (Cmd sur macOS) depuis n'importe quelle application ouvre une
+  nouvelle conversation en dictée, et la même combinaison arrête la dictée.
 - **Mises à jour** : les installations suivent les releases GitHub de ce dépôt.
 
 ## Installation

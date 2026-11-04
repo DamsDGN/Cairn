@@ -4,6 +4,7 @@ import { createMediaQuery } from "@solid-primitives/media"
 import { ResizeHandle } from "@opencode/ui/resize-handle"
 import { Titlebar } from "@/shell/titlebar/titlebar"
 import { AssistantSidebar } from "@/assistant/sidebar"
+import { AssistantQuickCapture } from "@/assistant/quick-capture"
 import { usePlatform } from "@/runtime/platform/platform"
 import { ToastRegion } from "@/shell/notifications/toast"
 import { UploadToastHost } from "@/composer/attachments/uploads"
@@ -104,6 +105,7 @@ export default function Layout(props: ParentProps) {
         <ExtensionSlot at="window.bottom" input={{}} />
         <ToastRegion />
         <UploadToastHost />
+        <AssistantQuickCapture />
       </div>
     </TitlebarRightProvider>
   )

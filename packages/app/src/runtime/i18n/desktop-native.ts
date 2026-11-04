@@ -244,6 +244,8 @@ export const DESKTOP_NATIVE_ENGLISH = {
   "desktop.menu.installCli": "Install CLI…",
   "desktop.menu.settings": "Settings",
   "desktop.menu.showApp": "Show Cairn",
+  "desktop.menu.newChat": "New Chat",
+  "desktop.menu.quickCapture": "Voice Capture",
   "desktop.menu.quit": "Quit Cairn",
   "desktop.menu.reloadWebview": "Reload Webview",
   "desktop.menu.restart": "Restart",

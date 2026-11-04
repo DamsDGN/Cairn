@@ -28,6 +28,11 @@ if (acquireApplicationLock()) {
     const tray = await import("./native/tray")
     tray.createTray()
 
+    // The capture shortcut stays registered while the window is hidden in the tray, and the renderer
+    // handles what it asks for.
+    const quickCapture = await import("./native/quick-capture")
+    quickCapture.registerQuickCapture()
+
     // The recognizer loads its model in the background once the window is up, so the first
     // dictation does not wait for it. A machine without a model does nothing.
     const voice = await import("./voice/transcribe")

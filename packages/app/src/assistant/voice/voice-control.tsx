@@ -14,13 +14,17 @@ import { AssistantVoiceButton } from "./voice-dialog"
 
 // The desktop build records, transcribes and synthesizes on the machine; the hosted realtime path
 // stays the fallback where no local voice bridge exists.
-export function AssistantVoiceControls(props: { composer: ComposerModel; session?: SessionModel }) {
+export function AssistantVoiceControls(props: {
+  composer: ComposerModel
+  session?: SessionModel
+  quickCapture?: boolean
+}) {
   const platform = usePlatform()
 
   return (
     <Show when={platform.assistantDirectory ? platform.voiceLocal : undefined} fallback={<AssistantVoiceButton />}>
       <AssistantCallButton composer={props.composer} session={props.session} />
-      <AssistantDictationButton composer={props.composer} />
+      <AssistantDictationButton composer={props.composer} quickCapture={props.quickCapture} />
     </Show>
   )
 }

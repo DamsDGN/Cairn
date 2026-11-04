@@ -78,7 +78,10 @@ export function NewSessionView(props: {
               <NewSessionWordmark />
             </Show>
             <div class="mt-8 flex flex-col gap-8">
-              <Composer model={props.composer} voiceControl={<AssistantVoiceControls composer={props.composer} />} />
+              <Composer
+                model={props.composer}
+                voiceControl={<AssistantVoiceControls composer={props.composer} quickCapture />}
+              />
               <Show when={!assistantMode() && props.project.empty()}>
                 <PromptProjectAddButton controller={props.project} />
               </Show>

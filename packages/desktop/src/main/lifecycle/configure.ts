@@ -10,6 +10,10 @@ const testOnboarding = process.env.OPENCODE_TEST_ONBOARDING === "1"
 
 const jsCallStackFeature = "DocumentPolicyIncludeJSCallStacksInCrashReports"
 
+// Wayland only exposes global shortcuts through the desktop portal; without this feature the quick
+// capture shortcut never registers on that compositor.
+const waylandShortcutsFeature = "GlobalShortcutsPortal"
+
 // Runs synchronously from the entry module, before Chromium is ready: command-line switches only
 // take effect before ready, the single-instance lock is scoped to userData, and the early window
 // needs userData to find the persisted window list and state.
@@ -24,7 +28,9 @@ export function configureApplication() {
   app.setAppUserModelId(APP_ID)
   app.commandLine.appendSwitch("proxy-bypass-list", "<-loopback>")
   const features = app.commandLine.getSwitchValue("enable-features")
-  app.commandLine.appendSwitch("enable-features", features ? `${jsCallStackFeature},${features}` : jsCallStackFeature)
+  const required =
+    process.platform === "linux" ? `${jsCallStackFeature},${waylandShortcutsFeature}` : jsCallStackFeature
+  app.commandLine.appendSwitch("enable-features", features ? `${required},${features}` : required)
 
   if (!app.isPackaged)
     app.commandLine.appendSwitch("remote-debugging-port", process.env.OPENCODE_DESKTOP_REMOTE_DEBUGGING_PORT ?? "9222")
