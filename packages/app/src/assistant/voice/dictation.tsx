@@ -1,4 +1,4 @@
-import { Show, createSignal, onCleanup, onMount } from "solid-js"
+import { Show, createEffect, createSignal, onCleanup, onMount } from "solid-js"
 import { Button } from "@opencode/ui/button"
 import { useDialog } from "@opencode/ui/context/dialog"
 import { Icon } from "@opencode/ui/icon"
@@ -6,6 +6,7 @@ import { useLanguage } from "@/runtime/i18n/language"
 import { usePlatform, type VoiceLocalModelID } from "@/runtime/platform/platform"
 import type { ComposerModel } from "@/composer/model"
 import { showToast } from "@/shell/notifications/toast"
+import { dictationCapture } from "./dictation-capture"
 import { dictationLanguage } from "./languages"
 import { DialogVoiceModels } from "./model-dialog"
 import { useVoiceModels } from "./models"
@@ -22,7 +23,7 @@ function clock(ms: number) {
 }
 
 /** Local dictation: record, transcribe sentence by sentence on this machine, insert the text. */
-export function AssistantDictationButton(props: { composer: ComposerModel }) {
+export function AssistantDictationButton(props: { composer: ComposerModel; quickCapture?: boolean }) {
   const platform = usePlatform()
   const dialog = useDialog()
   const language = useLanguage()
@@ -183,6 +184,26 @@ export function AssistantDictationButton(props: { composer: ComposerModel }) {
 
     document.addEventListener("keydown", onKeyDown)
     onCleanup(() => document.removeEventListener("keydown", onKeyDown))
+
+    // The global shortcut stops whichever capture is recording, wherever the composer sits.
+    const capture = { recording: () => phase() === "recording", finish: () => void finish() }
+
+    dictationCapture.attach(capture)
+    onCleanup(() => dictationCapture.detach(capture))
+  })
+
+  // Only the draft composer listens: the shortcut always opens a new conversation, so a composer
+  // already on screen must leave the request to the draft that mounts next.
+  const mountedRevision = dictationCapture.revision()
+
+  createEffect(() => {
+    if (!props.quickCapture || !dictationCapture.claim(mountedRevision)) return
+
+    void (async () => {
+      await voice.refetch()
+
+      if (phase() === "idle") await start()
+    })()
   })
 
   onCleanup(() => {

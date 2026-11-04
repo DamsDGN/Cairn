@@ -24,3 +24,7 @@ const appIDs: Record<string, string> = {
 export const APP_NAME = app.isPackaged ? appNames[CHANNEL] : "Cairn Dev"
 
 export const APP_ID = app.isPackaged ? appIDs[CHANNEL] : "tech.sover.cairn.dev"
+
+// A capture shortcut has to work before any window is focused, so it lives in the OS rather than in
+// the renderer's keybind settings.
+export const QUICK_CAPTURE_ACCELERATOR = "CommandOrControl+Shift+Space"

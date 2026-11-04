@@ -595,6 +595,7 @@ export const dict = {
   "assistant.voice.speechSettings": "Open voice settings",
   "assistant.voice.noSpeech": "Download the French voice in Settings > Voice to hear the answers.",
   "assistant.dictation.action": "Dictate",
+  "assistant.quickCapture": "Voice capture",
   "assistant.dictation.recording": "Stop, {{time}}",
   "assistant.dictation.transcribing": "Transcribing",
   "assistant.dictation.model.title": "Speech model",
