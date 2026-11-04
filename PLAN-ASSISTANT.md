@@ -28,8 +28,12 @@ reference for contributors; the user-facing description lives in `README.md`.
   runtime is updated without a restart. Removal is offered only for servers that file declares.
 - **M4 Conversation history (done)**: the fork sidebar lists chats, with search, pinning and
   deletion. The Home screen stays chat-first: a centred composer and suggestions.
-- **M5 Product shell (todo)**: tray and context menu, launch at login, system notifications, global
-  quick capture.
+- **M5 Product shell (done)**: tray with a context menu, launch at login, system notifications, and
+  global quick capture. `Ctrl+Shift+Space` (`Cmd` on macOS) restores the window, opens a new chat in
+  the Conversations folder and starts local dictation; the same shortcut while recording stops it and
+  keeps the text. The tray lists the window, a new chat, the voice capture and quit. Wayland only
+  exposes global shortcuts through the desktop portal, so `configureApplication` enables
+  `GlobalShortcutsPortal` there.
 - **M6 Distribution (done, shared)**: app id, product name, icons, deep link, GitHub releases and
   the updater feed. macOS and Windows signing, the dmg and the Intel build are handled outside this
   repository.

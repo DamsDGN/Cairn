@@ -36,6 +36,8 @@ the system asks for confirmation on first launch. Expect rough edges.
 - **Local speech**: Whisper runs on the machine, models are downloaded on demand. Dictation writes
   each sentence into the composer while you speak, and the voice conversation answers out loud with
   an embedded French voice.
+- **Quick capture**: `Ctrl+Shift+Space` (Cmd on macOS) from any app opens a new chat dictating, and
+  the same shortcut stops the dictation.
 - **Updates**: installed builds check the GitHub releases of this repository.
 
 ## Install
